@@ -1,11 +1,13 @@
 '''
-	https://www.mediawiki.org/wiki/Help:Extension:ParserFunctions##expr
-	https://meta.wikimedia.org/wiki/Help:Calculation
-	https://meta.wikimedia.org/wiki/Special:ExpandTemplates
+	Read Lisp syntax
+	Reference
+		https://www.dabeaz.com/ply/ply.html
+		https://stackoverflow.com/questions/4873810/what-does-mean-in-lisp
+		https://www.tutorialspoint.com/lisp/lisp_numbers.htm
 '''
 
 from fractions import Fraction
-# import operator, math
+from structs import Number, Symbol, List
 
 tokens = (
 	'ID', 'NUMBER', 'LPAREN', 'RPAREN', 'DOT', 'QUOTE', 'HASH', 
@@ -21,7 +23,6 @@ def t_ID(t) :
 	if t.value == '.' :
 		t.type = 'DOT'
 		return t
-	# https://www.tutorialspoint.com/lisp/lisp_numbers.htm
 	for f in (int, float, Fraction) :
 		try :
 			t.value = f(t.value)
@@ -31,6 +32,9 @@ def t_ID(t) :
 			pass
 	return t
 
+def t_COMMENT(t):
+	r'\;.*'
+
 t_ignore = " \t\n"
 
 def t_newline(t):
@@ -38,57 +42,63 @@ def t_newline(t):
 	t.lexer.lineno += t.value.count('\n')
 
 def t_error(t):
-	print("Illegal character '%s'" % t.value[0])
+	raise SyntaxError("Illegal character '%s'" % t.value[0])
 	t.lexer.skip(1)
-	0/0
 
 import ply.lex as lex
-lexer = lex.lex(optimize=1)
+lexer = lex.lex(optimize=0)
 
 def p_sexps(p) :
 	'sexps : sexps sexp'
+	p[0] = p[1].copy()
+	p[0].append(p[2])
 
 def p_sexps_empty(p) :
 	'sexps : '
+	p[0] = []
 
 def p_sexp_list(p) :
 	'sexp : LPAREN exps RPAREN'
-
-def p_sexp_dot(p) :
-	'sexp : LPAREN exps DOT sexp RPAREN'
+	p[0] = p[2]
 
 def p_sexp_quote(p) :
 	'sexp : QUOTE sexp'
+	p[0] = List('quote', List(p[2]))
 
 def p_sexp_function(p) :
 	'sexp : HASH QUOTE sexp'
-	# https://stackoverflow.com/questions/4873810/what-does-mean-in-lisp
+	p[0] = List('function', List(p[3]))
 
 def p_sexp_number(p) :
 	'sexp : NUMBER'
+	p[0] = Number(p[1])
 
 def p_sexp_id(p) :
 	'sexp : ID'
+	p[0] = Symbol(p[1])
 
 def p_sexp_complex(p) :
-	'sexp : HASH LPAREN NUMBER NUMBER RPAREN'
-	# https://www.tutorialspoint.com/lisp/lisp_numbers.htm
+	'sexp : HASH ID LPAREN NUMBER NUMBER RPAREN'
+	assert p[2].upper() == 'C'
+	p[0] = Number(complex(p[3].value, p[4].value))
 
 def p_exps_recu(p) :
 	'exps : sexp exps'
+	p[0] = List(p[1], p[2])
+
+def p_exps_dot(p) :
+	'exps : sexp DOT sexp'
+	p[0] = List(p[1], p[3])
 
 def p_exps_empty(p) :
 	'exps : '
+	p[0] = List()
 
 def p_error(p) :
-	print("Syntax error at '%s'" % p.value)
-	0/0
+	raise SyntaxError("Syntax error at '%s'" % p.value)
 
 import ply.yacc as yacc
 parser = yacc.yacc(debug=False)
 
-evaluate = parser.parse
-
-if __name__ == '__main__' :
-	print(parser.parse('(123.67e-5 + e / Pi - 45 (1 2 . (3 4)))'))
+build_tree = parser.parse
 
