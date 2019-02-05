@@ -1,6 +1,7 @@
 '''
 	builtin functions in lisp
 	LIMIT: complex + fraction will have different behavior than Clisp
+	LIMIT: eq have different behavior than Clisp (currently same as eql)
 '''
 
 import functools, operator, re
@@ -135,6 +136,8 @@ def atom(exps, env) :
 
 def eq(exps, env) :
 	'(eq 1 2)'
+	return eql(exps, env)
+	0/0
 	a, b = eval_params(exps, env)
 	return to_bool(a == b or
 					type(a) == List and type(b) == List and a.nil() and b.nil())
@@ -142,11 +145,21 @@ def eq(exps, env) :
 def eql(exps, env) :
 	'(eql 1 2)'
 	a, b = eval_params(exps, env)
-	if type(a) == Number and type(b) == Number :
+	ta, tb = type(a), type(b)
+	if ta != tb :
+		return to_bool(False)
+	if ta == Number :
 		return to_bool(a.equal(b))
+	elif ta == List :
+		return to_bool(id(a) == id(b) or a.nil() and b.nil())
+	elif ta == Dot :
+		return to_bool(True)
+	elif ta == Symbol :
+		return to_bool(a.value == b.value)
+	elif ta == Bool :
+		return to_bool(True)
 	else :
-		return to_bool(a == b or
-					type(a) == List and type(b) == List and a.nil() and b.nil())
+		raise ValueError('Unexpected type: %s' % repr(ta))
 
 def equal(exps, env) :
 	"(equal '(1) '(1))"
