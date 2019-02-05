@@ -68,6 +68,16 @@ class List :
 		self.cdr = cdr
 	def nil(self) :
 		return self.cdr == None
+	def get_car(self) :
+		if self.nil() :
+			return self
+		else :
+			return self.car
+	def get_cdr(self) :
+		if self.nil() :
+			return self
+		else :
+			return self.cdr
 	def __iter__(self) :
 		s = self
 		while s :

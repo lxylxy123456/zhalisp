@@ -3,7 +3,7 @@
 	LIMIT: complex + fraction will have different behavior than Clisp
 '''
 
-import functools, operator
+import functools, operator, re
 
 from structs import Env, Atom, Number, Symbol, List, Bool
 from itertools import repeat
@@ -15,7 +15,7 @@ def eval_params(exps, env) :
 	return tuple(map(evaluate, exps, repeat(env)))
 
 def call_func(func, args, env) :
-	# func: a Func object; args: a List
+	'func: a Func object; args: a List'
 	if type(func) == Symbol :
 		func = find_func(func.value, env)
 	return func(args, env)
@@ -24,6 +24,9 @@ def find_func(name, env) :
 	'Find function from builtin and environments'
 	if name in functions :
 		return functions[name]
+	matched = re.fullmatch('C([AD]{1,4})R', name)
+	if matched :
+		return caordr(matched.groups()[0])
 	for i in reversed(env) :
 		if i.has_fun(name) :
 			return i.get_fun(name)
@@ -79,6 +82,12 @@ def div(exps, env) :
 	assert type(a) == Number and type(b) == Number
 	return operator.truediv(a, b)
 
+def one_plus(exps, env) :
+	'(1+ 2)'
+	a, = eval_params(exps, env)
+	assert type(a) == Number
+	return a + Number(1)
+
 def eq_(exps, env) :
 	'(= 1 2)'
 	a, b = eval_params(exps, env)
@@ -116,12 +125,19 @@ def null(exps, env) :
 	value, = eval_params(exps, env)
 	return to_bool(type(value) == List and value.nil())
 
+def atom(exps, env) :
+	'(atom NIL) -> T'
+	value, = eval_params(exps, env)
+	return to_bool(issubclass(type(value), Atom) or 
+					type(value) == List and value.nil())
+
 # Binary Predicates
 
 def eq(exps, env) :
 	'(eq 1 2)'
 	a, b = eval_params(exps, env)
-	return to_bool(a == b)
+	return to_bool(a == b or
+					type(a) == List and type(b) == List and a.nil() and b.nil())
 
 def eql(exps, env) :
 	'(eql 1 2)'
@@ -129,7 +145,8 @@ def eql(exps, env) :
 	if type(a) == Number and type(b) == Number :
 		return to_bool(a.equal(b))
 	else :
-		return to_bool(a == b)
+		return to_bool(a == b or
+					type(a) == List and type(b) == List and a.nil() and b.nil())
 
 def equal(exps, env) :
 	"(equal '(1) '(1))"
@@ -162,13 +179,28 @@ def car(exps, env) :
 	"(car '(1 2 3)) -> 1"
 	l, = eval_params(exps, env)
 	assert type(l) == List
-	return l.car
+	return l.get_car()
 
 def cdr(exps, env) :
 	"(cdr '(1 2 3)) -> (2 3)"
 	l, = eval_params(exps, env)
 	assert type(l) == List
-	return l.cdr
+	return l.get_cdr()
+
+def caordr(func_name) :
+	"(cadddr '(1 2 3 4 5)) -> 4"
+	def answer(exps, env) :
+		l, = eval_params(exps, env)
+		for i in order :
+			assert type(l) == List
+			if i == 'A' :
+				l = l.get_car()
+			else :
+				l = l.get_cdr()
+		return l
+
+	order = list(reversed(func_name))
+	return answer
 
 def cons(exps, env) :
 	"(cons '1 '(2 3)) -> (1 2 3)"
@@ -250,6 +282,20 @@ def let(exps, env) :
 		ans = evaluate(i, new_envs)
 	return ans
 
+def let_star(exps, env) :
+	'(let* ((x 10) (y (1+ x))) (* y 2)) -> 22'
+	new_env = Env()
+	new_envs = env + [new_env]
+	assert type(exps.car) == List
+	for i in exps.car :
+		assert type(i) == List
+		assert i.cdr.cdr.nil()
+		new_env.set_var(i.car.value, evaluate(i.cdr.car, new_envs))
+	ans = List()
+	for i in exps.cdr :
+		ans = evaluate(i, new_envs)
+	return ans
+
 def setq(exps, env) :
 	'(setq x 10) -> X'
 	assert type(exps) == List
@@ -279,6 +325,8 @@ def cond(exp, env) :
 def evaluate(exp, env) :
 	'exp is (+ 2 3) OR 2 OR jkl'
 	if type(exp) == List :
+		if exp.nil() :
+			return exp
 		assert type(exp.car) == Symbol
 		func = find_func(exp.car.value, env)
 		return call_func(func, exp.cdr, env)
@@ -296,12 +344,14 @@ functions = {
 	'-': minus, 
 	'*': mul, 
 	'/': div, 
+	'1+': one_plus, 
 	'=': eq_, 
 	'<': lt, 
 	'<=': le, 
 	'>': gt, 
 	'>=': ge, 
 	'NULL': null, 			# Unary Predicates
+	'ATOM': atom, 
 	'EQ': eq, 				# Binary Predicates
 	'EQL': eql, 
 	'EQUAL': equal, 
@@ -316,6 +366,7 @@ functions = {
 	'QUOTE': quote, 
 	'EVAL': eval_, 
 	'LET': let, 			# Variables
+	'LET*': let_star, 
 	'SETQ': setq, 
 	'COND': cond, 			# Conditions
 }

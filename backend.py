@@ -29,6 +29,7 @@ if __name__ == '__main__' :
 			("(eq '(1) '(1))", 'NIL'), 
 			("(eql '(1) '(1))", 'NIL'), 
 			("(equal '(1) '(1))", 'T'), 
+			("(cadddr '(1 2 3 4 5))", '4'), 
 			] :
 			env = [Env()]
 			ss = build_tree(s)
