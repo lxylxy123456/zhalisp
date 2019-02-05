@@ -33,52 +33,68 @@ class Number(Atom) :
 			return Number(Fraction(self.value, rhs.value))
 		else :
 			return Number(self.value / rhs.value)
+	def __lt__(self, rhs) :
+		return self.value < rhs.value
+	def __gt__(self, rhs) :
+		return self.value > rhs.value
+	def __le__(self, rhs) :
+		return self.value <= rhs.value
+	def __ge__(self, rhs) :
+		return self.value >= rhs.value
 
 class Symbol(Atom) :
 	def __init__(self, value) :
 		# assert type(value) == str
-		self.value = value
+		self.value = value.upper()
 	def __str__(self) :
 		return self.value
 	def __repr__(self) :
 		return repr(self.value)
 
+class Bool(Atom) :
+	'The T value for True'
+	def __str__(self) :
+		return 'T'
+
 class List :
 	def __init__(self, car=None, cdr=None) :
 		'List is nil iff cdr == None; car is meaningful iff cdr != None'
+		assert not (cdr == None and car != None)
+		assert type(car) in (Env, Atom, Number, Symbol, List, Bool, type(None))
+		assert type(cdr) in (Env, Atom, Number, Symbol, List, Bool, type(None))
 		self.car = car
 		self.cdr = cdr
 	def nil(self) :
 		return self.cdr == None
-	def to_list(self, recurse=False) :
-		ans = []
+	def __iter__(self) :
 		s = self
 		while s :
-			if recurse and type(s.car) == List :
-				ans.append(s.car.to_list(recurse))
-			else :
-				ans.append(s.car)
+			yield s.car
 			if type(s.cdr) != List :
-				ans.append(Dot)
-				ans.append(s.cdr)
+				yield Dot
+				yield s.cdr
 				break
 			elif not s.cdr.nil() :
 				s = s.cdr
 			else :
 				break
+	def to_list(self) :
+		ans = []
+		for i in self :
+			if type(i) == List :
+				ans.append(i.to_list())
+			else :
+				ans.append(i)
 		return ans
 	def __str__(self) :
 		'Return a s-expression list that should be interpreted by lisp'
+		if self.nil() :
+			return 'NIL'
 		ans = '('
 		s = self
 		while s :
-			if type(s.car) == List :
-				ans += s.car.__str__()
-			else :
-				ans += str(s.car)
-			if s.cdr == None :
-				break
-			elif type(s.cdr) != List :
+			ans += s.car.__str__()
+			if type(s.cdr) != List :
 				ans += ' ' + str(Dot()) + ' ' + str(s.cdr)
 				break
 			elif s.cdr.nil() :

@@ -7,7 +7,7 @@
 '''
 
 from fractions import Fraction
-from structs import Number, Symbol, List
+from structs import Number, Symbol, List, Bool
 
 tokens = (
 	'ID', 'NUMBER', 'LPAREN', 'RPAREN', 'DOT', 'QUOTE', 'HASH', 
@@ -63,11 +63,11 @@ def p_sexp_list(p) :
 
 def p_sexp_quote(p) :
 	'sexp : QUOTE sexp'
-	p[0] = List('quote', List(p[2]))
+	p[0] = List(Symbol('quote'), List(p[2], List()))
 
 def p_sexp_function(p) :
 	'sexp : HASH QUOTE sexp'
-	p[0] = List('function', List(p[3]))
+	p[0] = List(Symbol('function'), List(p[3], List()))
 
 def p_sexp_number(p) :
 	'sexp : NUMBER'
@@ -75,7 +75,12 @@ def p_sexp_number(p) :
 
 def p_sexp_id(p) :
 	'sexp : ID'
-	p[0] = Symbol(p[1])
+	if p[1].upper() == 'NIL' :
+		p[0] =  List()
+	elif p[1].upper() == 'T' :
+		p[0] = Bool()
+	else :
+		p[0] = Symbol(p[1])
 
 def p_sexp_complex(p) :
 	'sexp : HASH ID LPAREN NUMBER NUMBER RPAREN'
@@ -95,7 +100,10 @@ def p_exps_empty(p) :
 	p[0] = List()
 
 def p_error(p) :
-	raise SyntaxError("Syntax error at '%s'" % p.value)
+	if p :
+		raise SyntaxError("Syntax error at '%s'" % p.value)
+	else :
+		raise SyntaxError
 
 import ply.yacc as yacc
 parser = yacc.yacc(debug=False)
