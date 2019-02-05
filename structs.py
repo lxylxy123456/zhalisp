@@ -57,6 +57,8 @@ class Bool(Atom) :
 	'The T value for True'
 	def __str__(self) :
 		return 'T'
+	def __repr__(self) :
+		return repr('T')
 
 class List :
 	def __init__(self, car=None, cdr=None) :

@@ -11,12 +11,12 @@ if __name__ == '__main__' :
 			('(defun f (x) (* 9 x) (+ 2 x))\n(f 2)\n(f 4)', 'F\n4\n6'), 
 			("(funcall #'+ 1 2 3)", '6'), 
 			("(apply #'+ 1 2 3 '(4 5 6))", '21'), 
-			("(apply 'cons '(a (b c)))", "(A B C)"), 
-			("(= 1 2)", "NIL"), 
-			("(= 2 2)", "T"), 
-			("(> 1 2)", "NIL"), 
-			("(>= 1 2)", "NIL"), 
-			("(list (< 1 2) (<= 1 2))", "(T T)"), 
+			("(apply 'cons '(a (b c)))", '(A B C)'), 
+			('(= 1 2)', 'NIL'), 
+			('(= 2 2)', 'T'), 
+			('(> 1 2)', 'NIL'), 
+			('(>= 1 2)', 'NIL'), 
+			('(list (< 1 2) (<= 1 2))', '(T T)'), 
 			('(cond ((> 1 2) 1) ((< 1 2) 2))', '2'), 
 			('(let ((x 10)) (* x 2))', '20'), 
 			('(setq x 10)\nx', 'X\n10'), 
@@ -30,6 +30,15 @@ if __name__ == '__main__' :
 			("(eql '(1) '(1))", 'NIL'), 
 			("(equal '(1) '(1))", 'T'), 
 			("(cadddr '(1 2 3 4 5))", '4'), 
+			('(or nil nil 1 (/ 0 0))', 'T'), 
+			('(and 1 1 nil (/ 0 0))', 'NIL'), 
+			('(or 1 1 1)', 'T'), 
+			('(and 1 1 1)', 'T'), 
+			('(or nil nil nil)', 'NIL'), 
+			('(and nil nil nil)', 'NIL'), 
+			('(not nil)', 'T'), 
+			('(not 1)', 'NIL'), 
+			('t', 't'), 
 			] :
 			env = [Env()]
 			ss = build_tree(s)
@@ -39,6 +48,7 @@ if __name__ == '__main__' :
 				e2 = aaa
 				print(e1, e2, sep='\t')
 				if str(e1) != str(e2) :
+					print(s)
 					raise Exception
 	if 1 :
 		from parent_dir import f_list, get_path, tests
@@ -60,5 +70,6 @@ if __name__ == '__main__' :
 				e2 = aaa
 				print(e1, e2, sep='\t')
 				if str(e1) != str(e2) :
+					print(s)
 					raise Exception
 

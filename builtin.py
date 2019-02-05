@@ -5,7 +5,7 @@
 
 import functools, operator, re
 
-from structs import Env, Atom, Number, Symbol, List, Bool
+from structs import Env, Atom, Number, Symbol, List, Bool, Dot
 from itertools import repeat
 
 # Helper functions
@@ -167,11 +167,32 @@ def equal(exps, env) :
 	elif type(a) == Dot :
 		return to_bool(True)
 	elif type(a) == Symbol :
-		return a.value == b.value
+		return to_bool(a.value == b.value)
 	elif type(a) == Bool :
 		return to_bool(True)
 	else :
 		raise ValueError('Unexpected type: %s' % repr(ta))
+
+# Logic
+
+def and_(exps, env) :
+	'(and 1 2 3)'
+	for value in exps :
+		if not is_true(evaluate(value, env)) :
+			return to_bool(False)
+	return to_bool(True)
+
+def or_(exps, env) :
+	'(or 1 2 3)'
+	for value in exps :
+		if is_true(evaluate(value, env)) :
+			return to_bool(True)
+	return to_bool(False)
+
+def not_(exps, env) :
+	'(not 1)'
+	value, = eval_params(exps, env)
+	return to_bool(not is_true(value))
 
 # List operations
 
@@ -324,18 +345,22 @@ def cond(exp, env) :
 
 def evaluate(exp, env) :
 	'exp is (+ 2 3) OR 2 OR jkl'
-	if type(exp) == List :
+	te = type(exp)
+	if te == List :
 		if exp.nil() :
 			return exp
 		assert type(exp.car) == Symbol
 		func = find_func(exp.car.value, env)
 		return call_func(func, exp.cdr, env)
-	elif type(exp) == Number :
+	elif te == Number :
 		return exp
-	elif type(exp) == Symbol :
+	elif te == Symbol :
 		return find_var(exp.value, env)
+	elif te == Bool :
+		return exp
 	else :
 		assert isinstance(exp, Atom)
+		raise ValueError('Unexpected type: %s' % repr(te))
 
 # Index
 
@@ -355,6 +380,9 @@ functions = {
 	'EQ': eq, 				# Binary Predicates
 	'EQL': eql, 
 	'EQUAL': equal, 
+	'AND': and_, 			# Logic
+	'OR': or_, 
+	'NOT': not_, 
 	'CAR': car, 			# List operations
 	'CDR': cdr, 
 	'CONS': cons, 
