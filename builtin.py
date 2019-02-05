@@ -53,6 +53,8 @@ def build_list(l) :
 		ans = List(i, ans)
 	return ans
 
+quoter = lambda x: List(Symbol('quote'), List(x, List()))
+
 # Arithmetics
 
 def plus(exps, env) :
@@ -63,6 +65,7 @@ def plus(exps, env) :
 def minus(exps, env) :
 	'(- 1 2)'
 	a, b = eval_params(exps, env)
+	assert type(a) == Number and type(b) == Number
 	return operator.sub(a, b)
 
 def mul(exps, env) :
@@ -73,34 +76,85 @@ def mul(exps, env) :
 def div(exps, env) :
 	'(/ 1 2)'
 	a, b = eval_params(exps, env)
+	assert type(a) == Number and type(b) == Number
 	return operator.truediv(a, b)
+
+def eq_(exps, env) :
+	'(= 1 2)'
+	a, b = eval_params(exps, env)
+	assert type(a) == Number and type(b) == Number
+	return to_bool(a.equal(b))
 
 def lt(exps, env) :
 	'(< 1 2)'
 	a, b = eval_params(exps, env)
+	assert type(a) == Number and type(b) == Number
 	return to_bool(operator.lt(a, b))
 
 def le(exps, env) :
 	'(<= 1 2)'
 	a, b = eval_params(exps, env)
+	assert type(a) == Number and type(b) == Number
 	return to_bool(operator.le(a, b))
 
 def gt(exps, env) :
 	'(> 1 2)'
 	a, b = eval_params(exps, env)
+	assert type(a) == Number and type(b) == Number
 	return to_bool(operator.gt(a, b))
 
 def ge(exps, env) :
 	'(>= 1 2)'
 	a, b = eval_params(exps, env)
+	assert type(a) == Number and type(b) == Number
 	return to_bool(operator.ge(a, b))
 
-# Predicates
+# Unary Predicates
 
 def null(exps, env) :
 	'(null NIL) -> T'
 	value, = eval_params(exps, env)
 	return to_bool(type(value) == List and value.nil())
+
+# Binary Predicates
+
+def eq(exps, env) :
+	'(eq 1 2)'
+	a, b = eval_params(exps, env)
+	return to_bool(a == b)
+
+def eql(exps, env) :
+	'(eql 1 2)'
+	a, b = eval_params(exps, env)
+	if type(a) == Number and type(b) == Number :
+		return to_bool(a.equal(b))
+	else :
+		return to_bool(a == b)
+
+def equal(exps, env) :
+	"(equal '(1) '(1))"
+	a, b = eval_params(exps, env)
+	ta, tb = type(a), type(b)
+	if ta != tb :
+		return to_bool(False)
+	if type(a) == Number :
+		return to_bool(a.equal(b))
+	elif type(a) == List :
+		if a.nil() :
+			return to_bool(b.nil())
+		if b.nil() :
+			return to_bool(False)
+		if not equal(List(quoter(a.car), List(quoter(b.car), List())), env) :
+			return to_bool(False)
+		return equal(List(quoter(a.cdr), List(quoter(b.cdr), List())), env)
+	elif type(a) == Dot :
+		return to_bool(True)
+	elif type(a) == Symbol :
+		return a.value == b.value
+	elif type(a) == Bool :
+		return to_bool(True)
+	else :
+		raise ValueError('Unexpected type: %s' % repr(ta))
 
 # List operations
 
@@ -156,7 +210,6 @@ def apply(exps, env) :
 	apply_args = eval_params(exps, env)
 	func = apply_args[0]
 	args = apply_args[1:-1] + tuple(apply_args[-1])
-	quoter = lambda x: List(Symbol('quote'), List(x, List()))
 	arg_list = build_list(list(map(quoter, args)))
 	return call_func(func, arg_list, env)
 
@@ -199,7 +252,15 @@ def let(exps, env) :
 
 def setq(exps, env) :
 	'(setq x 10) -> X'
-	0/0
+	assert type(exps) == List
+	assert exps.cdr.cdr.nil()
+	k = exps.car.value
+	v = evaluate(exps.cdr.car, env)
+	for e in reversed(env) :
+		if e.has_var(k) :
+			break
+	e.set_var(exps.car.value, evaluate(exps.cdr.car, env))
+	return k
 
 # Conditions
 
@@ -235,11 +296,15 @@ functions = {
 	'-': minus, 
 	'*': mul, 
 	'/': div, 
+	'=': eq_, 
 	'<': lt, 
 	'<=': le, 
 	'>': gt, 
 	'>=': ge, 
-	'NULL': null, 			# Predicates
+	'NULL': null, 			# Unary Predicates
+	'EQ': eq, 				# Binary Predicates
+	'EQL': eql, 
+	'EQUAL': equal, 
 	'CAR': car, 			# List operations
 	'CDR': cdr, 
 	'CONS': cons, 

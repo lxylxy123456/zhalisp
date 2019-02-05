@@ -33,6 +33,8 @@ class Number(Atom) :
 			return Number(Fraction(self.value, rhs.value))
 		else :
 			return Number(self.value / rhs.value)
+	def equal(self, rhs) :
+		return self.value == rhs.value
 	def __lt__(self, rhs) :
 		return self.value < rhs.value
 	def __gt__(self, rhs) :

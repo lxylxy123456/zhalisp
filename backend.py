@@ -12,9 +12,23 @@ if __name__ == '__main__' :
 			("(funcall #'+ 1 2 3)", '6'), 
 			("(apply #'+ 1 2 3 '(4 5 6))", '21'), 
 			("(apply 'cons '(a (b c)))", "(A B C)"), 
-			("(list (< 1 2) (<= 1 2) (> 1 2) (>= 1 2))", "(T T NIL NIL)"), 
+			("(= 1 2)", "NIL"), 
+			("(= 2 2)", "T"), 
+			("(> 1 2)", "NIL"), 
+			("(>= 1 2)", "NIL"), 
+			("(list (< 1 2) (<= 1 2))", "(T T)"), 
 			('(cond ((> 1 2) 1) ((< 1 2) 2))', '2'), 
-			('(let ((x 10)) (* x 2))', '20')
+			('(let ((x 10)) (* x 2))', '20'), 
+			('(setq x 10)\nx', 'X\n10'), 
+			('(eq 1 2)', 'NIL'), 
+			('(eql 1 2)', 'NIL'), 
+			('(equal 1 2)', 'NIL'), 
+			('(eq 1 1)', 'NIL'), 
+			('(eql 1 1)', 'T'), 
+			('(equal 1 1)', 'T'), 
+			("(eq '(1) '(1))", 'NIL'), 
+			("(eql '(1) '(1))", 'NIL'), 
+			("(equal '(1) '(1))", 'T'), 
 			] :
 			env = [Env()]
 			ss = build_tree(s)
@@ -26,18 +40,18 @@ if __name__ == '__main__' :
 				if str(e1) != str(e2) :
 					raise Exception
 	if 1 :
-		from parent_dir import f_list, get_path
+		from parent_dir import f_list, get_path, tests
 		env = [Env()]
 		for f in f_list :
-			print(';', f)
+			p = lambda *x: x
+			# p = print
+			p(';', f)
 			s = open(get_path(f)).read()
 			a = build_tree(s)
 			for i in a :
-				print(builtin.evaluate(i, env))
-			print()
-		for s, a in [
-			("(get-min '(1 2 3))", "1"), 
-			] :
+				p(builtin.evaluate(i, env))
+			p()
+		for s, a in tests :
 			ss = build_tree(s)
 			aa = build_tree(a)
 			for sss, aaa in zip(ss, aa) :
