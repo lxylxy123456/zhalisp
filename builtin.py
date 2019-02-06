@@ -415,7 +415,7 @@ def let_star(exps, env) :
 	return ans
 
 def setq(exps, env) :
-	'(setq x 10) -> X'
+	'(setq x 10) -> 10'
 	assert type(exps) == List
 	assert exps.cdr.cdr.nil()
 	k = exps.car.value
@@ -424,7 +424,7 @@ def setq(exps, env) :
 		if e.has_var(k) :
 			break
 	e.set_var(exps.car.value, evaluate(exps.cdr.car, env))
-	return k
+	return v
 
 # Conditions
 
