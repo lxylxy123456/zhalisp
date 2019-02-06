@@ -25,6 +25,7 @@ A "zha" Clisp interpreter implementation
 * Complex numbers currently unsupported
 	* If enabled, complex + fraction will have different behavior than Clisp
 * `eq` have different behavior than Clisp (currently same as `eql`)
+* `typep` does not implement fully
 
 ## Implemented Functions
 
@@ -42,10 +43,15 @@ A "zha" Clisp interpreter implementation
 |`>`		|`gt`		|`(> 1 2)`							|`NIL`						|						|
 |`>=`		|`ge`		|`(>= 1 2)`							|`NIL`						|						|
 |`SQRT`		|`sqrt_`	|`(SQRT 4)`							|`2.0`						|						|
-|`NULL`		|`null`		|`(NULL NIL)` <br> `(NULL T)`		|`T` <br> `NIL`				| Unary Predicates		|
-|`ATOM`		|`atom`		|`(ATOM NIL)` <br> `(ATOM '(1))`	|`T` <br> `NIL`				|						|
+|`ATOM`		|`atom`		|`(ATOM NIL)` <br> `(ATOM '(1))`	|`T` <br> `NIL`				| Unary Predicates		|
 |`LISTP`	|`listp`	|`(LISTP 1)` <br> `(LISTP NIL)`		|`T` <br> `NIL`				|						|
+|`NULL`		|`null`		|`(NULL NIL)` <br> `(NULL T)`		|`T` <br> `NIL`				|						|
+|`NUMBERP`	|`numberp`	|`(NUMBERP 0)` <br> `(NUMBERP ())`	|`T` <br> `NIL`				|						|
+|`TYPEP`	|`typep`	|`(TYPEP 0 'NUMBER)`				|`T`						|						|
+|`SYMBOLP`	|`symbolp`	|`(SYMBOLP 'A)` <br> `(SYMBOLP 1)`	|`T` <br> `NIL`				|						|
 |`ZEROP`	|`zerop`	|`(ZEROP 0)` <br> `(ZEROP 1)`		|`T` <br> `NIL`				|						|
+|`EVENP`	|`evenp`	|`(EVENP 0)` <br> `(EVENP 1)`		|`T` <br> `NIL`				|						|
+|`ODDP`		|`oddp`		|`(ODDP 0)` <br> `(ODDP 1)`			|`NIL` <br> `T`				|						|
 |`EQ`		|`eq`		|`(EQ 0 1)`							|`NIL`						| Binary Predicates		|
 |`EQL`		|`eql`		|`(EQL 0 1)`						|`NIL`						|						|
 |`EQUAL`	|`equal`	|`(EQUAL '(0 1) '(0 1))`			|`T`						|						|
@@ -65,15 +71,17 @@ A "zha" Clisp interpreter implementation
 |`FUNCALL`	|`funcall`	|`(FUNCALL #'+ 1 2 3)`				|`6`						|						|
 |`FUNCTION`	|`function`	|`(FUNCALL (FUNCTION +) 1 2 3)`		|`6`						|						|
 |`QUOTE`	|`quote`	|`(QUOTE (1 2 3))`					|`(1 2 3)`					|						|
-|`EVAL`		|`eval_`	|`(EVAL '(+ 1 2))`					|`(3)`						| Variables				|
-|`LET`		|`let`		|`(LET ((X 1)) X)`					|`1`						|						|
+|`EVAL`		|`eval_`	|`(EVAL '(+ 1 2))`					|`(3)`						|						|
+|`LET`		|`let`		|`(LET ((X 1)) X)`					|`1`						| Variables				|
 |`LET*`		|`let_star`	|`(LET* ((X 1) (Y X)) Y)`			|`1`						|						|
 |`SETQ`		|`setq`		|`(SETQ X 1)` <br> `X`				|`1` <br> `1`				|						|
 |`SET`		|`set_`		|`(SET 'X 1)` <br> `X`				|`1` <br> `1`				|						|
 |`COND`		|`cond`		|`(COND (nil 1) (t 2))`				|`2`						| Conditions			|
+|`IF`		|`if_`		|`(IF (> 1 2) 1 2)`					|`2`						| 						|
 
 ### To be implemented
 * string
 * complex
+* lambda
 * `load` (P51)
 

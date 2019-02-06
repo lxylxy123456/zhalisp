@@ -390,3 +390,266 @@
 -> CLEAR-ENV
 => ; Chapter 4
 
+-> (atom 'a)
+=> T
+
+-> (atom 8)
+=> T
+
+-> (atom '(a b c))
+=> NIL
+
+-> (atom (car '(a b c)))
+=> T
+
+-> (atom (cdr '(a b c)))
+=> NIL
+
+-> (listp 'a)
+=> NIL
+
+-> (listp 8)
+=> NIL
+
+-> (listp '(a b c))
+=> T
+
+-> (listp (car '(a b c)))
+=> NIL
+
+-> (listp (cdr '(a b c)))
+=> T
+
+-> (atom nil)
+=> T
+
+-> (listp nil)
+=> T
+
+-> (null nil)
+=> T
+
+-> (null nil)
+=> T
+
+-> (null 'a)
+=> NIL
+
+-> (null '(a b c))
+=> NIL
+
+-> (null ())
+=> T
+
+-> (equal 'a 'b)
+=> NIL
+
+-> (equal 'a 'a)
+=> T
+
+-> (equal '(a b c) '(a b c))
+=> T
+
+-> (equal '(a b c) '(a (b) c))
+=> NIL
+
+-> (numberp 6)
+=> T
+
+-> (numberp 'a)
+=> NIL
+
+-> (typep 6 'number)
+=> T
+
+-> (typep 'a 'number)
+=> NIL
+
+-> (member 'b '(a b c))
+=> (B C)
+
+-> (member 'x '(a b c))
+=> NIL
+
+-> (member 'y '(x (y) z))
+=> NIL
+
+-> (member '(a b) '(a b c))
+=> NIL
+
+-> (defun car-atomp (x) (atom (car x)))
+=> CAR-ATOMP
+
+-> (car-atomp '(a b c))
+=> T
+
+-> (car-atomp '((a) (b) (c)))
+=> NIL
+
+-> (setq x '(a b c))
+=> (A B C)
+
+-> (cond ((listp x) (car x)))
+=> A
+
+-> (setq x 'y)
+=> Y
+
+-> (cond ((listp x) (car x)))
+=> NIL
+
+-> (defun car-atomp (x) (cond ((listp x) (atom (car x)))))
+=> CAR-ATOMP
+
+-> (car-atomp '(a b c))
+=> T
+
+-> (car-atomp 'z)
+=> NIL
+
+-> (defun cond-example1 (x)
+	(cond ((listp x) (cons 'a x)) ((numberp x) (+ 7 x))))
+=> COND-EXAMPLE1
+
+-> (cond-example1 '(b c))
+=> (A B C)
+
+-> (cond-example1 9)
+=> 16
+
+-> (cond-example1 'z)
+=> NIL
+
+-> (defun cond-example2 (x)
+	(cond ((listp x) (setq flag 'list) (cons 'a x))
+		((numberp x) (setq flag 'number) (+ 7 x))))
+=> COND-EXAMPLE2
+
+-> (cond-example2 '(b c))
+=> (A B C)
+
+-> flag
+=> LIST
+
+-> (cond-example2 9)
+=> 16
+
+-> flag
+=> NUMBER
+
+-> (defun cond-example3 (x)
+	(cond ((listp x) (setq flag 'list) (cons 'a x))
+		((numberp x) (setq flag 'number) (+ 7 x))
+		(t (setq flag 'neither) nil)))
+=> COND-EXAMPLE3
+
+-> (cond-example3 '(b c))
+=> (A B C)
+
+-> flag
+=> LIST
+
+-> (cond-example3 'z)
+=> NIL
+
+-> flag
+=> NEITHER
+
+-> (defun cond-example4 (x)
+	(cond ((listp x) (setq flag 'list) (cons 'a x))
+		((numberp x) (setq flag 'number) (+ 7 x))
+		((setq flag 'neither))))
+=> COND-EXAMPLE4
+
+-> (cond-example4 '(b c))
+=> (A B C)
+
+-> flag
+=> LIST
+
+-> (cond-example4 'z)
+=> NEITHER
+
+-> flag
+=> NEITHER
+
+-> (defun our-adjoin (e l) (cond ((member e l) l) (t (cons e l))))
+=> OUR-ADJOIN
+
+-> (our-adjoin 'b '(a b c))
+=> (A B C)
+
+-> (our-adjoin 'b '(x y z))
+=> (B X Y Z)
+
+-> (defun our-adjoin (e l) (if (member e l) l (cons e l)))
+=> OUR-ADJOIN
+
+-> (our-adjoin 'b '(a b c))
+=> (A B C)
+
+-> (our-adjoin 'b '(x y z))
+=> (B X Y Z)
+
+-> (defun even-50-100 (x)
+	(cond ((numberp x) (cond ((evenp x) (cond ((> x 49) (< x 101))))))))
+=> EVEN-50-100
+
+-> (even-50-100 17)
+=> NIL
+
+-> (even-50-100 88)
+=> T
+
+-> (even-50-100 89)
+=> NIL
+
+-> (even-50-100 102)
+=> NIL
+
+-> (even-50-100 '(a b c))
+=> NIL
+
+-> (setq x 86)
+=> 86
+
+-> (not (atom x))
+=> NIL
+
+-> (and (evenp x) (< x 100))
+=> T
+
+-> (or (null x) (numberp x))
+=> T
+
+-> (setq l '(a b c))
+=> (A B C)
+
+-> (and (listp l) (numberp (car l)))
+=> NIL
+
+-> (cond ((listp l) (numberp (car l))))
+=> NIL
+
+-> (defun even-50-100 (x)
+	(and (numberp x) (evenp x) (> x 49) (< x 101)))
+=> EVEN-50-100
+
+-> (even-50-100 17)
+=> NIL
+
+-> (even-50-100 88)
+=> T
+
+-> (even-50-100 89)
+=> NIL
+
+-> (even-50-100 102)
+=> NIL
+
+-> (even-50-100 '(a b c))
+=> NIL
+
+-> CLEAR-ENV
+=> ; Chapter 5
+

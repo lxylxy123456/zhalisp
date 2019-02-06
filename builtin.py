@@ -29,6 +29,10 @@ from itertools import repeat
 
 # Helper functions
 
+T = Bool()
+
+Nil = List()
+
 def eval_params(exps, env) :
 	'((+ 1 2) (- 3 4)) -> [3, -1]'
 	return map(evaluate, exps, repeat(env))
@@ -60,9 +64,9 @@ def find_var(name, env) :
 
 def to_bool(value) :
 	if value == True :
-		return Bool()
+		return T
 	elif value == False :
-		return List()
+		return Nil
 	else :
 		raise ValueError('Expect Python bool value, but get %s' % repr(value))
 
@@ -70,7 +74,7 @@ def is_true(value) :
 	return not(type(value) == List and value.nil())
 
 def build_list(*l) :
-	ans = List()
+	ans = List()	# Cannot be replaced with Nil
 	ptr = None
 	for i in l :
 		for j in i :
@@ -82,7 +86,13 @@ def build_list(*l) :
 				ptr = ptr.cdr
 	return ans
 
-quoter = lambda x: List(Symbol('quote'), List(x, List()))
+quoter = lambda x: List(Symbol('quote'), List(x, Nil))
+
+arg1 = lambda x: List(quoter(x), Nil)
+
+arg2 = lambda x, y: List(quoter(x), List(quoter(y), Nil))
+
+# TODO: allow build 1 arguments and 2 arguments easily
 
 # Arithmetics
 
@@ -165,11 +175,6 @@ def sqrt_(exps, env) :
 
 # Unary Predicates
 
-def null(exps, env) :
-	'(null NIL) -> T'
-	value, = eval_params(exps, env)
-	return to_bool(type(value) == List and value.nil())
-
 def atom(exps, env) :
 	'(atom NIL) -> T'
 	value, = eval_params(exps, env)
@@ -181,11 +186,50 @@ def listp(exps, env) :
 	value, = eval_params(exps, env)
 	return to_bool(type(value) == List)
 
+def null(exps, env) :
+	'(null NIL) -> T'
+	value, = eval_params(exps, env)
+	return to_bool(type(value) == List and value.nil())
+
+def numberp(exps, env) :
+	'(numberp 0) -> T; (numberp ()) -> NIL'
+	value, = eval_params(exps, env)
+	return to_bool(type(value) == Number)
+
+def typep(exps, env) :
+	"(typep 0 'number) -> T"
+	val, typ = eval_params(exps, env)
+	assert type(typ) == Symbol
+	func = {
+		'ATOM': atom, 
+		'LIST': listp, 
+		'NUMBER': numberp, 
+		'SYMBOL': symbolp, 
+	}[typ.value]
+	return func(arg1(val), env)
+
+def symbolp(exps, env) :
+	"(symbolp 'a) -> T"
+	value, = eval_params(exps, env)
+	return to_bool(type(value) == Symbol)
+
 def zerop(exps, env) :
 	'(zerop ()) -> T'
 	value, = eval_params(exps, env)
 	assert type(value) == Number
 	return to_bool(value.value == 0)
+
+def evenp(exps, env) :
+	'(evenp 0) -> T'
+	value, = eval_params(exps, env)
+	assert type(value) == Number and type(value.value) == int
+	return to_bool(value.value % 2 == 0)
+
+def oddp(exps, env) :
+	'(oddp 0) -> NIL'
+	value, = eval_params(exps, env)
+	assert type(value) == Number and type(value.value) == int
+	return to_bool(value.value % 2 == 1)
 
 # Binary Predicates
 
@@ -225,9 +269,9 @@ def equal(exps, env) :
 			return to_bool(b.nil())
 		if b.nil() :
 			return to_bool(False)
-		if not equal(List(quoter(a.car), List(quoter(b.car), List())), env) :
+		if not is_true(equal(arg2(a.car, b.car), env)) :
 			return to_bool(False)
-		return equal(List(quoter(a.cdr), List(quoter(b.cdr), List())), env)
+		return equal(arg2(a.cdr, b.cdr), env)
 	elif type(a) == Dot :
 		return to_bool(True)
 	elif type(a) == Symbol :
@@ -296,6 +340,17 @@ def list_(exps, env) :
 	"(list '1 'a) -> (1 A)"
 	params = eval_params(exps, env)
 	return build_list(params)
+
+def member(exps, env) :
+	"(member '1 '(0 1 2)) -> (1 2)"
+	a, l = eval_params(exps, env)
+	assert type(l) == List
+	while not l.nil() :
+		if is_true(eql(arg2(a, l.car), env)) :
+			return l
+		else :
+			l = l.cdr
+	return Nil
 
 # High-Order Functions
 
@@ -406,7 +461,7 @@ def let(exps, env) :
 		assert type(i) == List
 		assert i.cdr.cdr.nil()
 		new_env.set_var(i.car.value, evaluate(i.cdr.car, env))
-	ans = List()
+	ans = Nil
 	for i in exps.cdr :
 		ans = evaluate(i, new_envs)
 	return ans
@@ -420,7 +475,7 @@ def let_star(exps, env) :
 		assert type(i) == List
 		assert i.cdr.cdr.nil()
 		new_env.set_var(i.car.value, evaluate(i.cdr.car, new_envs))
-	ans = List()
+	ans = Nil
 	for i in exps.cdr :
 		ans = evaluate(i, new_envs)
 	return ans
@@ -451,11 +506,21 @@ def cond(exp, env) :
 	'(cond ((> 1 2) 1) ((< 1 2) 2))'
 	for test in exp :
 		assert type(test) == List
-		if is_true(evaluate(test.car, env)) :
-			for stmt in test.cdr :
+		tests = iter(test)
+		ans = evaluate(next(tests), env)
+		if is_true(ans) :
+			for stmt in tests :
 				ans = evaluate(stmt, env)
 			return ans
-	return List()
+	return Nil
+
+def if_(exps, env) :
+	'(if (> 1 2) 1 2) -> 2'
+	test, true, false = exps
+	if is_true(evaluate(test, env)) :
+		return evaluate(true, env)
+	else :
+		return evaluate(false, env)
 
 # Evaluate
 
@@ -493,10 +558,15 @@ functions = {
 	'>': gt, 
 	'>=': ge, 
 	'SQRT': sqrt_, 
-	'NULL': null, 			# Unary Predicates
-	'ATOM': atom, 
+	'ATOM': atom, 			# Unary Predicates
 	'LISTP': listp, 
+	'NULL': null, 
+	'NUMBERP': numberp, 
+	'TYPEP': typep, 
+	'SYMBOLP': symbolp, 
 	'ZEROP': zerop, 
+	'EVENP': evenp, 
+	'ODDP': oddp, 
 	'EQ': eq, 				# Binary Predicates
 	'EQL': eql, 
 	'EQUAL': equal, 
@@ -507,6 +577,7 @@ functions = {
 	'CDR': cdr, 
 	'CONS': cons, 
 	'LIST': list_, 
+	'MEMBER': member, 
 	'MAPCAR': mapcar, 		# High-Order Functions
 	'MAPC': mapc, 
 	'MAPLIST': maplist, 
@@ -522,5 +593,6 @@ functions = {
 	'SETQ': setq, 
 	'SET': set_, 
 	'COND': cond, 			# Conditions
+	'IF': if_, 
 }
 
