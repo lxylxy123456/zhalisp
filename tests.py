@@ -55,3 +55,21 @@ tests = [
 	('(listp (zerop 1))', 'T'), 
 	# Credit of test cases above goes to Professor Aditya V. Thakur
 ]
+
+from structs import Env
+from frontend import build_tree
+from builtin import evaluate
+
+def test() :
+	for s, a in tests :
+		env = [Env()]
+		ss = build_tree(s)
+		aa = build_tree(a)
+		for sss, aaa in zip(ss, aa) :
+			e1 = evaluate(sss, env)
+			e2 = aaa
+			print(e1, e2, sep='\t')
+			if str(e1) != str(e2) :
+				print(s)
+				raise Exception
+

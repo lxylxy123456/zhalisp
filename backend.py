@@ -1,19 +1,14 @@
-from structs import Env, Atom, Number, Symbol, List
+from structs import Env
 from frontend import build_tree
-import builtin
+from builtin import evaluate
+
+def eval_str(s, env) :
+	'build sexp from str and evaluate'
+	for i in build_tree(s) :
+		yield evaluate(i, env)
 
 if __name__ == '__main__' :
-	if 1 :
-		from tests import tests
-		for s, a in tests :
-			env = [Env()]
-			ss = build_tree(s)
-			aa = build_tree(a)
-			for sss, aaa in zip(ss, aa) :
-				e1 = builtin.evaluate(sss, env)
-				e2 = aaa
-				print(e1, e2, sep='\t')
-				if str(e1) != str(e2) :
-					print(s)
-					raise Exception
+	s = '(defun f (x) (+ 2 x))\n(f 2)\n(f 4)'
+	for i in eval_str(s, [Env()]) :
+		print(i)
 
