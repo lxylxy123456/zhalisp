@@ -52,6 +52,7 @@ def is_true(value) :
 	return not(type(value) == List and value.nil())
 
 def build_list(l) :
+	# TODO: remove the use of reversed
 	ans = List()
 	for i in reversed(l) :
 		ans = List(i, ans)
@@ -137,10 +138,6 @@ def atom(exps, env) :
 def eq(exps, env) :
 	'(eq 1 2)'
 	return eql(exps, env)
-	0/0
-	a, b = eval_params(exps, env)
-	return to_bool(a == b or
-					type(a) == List and type(b) == List and a.nil() and b.nil())
 
 def eql(exps, env) :
 	'(eql 1 2)'
@@ -246,6 +243,21 @@ def list_(exps, env) :
 	"(list '1 'a) -> (1 A)"
 	params = eval_params(exps, env)
 	return build_list(params)
+
+# High-Order Functions
+
+def mapcar(exps, env) :
+	"(mapcar #'+ '(1 2 3) '(10 20 30))"
+	args = eval_params(exps, env)
+	func = args[0]
+	params = args[1:]
+	assert all(map(lambda x: type(x) == List, params))
+	answer = []
+	while not any(map(lambda x: x.nil(), params)) :
+		arg = build_list(list(map(lambda x: quoter(x.car), params)))
+		answer.append(call_func(func, arg, env))
+		params = (list(map(lambda x: x.cdr, params)))
+	return build_list(answer)
 
 # Functions
 
@@ -400,6 +412,7 @@ functions = {
 	'CDR': cdr, 
 	'CONS': cons, 
 	'LIST': list_, 
+	'MAPCAR': mapcar, 		# High-Order Functions
 	'DEFUN': defun, 		# Functions
 	'APPLY': apply, 
 	'FUNCALL': funcall, 

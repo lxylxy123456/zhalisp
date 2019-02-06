@@ -39,6 +39,8 @@ if __name__ == '__main__' :
 			('(not nil)', 'T'), 
 			('(not 1)', 'NIL'), 
 			('t', 't'), 
+			("(mapcar #'+ '(1 2 3) '(10 20 30))", '(11 22 33)'), 
+			("(mapcar #'+ nil)", '()'), 
 			] :
 			env = [Env()]
 			ss = build_tree(s)
