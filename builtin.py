@@ -51,12 +51,20 @@ def to_bool(value) :
 def is_true(value) :
 	return not(type(value) == List and value.nil())
 
-def build_list(l) :
-	# TODO: remove the use of reversed
+def build_list(*l) :
 	ans = List()
-	for i in reversed(l) :
-		ans = List(i, ans)
+	ptr = None
+	for i in l :
+		for j in i :
+			if ptr == None :
+				ans = List(j, ans)
+				ptr = ans
+			else :
+				ptr.cdr = List(j, ptr.cdr)
+				ptr = ptr.cdr
 	return ans
+
+# TODO: remove explicit conversion to list as argument to build_list
 
 quoter = lambda x: List(Symbol('quote'), List(x, List()))
 
@@ -68,7 +76,7 @@ def plus(exps, env) :
 	return functools.reduce(operator.add, nums)
 
 def minus(exps, env) :
-	'(- 1 2)'
+	'(- 1 2) OR (- 1)'
 	nums = tuple(eval_params(exps, env))
 	if len(nums) == 1 :
 		a, = nums
@@ -260,7 +268,7 @@ def cons(exps, env) :
 def list_(exps, env) :
 	"(list '1 'a) -> (1 A)"
 	params = eval_params(exps, env)
-	return build_list(list(params))
+	return build_list(params)
 
 # High-Order Functions
 
@@ -272,7 +280,7 @@ def mapcar(exps, env) :
 	assert all(map(lambda x: type(x) == List, params))
 	answer = []
 	while not any(map(lambda x: x.nil(), params)) :
-		arg = build_list(list(map(lambda x: quoter(x.car), params)))
+		arg = build_list(map(lambda x: quoter(x.car), params))
 		answer.append(call_func(func, arg, env))
 		params = list(map(lambda x: x.cdr, params))
 	return build_list(answer)
@@ -285,7 +293,7 @@ def mapc(exps, env) :
 	ret = params[0]
 	assert all(map(lambda x: type(x) == List, params))
 	while not any(map(lambda x: x.nil(), params)) :
-		arg = build_list(list(map(lambda x: quoter(x.car), params)))
+		arg = build_list(map(lambda x: quoter(x.car), params))
 		call_func(func, arg, env)
 		params = list(map(lambda x: x.cdr, params))
 	return ret
@@ -298,18 +306,14 @@ def maplist(exps, env) :
 	assert all(map(lambda x: type(x) == List, params))
 	answer = []
 	while not any(map(lambda x: x.nil(), params)) :
-		arg = build_list(list(map(quoter, params)))
+		arg = build_list(map(quoter, params))
 		answer.append(call_func(func, arg, env))
 		params = list(map(lambda x: x.cdr, params))
 	return build_list(answer)
 
 def append(exps, env) :
 	"(append '(1 2 3) '(4 5 6) '(7 8 9))"
-	answer = []
-	for i in eval_params(exps, env) :
-		assert type(i) == List
-		answer += list(i)
-	return build_list(answer)
+	return build_list(*eval_params(exps, env))
 
 # Functions
 
@@ -340,7 +344,7 @@ def apply(exps, env) :
 	apply_args = tuple(eval_params(exps, env))
 	func = apply_args[0]
 	args = apply_args[1:-1] + tuple(apply_args[-1])
-	arg_list = build_list(list(map(quoter, args)))
+	arg_list = build_list(map(quoter, args))
 	return call_func(func, arg_list, env)
 
 def funcall(exps, env) :

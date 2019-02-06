@@ -33,6 +33,7 @@ tests = [
 	('(not nil)', 'T'), 
 	('(not 1)', 'NIL'), 
 	('t', 't'), 
+	# Credit of test cases below goes to Professor Aditya V. Thakur
 	("(append '(1 2 3) '(4 5 6) '(7 8 9))", '(1 2 3 4 5 6 7 8 9)'), 
 	("(mapcar #'+ '(1 2 3) '(10 20 30))", '(11 22 33)'), 
 	("(mapcar #'+ nil)", '()'), 
@@ -52,4 +53,5 @@ tests = [
 	('(let ((a 2)) (let ((a 3) (b (+ a 1))) (+ a b)))', '6'), 
 	('(cond ((> 1 3) 1) (( > 1 2) 2))', 'NIL'), 
 	('(listp (zerop 1))', 'T'), 
+	# Credit of test cases above goes to Professor Aditya V. Thakur
 ]
