@@ -69,9 +69,17 @@ def plus(exps, env) :
 
 def minus(exps, env) :
 	'(- 1 2)'
-	a, b = eval_params(exps, env)
-	assert type(a) == Number and type(b) == Number
-	return operator.sub(a, b)
+	nums = eval_params(exps, env)
+	if len(nums) == 1 :
+		a, = nums
+		assert type(a) == Number
+		return operator.neg(a)
+	elif len(nums) == 2 :
+		a, b = nums
+		assert type(a) == Number and type(b) == Number
+		return operator.sub(a, b)
+	else :
+		raise Exception('Invalid variable numbers for - function')
 
 def mul(exps, env) :
 	'(* 1 2 3)'
@@ -132,6 +140,17 @@ def atom(exps, env) :
 	value, = eval_params(exps, env)
 	return to_bool(issubclass(type(value), Atom) or 
 					type(value) == List and value.nil())
+
+def listp(exps, env) :
+	'(listp ()) -> T'
+	value, = eval_params(exps, env)
+	return to_bool(type(value) == List)
+
+def zerop(exps, env) :
+	'(zerop ()) -> T'
+	value, = eval_params(exps, env)
+	assert type(value) == Number
+	return to_bool(value.value == 0)
 
 # Binary Predicates
 
@@ -234,9 +253,8 @@ def caordr(func_name) :
 	return answer
 
 def cons(exps, env) :
-	"(cons '1 '(2 3)) -> (1 2 3)"
+	"(cons '1 '(2 3)) -> (1 2 3); (cons 1 2) -> (1 . 2)"
 	a, d = eval_params(exps, env)
-	assert type(d) == List
 	return List(a, d)
 
 def list_(exps, env) :
@@ -256,7 +274,40 @@ def mapcar(exps, env) :
 	while not any(map(lambda x: x.nil(), params)) :
 		arg = build_list(list(map(lambda x: quoter(x.car), params)))
 		answer.append(call_func(func, arg, env))
-		params = (list(map(lambda x: x.cdr, params)))
+		params = list(map(lambda x: x.cdr, params))
+	return build_list(answer)
+
+def mapc(exps, env) :
+	"(mapc #'+ '(1 2 3) '(10 20 30)) -> '(1 2 3)"
+	args = eval_params(exps, env)
+	func = args[0]
+	params = args[1:]
+	assert all(map(lambda x: type(x) == List, params))
+	while not any(map(lambda x: x.nil(), params)) :
+		arg = build_list(list(map(lambda x: quoter(x.car), params)))
+		call_func(func, arg, env)
+		params = list(map(lambda x: x.cdr, params))
+	return args[1]
+
+def maplist(exps, env) :
+	"(maplist #'cons '(2 3) '(20 30)) -> (((2 3) 20 30) ((3) 30))"
+	args = eval_params(exps, env)
+	func = args[0]
+	params = args[1:]
+	assert all(map(lambda x: type(x) == List, params))
+	answer = []
+	while not any(map(lambda x: x.nil(), params)) :
+		arg = build_list(list(map(quoter, params)))
+		answer.append(call_func(func, arg, env))
+		params = list(map(lambda x: x.cdr, params))
+	return build_list(answer)
+
+def append(exps, env) :
+	"(append '(1 2 3) '(4 5 6) '(7 8 9))"
+	answer = []
+	for i in eval_params(exps, env) :
+		assert type(i) == List
+		answer += list(i)
 	return build_list(answer)
 
 # Functions
@@ -402,6 +453,8 @@ functions = {
 	'>=': ge, 
 	'NULL': null, 			# Unary Predicates
 	'ATOM': atom, 
+	'LISTP': listp, 
+	'ZEROP': zerop, 
 	'EQ': eq, 				# Binary Predicates
 	'EQL': eql, 
 	'EQUAL': equal, 
@@ -413,6 +466,9 @@ functions = {
 	'CONS': cons, 
 	'LIST': list_, 
 	'MAPCAR': mapcar, 		# High-Order Functions
+	'MAPC': mapc, 
+	'MAPLIST': maplist, 
+	'APPEND': append, 
 	'DEFUN': defun, 		# Functions
 	'APPLY': apply, 
 	'FUNCALL': funcall, 

@@ -26,6 +26,8 @@ class Number(Atom) :
 		return Number(self.value + rhs.value)
 	def __sub__(self, rhs) :
 		return Number(self.value - rhs.value)
+	def __neg__(self) :
+		return Number(-self.value)
 	def __mul__(self, rhs) :
 		return Number(self.value * rhs.value)
 	def __truediv__(self, rhs) :
