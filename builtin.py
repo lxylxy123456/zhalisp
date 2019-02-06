@@ -13,7 +13,7 @@ from itertools import repeat
 
 def eval_params(exps, env) :
 	'((+ 1 2) (- 3 4)) -> [3, -1]'
-	return tuple(map(evaluate, exps, repeat(env)))
+	return map(evaluate, exps, repeat(env))
 
 def call_func(func, args, env) :
 	'func: a Func object; args: a List'
@@ -69,7 +69,7 @@ def plus(exps, env) :
 
 def minus(exps, env) :
 	'(- 1 2)'
-	nums = eval_params(exps, env)
+	nums = tuple(eval_params(exps, env))
 	if len(nums) == 1 :
 		a, = nums
 		assert type(a) == Number
@@ -260,15 +260,15 @@ def cons(exps, env) :
 def list_(exps, env) :
 	"(list '1 'a) -> (1 A)"
 	params = eval_params(exps, env)
-	return build_list(params)
+	return build_list(list(params))
 
 # High-Order Functions
 
 def mapcar(exps, env) :
 	"(mapcar #'+ '(1 2 3) '(10 20 30))"
 	args = eval_params(exps, env)
-	func = args[0]
-	params = args[1:]
+	func = next(args)
+	params = list(args)
 	assert all(map(lambda x: type(x) == List, params))
 	answer = []
 	while not any(map(lambda x: x.nil(), params)) :
@@ -280,20 +280,21 @@ def mapcar(exps, env) :
 def mapc(exps, env) :
 	"(mapc #'+ '(1 2 3) '(10 20 30)) -> '(1 2 3)"
 	args = eval_params(exps, env)
-	func = args[0]
-	params = args[1:]
+	func = next(args)
+	params = list(args)
+	ret = params[0]
 	assert all(map(lambda x: type(x) == List, params))
 	while not any(map(lambda x: x.nil(), params)) :
 		arg = build_list(list(map(lambda x: quoter(x.car), params)))
 		call_func(func, arg, env)
 		params = list(map(lambda x: x.cdr, params))
-	return args[1]
+	return ret
 
 def maplist(exps, env) :
 	"(maplist #'cons '(2 3) '(20 30)) -> (((2 3) 20 30) ((3) 30))"
 	args = eval_params(exps, env)
-	func = args[0]
-	params = args[1:]
+	func = next(args)
+	params = list(args)
 	assert all(map(lambda x: type(x) == List, params))
 	answer = []
 	while not any(map(lambda x: x.nil(), params)) :
@@ -336,7 +337,7 @@ def defun(exps, env) :
 
 def apply(exps, env) :
 	"(apply #'+ '(1 2 3))"
-	apply_args = eval_params(exps, env)
+	apply_args = tuple(eval_params(exps, env))
 	func = apply_args[0]
 	args = apply_args[1:-1] + tuple(apply_args[-1])
 	arg_list = build_list(list(map(quoter, args)))
