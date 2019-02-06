@@ -64,8 +64,6 @@ def build_list(*l) :
 				ptr = ptr.cdr
 	return ans
 
-# TODO: remove explicit conversion to list as argument to build_list
-
 quoter = lambda x: List(Symbol('quote'), List(x, List()))
 
 # Arithmetics
