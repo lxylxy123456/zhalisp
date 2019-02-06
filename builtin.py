@@ -45,8 +45,8 @@ def call_func(func, args, env) :
 
 def find_func(name, env) :
 	'Find function from builtin and environments'
-	if name in functions :
-		return functions[name]
+	if name in builtin_functions :
+		return builtin_functions[name]
 	matched = re.fullmatch('C([AD]{1,4})R', name)
 	if matched :
 		return caordr(matched.groups()[0])
@@ -92,15 +92,29 @@ arg1 = lambda x: List(quoter(x), Nil)
 
 arg2 = lambda x, y: List(quoter(x), List(quoter(y), Nil))
 
+builtin_functions = {}
+
+def lisp_builtin(symbol) :
+	assert type(symbol) == str and symbol == symbol.upper()
+	def f(func) :
+		builtin_functions[symbol] = func
+		print(symbol, func)
+		return func
+	return f
+
+# NOTICE caordr
+
 # TODO: allow build 1 arguments and 2 arguments easily
 
 # Arithmetics
 
+@lisp_builtin('+')
 def plus(exps, env) :
 	'(+ 1 2 3)'
 	nums = eval_params(exps, env)
 	return functools.reduce(operator.add, nums)
 
+@lisp_builtin('-')
 def minus(exps, env) :
 	'(- 1 2) OR (- 1)'
 	nums = tuple(eval_params(exps, env))
@@ -115,87 +129,102 @@ def minus(exps, env) :
 	else :
 		raise Exception('Invalid variable numbers for - function')
 
+@lisp_builtin('*')
 def mul(exps, env) :
 	'(* 1 2 3)'
 	nums = eval_params(exps, env)
 	return functools.reduce(operator.mul, nums)
 
+@lisp_builtin('/')
 def div(exps, env) :
 	'(/ 1 2)'
 	a, b = eval_params(exps, env)
 	assert type(a) == Number and type(b) == Number
 	return operator.truediv(a, b)
 
+@lisp_builtin('1+')
 def one_plus(exps, env) :
 	'(1+ 2)'
 	a, = eval_params(exps, env)
 	assert type(a) == Number
 	return a + Number(1)
 
+@lisp_builtin('1-')
 def one_minus(exps, env) :
 	'(1- 2)'
 	a, = eval_params(exps, env)
 	assert type(a) == Number
 	return a - Number(1)
 
+@lisp_builtin('=')
 def eq_(exps, env) :
 	'(= 1 2)'
 	a, b = eval_params(exps, env)
 	assert type(a) == Number and type(b) == Number
 	return to_bool(a.equal(b))
 
+@lisp_builtin('<')
 def lt(exps, env) :
 	'(< 1 2)'
 	a, b = eval_params(exps, env)
 	assert type(a) == Number and type(b) == Number
 	return to_bool(operator.lt(a, b))
 
+@lisp_builtin('<=')
 def le(exps, env) :
 	'(<= 1 2)'
 	a, b = eval_params(exps, env)
 	assert type(a) == Number and type(b) == Number
 	return to_bool(operator.le(a, b))
 
+@lisp_builtin('>')
 def gt(exps, env) :
 	'(> 1 2)'
 	a, b = eval_params(exps, env)
 	assert type(a) == Number and type(b) == Number
 	return to_bool(operator.gt(a, b))
 
+@lisp_builtin('>=')
 def ge(exps, env) :
 	'(>= 1 2)'
 	a, b = eval_params(exps, env)
 	assert type(a) == Number and type(b) == Number
 	return to_bool(operator.ge(a, b))
 
-def sqrt_(exps, env) :
+@lisp_builtin('SQRT')
+def sqrt(exps, env) :
 	value, = eval_params(exps, env)
 	assert type(value) == Number
 	return Number(math.sqrt(value.value))
 
 # Unary Predicates
 
+@lisp_builtin('ATOM')
 def atom(exps, env) :
 	'(atom NIL) -> T'
 	value, = eval_params(exps, env)
 	return to_bool(issubclass(type(value), Atom) or 
 					type(value) == List and value.nil())
 
+@lisp_builtin('LISTP')
 def listp(exps, env) :
 	'(listp ()) -> T'
 	value, = eval_params(exps, env)
 	return to_bool(type(value) == List)
 
+@lisp_builtin('NULL')
 def null(exps, env) :
 	'(null NIL) -> T'
 	value, = eval_params(exps, env)
 	return to_bool(type(value) == List and value.nil())
 
+@lisp_builtin('NUMBERP')
 def numberp(exps, env) :
 	'(numberp 0) -> T; (numberp ()) -> NIL'
 	value, = eval_params(exps, env)
 	return to_bool(type(value) == Number)
 
+@lisp_builtin('TYPEP')
 def typep(exps, env) :
 	"(typep 0 'number) -> T"
 	val, typ = eval_params(exps, env)
@@ -208,23 +237,27 @@ def typep(exps, env) :
 	}[typ.value]
 	return func(arg1(val), env)
 
+@lisp_builtin('SYMBOLP')
 def symbolp(exps, env) :
 	"(symbolp 'a) -> T"
 	value, = eval_params(exps, env)
 	return to_bool(type(value) == Symbol)
 
+@lisp_builtin('ZEROP')
 def zerop(exps, env) :
 	'(zerop ()) -> T'
 	value, = eval_params(exps, env)
 	assert type(value) == Number
 	return to_bool(value.value == 0)
 
+@lisp_builtin('EVENP')
 def evenp(exps, env) :
 	'(evenp 0) -> T'
 	value, = eval_params(exps, env)
 	assert type(value) == Number and type(value.value) == int
 	return to_bool(value.value % 2 == 0)
 
+@lisp_builtin('ODDP')
 def oddp(exps, env) :
 	'(oddp 0) -> NIL'
 	value, = eval_params(exps, env)
@@ -233,10 +266,12 @@ def oddp(exps, env) :
 
 # Binary Predicates
 
+@lisp_builtin('EQ')
 def eq(exps, env) :
 	'(eq 1 2)'
 	return eql(exps, env)
 
+@lisp_builtin('EQL')
 def eql(exps, env) :
 	'(eql 1 2)'
 	a, b = eval_params(exps, env)
@@ -256,6 +291,7 @@ def eql(exps, env) :
 	else :
 		raise ValueError('Unexpected type: %s' % repr(ta))
 
+@lisp_builtin('EQUAL')
 def equal(exps, env) :
 	"(equal '(1) '(1))"
 	a, b = eval_params(exps, env)
@@ -283,6 +319,7 @@ def equal(exps, env) :
 
 # Logic
 
+@lisp_builtin('AND')
 def and_(exps, env) :
 	'(and 1 2 3)'
 	for value in exps :
@@ -290,6 +327,7 @@ def and_(exps, env) :
 			return to_bool(False)
 	return to_bool(True)
 
+@lisp_builtin('OR')
 def or_(exps, env) :
 	'(or 1 2 3)'
 	for value in exps :
@@ -297,6 +335,7 @@ def or_(exps, env) :
 			return to_bool(True)
 	return to_bool(False)
 
+@lisp_builtin('NOT')
 def not_(exps, env) :
 	'(not 1)'
 	value, = eval_params(exps, env)
@@ -304,12 +343,14 @@ def not_(exps, env) :
 
 # List operations
 
+@lisp_builtin('CAR')
 def car(exps, env) :
 	"(car '(1 2 3)) -> 1"
 	l, = eval_params(exps, env)
 	assert type(l) == List
 	return l.get_car()
 
+@lisp_builtin('CDR')
 def cdr(exps, env) :
 	"(cdr '(1 2 3)) -> (2 3)"
 	l, = eval_params(exps, env)
@@ -331,16 +372,19 @@ def caordr(func_name) :
 	order = list(reversed(func_name))
 	return answer
 
+@lisp_builtin('CONS')
 def cons(exps, env) :
 	"(cons '1 '(2 3)) -> (1 2 3); (cons 1 2) -> (1 . 2)"
 	a, d = eval_params(exps, env)
 	return List(a, d)
 
+@lisp_builtin('LIST')
 def list_(exps, env) :
 	"(list '1 'a) -> (1 A)"
 	params = eval_params(exps, env)
 	return build_list(params)
 
+@lisp_builtin('MEMBER')
 def member(exps, env) :
 	"(member '1 '(0 1 2)) -> (1 2)"
 	a, l = eval_params(exps, env)
@@ -354,6 +398,7 @@ def member(exps, env) :
 
 # High-Order Functions
 
+@lisp_builtin('MAPCAR')
 def mapcar(exps, env) :
 	"(mapcar #'+ '(1 2 3) '(10 20 30))"
 	args = eval_params(exps, env)
@@ -367,6 +412,7 @@ def mapcar(exps, env) :
 		params = list(map(lambda x: x.cdr, params))
 	return build_list(answer)
 
+@lisp_builtin('MAPC')
 def mapc(exps, env) :
 	"(mapc #'+ '(1 2 3) '(10 20 30)) -> '(1 2 3)"
 	args = eval_params(exps, env)
@@ -380,6 +426,7 @@ def mapc(exps, env) :
 		params = list(map(lambda x: x.cdr, params))
 	return ret
 
+@lisp_builtin('MAPLIST')
 def maplist(exps, env) :
 	"(maplist #'cons '(2 3) '(20 30)) -> (((2 3) 20 30) ((3) 30))"
 	args = eval_params(exps, env)
@@ -393,12 +440,14 @@ def maplist(exps, env) :
 		params = list(map(lambda x: x.cdr, params))
 	return build_list(answer)
 
+@lisp_builtin('APPEND')
 def append(exps, env) :
 	"(append '(1 2 3) '(4 5 6) '(7 8 9))"
 	return build_list(*eval_params(exps, env))
 
 # Functions
 
+@lisp_builtin('DEFUN')
 def defun(exps, env) :
 	'(defun f (x) (* x x))'
 
@@ -421,6 +470,7 @@ def defun(exps, env) :
 	env[0].set_fun(f_name.value, result)
 	return f_name
 
+@lisp_builtin('APPLY')
 def apply(exps, env) :
 	"(apply #'+ '(1 2 3))"
 	apply_args = tuple(eval_params(exps, env))
@@ -429,29 +479,34 @@ def apply(exps, env) :
 	arg_list = build_list(map(quoter, args))
 	return call_func(func, arg_list, env)
 
+@lisp_builtin('FUNCALL')
 def funcall(exps, env) :
 	"(funcall #'+ 1 2 3)"
 	func = evaluate(exps.car, env)
 	args = exps.cdr
 	return call_func(func, args, env)
 
+@lisp_builtin('FUNCTION')
 def function(exps, env) :
 	"(function +) OR #'+"
 	name, = exps
 	assert type(name) == Symbol
 	return find_func(name.value, env)
 
+@lisp_builtin('QUOTE')
 def quote(exps, env) :
 	"(quote (1 2 3)) OR '(1 2 3)"
 	assert exps.cdr.nil()
 	return exps.car
 
+@lisp_builtin('EVAL')
 def eval_(exps, env) :
 	'(eval (+ 1 2 3))'
 	return evaluate(exps.car, env)
 
 # Variables
 
+@lisp_builtin('LET')
 def let(exps, env) :
 	'(let ((x 10)) (* x 2))'
 	new_env = Env()
@@ -466,6 +521,7 @@ def let(exps, env) :
 		ans = evaluate(i, new_envs)
 	return ans
 
+@lisp_builtin('LET*')
 def let_star(exps, env) :
 	'(let* ((x 10) (y (1+ x))) (* y 2)) -> 22'
 	new_env = Env()
@@ -480,6 +536,7 @@ def let_star(exps, env) :
 		ans = evaluate(i, new_envs)
 	return ans
 
+@lisp_builtin('SETQ')
 def setq(exps, env) :
 	'(setq x 10) -> 10'
 	assert exps.cdr.cdr.nil()
@@ -491,6 +548,7 @@ def setq(exps, env) :
 	e.set_var(exps.car.value, evaluate(exps.cdr.car, env))
 	return v
 
+@lisp_builtin('SET')
 def set_(exps, env) :
 	"(set 'x 'y) -> y; x -> y"
 	k, v = eval_params(exps, env)
@@ -502,6 +560,7 @@ def set_(exps, env) :
 
 # Conditions
 
+@lisp_builtin('COND')
 def cond(exp, env) :
 	'(cond ((> 1 2) 1) ((< 1 2) 2))'
 	for test in exp :
@@ -514,6 +573,7 @@ def cond(exp, env) :
 			return ans
 	return Nil
 
+@lisp_builtin('IF')
 def if_(exps, env) :
 	'(if (> 1 2) 1 2) -> 2'
 	test, true, false = exps
@@ -542,57 +602,4 @@ def evaluate(exp, env) :
 	else :
 		assert isinstance(exp, Atom)
 		raise ValueError('Unexpected type: %s' % repr(te))
-
-# Index
-
-functions = {
-	'+': plus, 				# Arithmetics
-	'-': minus, 
-	'*': mul, 
-	'/': div, 
-	'1+': one_plus, 
-	'1-': one_minus, 
-	'=': eq_, 
-	'<': lt, 
-	'<=': le, 
-	'>': gt, 
-	'>=': ge, 
-	'SQRT': sqrt_, 
-	'ATOM': atom, 			# Unary Predicates
-	'LISTP': listp, 
-	'NULL': null, 
-	'NUMBERP': numberp, 
-	'TYPEP': typep, 
-	'SYMBOLP': symbolp, 
-	'ZEROP': zerop, 
-	'EVENP': evenp, 
-	'ODDP': oddp, 
-	'EQ': eq, 				# Binary Predicates
-	'EQL': eql, 
-	'EQUAL': equal, 
-	'AND': and_, 			# Logic
-	'OR': or_, 
-	'NOT': not_, 
-	'CAR': car, 			# List operations
-	'CDR': cdr, 
-	'CONS': cons, 
-	'LIST': list_, 
-	'MEMBER': member, 
-	'MAPCAR': mapcar, 		# High-Order Functions
-	'MAPC': mapc, 
-	'MAPLIST': maplist, 
-	'APPEND': append, 
-	'DEFUN': defun, 		# Functions
-	'APPLY': apply, 
-	'FUNCALL': funcall, 
-	'FUNCTION': function, 
-	'QUOTE': quote, 
-	'EVAL': eval_, 
-	'LET': let, 			# Variables
-	'LET*': let_star, 
-	'SETQ': setq, 
-	'SET': set_, 
-	'COND': cond, 			# Conditions
-	'IF': if_, 
-}
 
