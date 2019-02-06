@@ -72,6 +72,8 @@ A "zha" Clisp interpreter implementation
 |`SET`		|`set_`		|`(SET 'X 1)` <br> `X`				|`1` <br> `1`				|						|
 |`COND`		|`cond`		|`(COND (nil 1) (t 2))`				|`2`						| Conditions			|
 
-### to be implemented
+### To be implemented
+* string
+* complex
 * `load` (P51)
 
