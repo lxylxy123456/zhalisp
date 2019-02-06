@@ -35,11 +35,13 @@ A "zha" Clisp interpreter implementation
 |`*`		|`mul`		|`(* 1 2 3)`						|`6`						|						|
 |`/`		|`div`		|`(/ 1 2)`							|`1/2`						|						|
 |`1+`		|`one_plus`	|`(1+ 2)`							|`3`						|						|
+|`1-`		|`one_minus`|`(1- 2)`							|`1`						|						|
 |`=`		|`eq_`		|`(= 1 2)`							|`NIL`						|						|
 |`<`		|`lt`		|`(< 1 2)`							|`T`						|						|
 |`<=`		|`le`		|`(<= 1 2)`							|`T`						|						|
 |`>`		|`gt`		|`(> 1 2)`							|`NIL`						|						|
 |`>=`		|`ge`		|`(>= 1 2)`							|`NIL`						|						|
+|`SQRT`		|`sqrt_`	|`(SQRT 4)`							|`2.0`						|						|
 |`NULL`		|`null`		|`(NULL NIL)` <br> `(NULL T)`		|`T` <br> `NIL`				| Unary Predicates		|
 |`ATOM`		|`atom`		|`(ATOM NIL)` <br> `(ATOM '(1))`	|`T` <br> `NIL`				|						|
 |`LISTP`	|`listp`	|`(LISTP 1)` <br> `(LISTP NIL)`		|`T` <br> `NIL`				|						|
@@ -66,6 +68,10 @@ A "zha" Clisp interpreter implementation
 |`EVAL`		|`eval_`	|`(EVAL '(+ 1 2))`					|`(3)`						| Variables				|
 |`LET`		|`let`		|`(LET ((X 1)) X)`					|`1`						|						|
 |`LET*`		|`let_star`	|`(LET* ((X 1) (Y X)) Y)`			|`1`						|						|
-|`SETQ`		|`setq`		|`(SETQ X 1)`						|`X`						|						|
+|`SETQ`		|`setq`		|`(SETQ X 1)` <br> `X`				|`1` <br> `1`				|						|
+|`SET`		|`set_`		|`(SET 'X 1)` <br> `X`				|`1` <br> `1`				|						|
 |`COND`		|`cond`		|`(COND (nil 1) (t 2))`				|`2`						| Conditions			|
+
+### to be implemented
+* `load` (P51)
 

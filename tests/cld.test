@@ -107,3 +107,286 @@
 
 -> (setq x '(+ 3 4))
 => (+ 3 4)
+
+-> (setq x 'y)
+=> Y
+
+-> x
+=> Y
+
+-> (setq a 'a)
+=> A
+
+-> a
+=> A
+
+-> x
+=> Y
+
+-> (set x 'z)
+=> Z
+
+-> y
+=> Z
+
+-> x
+=> Y
+
+-> (set 'x '(a b c))
+=> (A B C)
+
+-> x
+=> (A B C)
+
+-> (car '(a b c))
+=> A
+
+-> (cdr '(a b c))
+=> (B C)
+
+-> (setq x '(a b c))
+=> (A B C)
+
+-> x
+=> (A B C)
+
+-> (car x)
+=> A
+
+-> x
+=> (A B C)
+
+-> (cdr x)
+=> (B C)
+
+-> x
+=> (A B C)
+
+-> (cdr '(a b))
+=> (B)
+
+-> (car (cdr '(a b)))
+=> B
+
+-> (car '((a b)))
+=> (A B)
+
+-> (car (car '((a b))))
+=> A
+
+-> (cdr '((a b) (c d)))
+=> ((C D))
+
+-> (cdr '((a b) (c d) (e f)))
+=> ((C D) (E F))
+
+-> (car (cdr '((a b) (c d))))
+=> (C D)
+
+-> (cdr (car '((a b) (c d))))
+=> (B)
+
+-> (cdr (car '((a b c) (d e f))))
+=> (B C)
+
+-> (car (car '((a b c) (d e f))))
+=> A
+
+-> (car (cdr '((a b c) (d e f))))
+=> (D E F)
+
+-> (car (car (cdr '((a b c) (d e f)))))
+=> D
+
+-> (cdr (car (cdr '((a b c) (d e f)))))
+=> (E F)
+
+-> (car (cdr (car (cdr '((a b c) (d e f))))))
+=> E
+
+-> (car (cdr '((a b c) (d e f))))
+=> (D E F)
+
+-> (cadr '((a b c) (d e f)))
+=> (D E F)
+
+-> (car (cdr (car (cdr '((a b c) (d e f))))))
+=> E
+
+-> (cadadr '((a b c) (d e f)))
+=> E
+
+-> (car '(cdr '(a b c)))
+=> CDR
+
+-> (car (cdr '(a b c)))
+=> B
+
+-> (cdr '(c))
+=> NIL
+
+-> '()
+=> NIL
+
+-> ()
+=> NIL
+
+-> nil
+=> NIL
+
+-> (cons 'a '(b c))
+=> (A B C)
+
+-> (setq x (cons 'a '(b c)))
+=> (A B C)
+
+-> (car x)
+=> A
+
+-> (cdr x)
+=> (B C)
+
+-> (cons 'a '(b))
+=> (A B)
+
+-> (cons '(a b) '(c d))
+=> ((A B) C D)
+
+-> (cons 'a (cons 'b '(c d)))
+=> (A B C D)
+
+-> (setq x '(a b))
+=> (A B)
+
+-> (cons (car x) (cons (cadr x) '(c d)))
+=> (A B C D)
+
+-> (cons 'a nil)
+=> (A)
+
+-> (setq x 'a)
+=> A
+
+-> (setq y '(b c))
+=> (B C)
+
+-> (cons x y)
+=> (A B C)
+
+-> x
+=> A
+
+-> y
+=> (B C)
+
+-> (cons 'a (cons 'b (cons 'c nil)))
+=> (A B C)
+
+-> (cons 'a (cons (cons 'b (cons 'c nil)) (cons 'd nil)))
+=> (A (B C) D)
+
+-> (list 'a 'b 'c)
+=> (A B C)
+
+-> (list 'a '(b c) 'd)
+=> (A (B C) D)
+
+-> (append '(a b) '(c d) '(e f))
+=> (A B C D E F)
+
+-> CLEAR-ENV
+=> ; Chapter 3
+
+-> (defun addthree (x) (+ x 3))
+=> ADDTHREE
+
+-> (addthree 7)
+=> 10
+
+-> (setq x (addthree 19))
+=> 22
+
+-> (addthree 11)
+=> 14
+
+-> (addthree (* 4 (1- 7)))
+=> 27
+
+-> (defun average (x y) (/ (+ x y) 2))
+=> AVERAGE
+
+-> (average 7 21)
+=> 14
+
+-> (average 9 31)
+=> 20
+
+-> (defun xcons (l e) (cons e l))
+=> XCONS
+
+-> (xcons '(b c) 'a)
+=> (A B C)
+
+-> (defun list-of-lists (x) (list (list (car x)) (list (cadr x))))
+=> LIST-OF-LISTS
+
+-> (list-of-lists '(a b))
+=> ((A) (B))
+
+-> (list-of-lists '(1 2))
+=> ((1) (2))
+
+-> (list-of-lists (xcons (cons 'c nil) 'd))
+=> ((D) (C))
+
+-> (setq x '(a b c))
+=> (A B C)
+
+-> (addthree 7)
+=> 10
+
+-> x
+=> (A B C)
+
+-> (defun squared (y) (* y y))
+=> SQUARED
+
+-> (defun hyp (x y) (sqrt (+ (squared x) (squared y))))
+=> HYP
+
+-> (hyp 3 4)
+=> 5.0
+
+-> (defun sum-average (x y) (setq sum (+ x y)) (/ sum 2))
+=> SUM-AVERAGE
+
+-> (sum-average 29 13)
+=> 21
+
+-> sum
+=> 42
+
+-> (sum-average 7 93)
+=> 50
+
+-> sum
+=> 100
+
+-> (defun sum-average-caller (sum x y) (sum-average x y) sum)
+=> SUM-AVERAGE-CALLER
+
+-> (setq sum '(a b c))
+=> (A B C)
+
+-> (sum-average-caller 0 55 65)
+=> 0
+
+-> sum
+=> 120
+
+-> (load 'utilities)
+=> ERROR	; LIMIT: cannot load other files
+
+-> CLEAR-ENV
+=> ; Chapter 4
+

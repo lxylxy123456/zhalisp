@@ -29,6 +29,8 @@
 '''
 
 import sys
+from itertools import zip_longest
+
 from structs import Env
 from frontend import build_tree
 from builtin import evaluate
@@ -52,7 +54,8 @@ def test(file) :
 			env = [Env()]
 			print('-> CLEAR-ENV\n=> CLEAR-ENV\n')
 			continue
-		for qq, aa in zip(build_tree(q), build_tree(a)) :
+		for qq, aa in zip_longest(build_tree(q), build_tree(a)) :
+			assert qq and aa
 			aaa = str(aa)
 			if aaa.strip() == 'ERROR' :
 				error_flag = False

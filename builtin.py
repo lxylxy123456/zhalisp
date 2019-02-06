@@ -22,7 +22,7 @@
 	LIMIT: eq have different behavior than Clisp (currently same as eql)
 '''
 
-import functools, operator, re
+import functools, operator, re, math
 
 from structs import Env, Atom, Number, Symbol, List, Bool, Dot
 from itertools import repeat
@@ -122,6 +122,12 @@ def one_plus(exps, env) :
 	assert type(a) == Number
 	return a + Number(1)
 
+def one_minus(exps, env) :
+	'(1- 2)'
+	a, = eval_params(exps, env)
+	assert type(a) == Number
+	return a - Number(1)
+
 def eq_(exps, env) :
 	'(= 1 2)'
 	a, b = eval_params(exps, env)
@@ -151,6 +157,11 @@ def ge(exps, env) :
 	a, b = eval_params(exps, env)
 	assert type(a) == Number and type(b) == Number
 	return to_bool(operator.ge(a, b))
+
+def sqrt_(exps, env) :
+	value, = eval_params(exps, env)
+	assert type(value) == Number
+	return Number(math.sqrt(value.value))
 
 # Unary Predicates
 
@@ -338,7 +349,7 @@ def defun(exps, env) :
 
 	def result(exps_, env_) :
 		new_env = Env()
-		new_envs = env_ + [new_env]
+		new_envs = env + [new_env]		# determines lexical / static scoping
 		actual_args = eval_params(exps_, env_)
 		for f, a in zip(formal_args, actual_args) :
 			new_env.set_var(f.value, a)
@@ -416,7 +427,6 @@ def let_star(exps, env) :
 
 def setq(exps, env) :
 	'(setq x 10) -> 10'
-	assert type(exps) == List
 	assert exps.cdr.cdr.nil()
 	k = exps.car.value
 	v = evaluate(exps.cdr.car, env)
@@ -424,6 +434,15 @@ def setq(exps, env) :
 		if e.has_var(k) :
 			break
 	e.set_var(exps.car.value, evaluate(exps.cdr.car, env))
+	return v
+
+def set_(exps, env) :
+	"(set 'x 'y) -> y; x -> y"
+	k, v = eval_params(exps, env)
+	for e in reversed(env) :
+		if e.has_var(k.value) :
+			break
+	e.set_var(k.value, v)
 	return v
 
 # Conditions
@@ -467,11 +486,13 @@ functions = {
 	'*': mul, 
 	'/': div, 
 	'1+': one_plus, 
+	'1-': one_minus, 
 	'=': eq_, 
 	'<': lt, 
 	'<=': le, 
 	'>': gt, 
 	'>=': ge, 
+	'SQRT': sqrt_, 
 	'NULL': null, 			# Unary Predicates
 	'ATOM': atom, 
 	'LISTP': listp, 
@@ -499,6 +520,7 @@ functions = {
 	'LET': let, 			# Variables
 	'LET*': let_star, 
 	'SETQ': setq, 
+	'SET': set_, 
 	'COND': cond, 			# Conditions
 }
 
