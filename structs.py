@@ -8,7 +8,7 @@ class Dot :
 	def __str__(self) :
 		return '.'
 	def __repr__(self) :
-		return 'DOT()'
+		return 'DOT<.>'
 
 class Number(Atom) :
 	def __init__(self, value) :
@@ -19,7 +19,7 @@ class Number(Atom) :
 	def __str__(self) :
 		return str(self.value)
 	def __repr__(self) :
-		return repr(self.value)
+		return 'Number<%s>' % repr(self.value)
 	def type(self) :
 		return type(self.value)
 	def __add__(self, rhs) :
@@ -53,14 +53,14 @@ class Symbol(Atom) :
 	def __str__(self) :
 		return self.value
 	def __repr__(self) :
-		return repr(self.value)
+		return 'Symbol<%s>' % repr(self.value)
 
 class Bool(Atom) :
 	'The T value for True'
 	def __str__(self) :
 		return 'T'
 	def __repr__(self) :
-		return repr('T')
+		return 'Bool<T>'
 
 class List :
 	def __init__(self, car=None, cdr=None) :
@@ -87,7 +87,7 @@ class List :
 		while s :
 			yield s.car
 			if type(s.cdr) != List :
-				yield Dot
+				yield Dot()
 				yield s.cdr
 				break
 			elif not s.cdr.nil() :
@@ -119,11 +119,15 @@ class List :
 				s = s.cdr
 				ans += ' '
 		return ans + ')'
+	def __repr__(self) :
+		return 'List<' + str(self) + '>'
 
 class Env :
 	def __init__(self) :
 		self.variable = {}
 		self.function = {}
+	def __repr__(self) :
+		return 'Env<var=%s, fun=%s>' % (self.variable, self.function)
 	def has_var(self, k) :
 		assert type(k) == str
 		return self.variable.__contains__(k)
