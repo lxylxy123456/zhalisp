@@ -17,9 +17,15 @@
 # 
 
 '''
-	Test file format: ...
-	-> CLEAR-ENV
-	=> CLEAR-ENV
+	Test file format
+		-> test expression to be evaluated
+		=> answer expression (not to be evaluated)
+	Example
+		-> (+ 1 2)
+		=> 3
+	To clear environment
+		-> CLEAR-ENV
+		=> ...
 '''
 
 import sys

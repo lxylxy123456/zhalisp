@@ -1,10 +1,11 @@
 # zhalisp
 A "zha" Clisp interpreter implementation
-* Zha ([Wiktionary](https://en.wiktionary.org/wiki/%E6%AE%98%E6%B8%A3#Noun)) here means not efficient / bad design. 
+* Zha ([Wiktionary](https://en.wiktionary.org/wiki/%E6%AE%98%E6%B8%A3#Noun)) here means not efficient / limited / bad design. 
 
 ## Project Structure
 * `backend.py`: connecting the interpreter parts together, actually doing nothing
 	* `eval_str(str, env)` converts a string to an s-expression and evaluate
+	* `shell(env)` implements interactive mode
 * `builtin.py`: backend, includes a list of all build-in functions implemented
 	* `evaluate(exp, env)` evaluates an s-expression in the given environment
 * `frontend.py`: frontend, written in [ply](https://www.dabeaz.com/ply/ply.html)

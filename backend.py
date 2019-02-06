@@ -19,14 +19,49 @@
 from structs import Env
 from frontend import build_tree
 from builtin import evaluate
+import traceback
 
 def eval_str(s, env) :
 	'build sexp from str and evaluate'
 	for i in build_tree(s) :
 		yield evaluate(i, env)
 
+def shell(env=None) :
+	'''
+		Interactive mode, returns the final environment upon exit
+		Use 'CLEAR-ENV' to clear environment
+		Use '(EXIT)' to exit
+	'''
+	if env == None :
+		env = [Env()]
+	while True :
+		print('-> ', end='', flush=True)
+		try :
+			s = input()
+		except EOFError :
+			print()
+			break
+		while True :	# LIMIT: when the command line is multiple lines,
+			try :		#        will parse it after each line of input is made
+				t = build_tree(s)
+				break
+			except SyntaxError :
+				s += '\n' + input()
+		if s.strip().upper() == '(EXIT)' :
+			break
+		elif s.strip().upper() == 'CLEAR-ENV' :
+			env = [Env()]
+			print('=> CLEAR-ENV')
+			continue
+		for i in t :
+			try :
+				ans = evaluate(i, env)
+				print('=>', ans)
+			except Exception :
+				traceback.print_exc()
+	return env
+
 if __name__ == '__main__' :
-	s = '(defun f (x) (+ 2 x))\n(f 2)\n(f 4)'
-	for i in eval_str(s, [Env()]) :
-		print(i)
+	# for i in eval_str('(defun f (x) (+ 2 x))\n(f 2)\n(f 4)',[Env()]): print(i)
+	shell()
 
