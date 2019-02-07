@@ -497,7 +497,8 @@ def quote(exps, env) :
 @lisp_builtin('EVAL')
 def eval_(exps, env) :
 	'(eval (+ 1 2 3))'
-	return evaluate(exps.car, env)
+	assert exps.cdr.nil()
+	return evaluate(evaluate(exps.car, env), env)
 
 # Variables
 
