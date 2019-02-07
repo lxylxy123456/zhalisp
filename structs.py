@@ -101,6 +101,8 @@ class List :
 		else :
 			return self.cdr
 	def __iter__(self) :
+		if self.nil() :
+			return
 		s = self
 		while s :
 			yield s.car
@@ -113,6 +115,8 @@ class List :
 			else :
 				break
 	def to_list(self) :
+		if self.nil() :
+			return []
 		ans = []
 		for i in self :
 			if type(i) == List :
@@ -141,7 +145,7 @@ class List :
 		return 'List<' + str(self) + '>'
 
 class Env :
-	def __init__(self) :
+	def __init__(self, scope='global') :
 		self.variable = {}
 		self.function = {}
 	def __repr__(self) :

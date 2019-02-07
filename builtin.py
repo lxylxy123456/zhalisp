@@ -98,13 +98,8 @@ def lisp_builtin(symbol) :
 	assert type(symbol) == str and symbol == symbol.upper()
 	def f(func) :
 		builtin_functions[symbol] = func
-		print(symbol, func)
 		return func
 	return f
-
-# NOTICE caordr
-
-# TODO: allow build 1 arguments and 2 arguments easily
 
 # Arithmetics
 
@@ -452,7 +447,7 @@ def defun(exps, env) :
 	'(defun f (x) (* x x))'
 
 	def result(exps_, env_) :
-		new_env = Env()
+		new_env = Env('DEFUN')
 		new_envs = env + [new_env]		# determines lexical / static scoping
 		actual_args = eval_params(exps_, env_)
 		for f, a in zip(formal_args, actual_args) :
@@ -509,7 +504,7 @@ def eval_(exps, env) :
 @lisp_builtin('LET')
 def let(exps, env) :
 	'(let ((x 10)) (* x 2))'
-	new_env = Env()
+	new_env = Env('LET')
 	new_envs = env + [new_env]
 	assert type(exps.car) == List
 	for i in exps.car :
@@ -524,7 +519,7 @@ def let(exps, env) :
 @lisp_builtin('LET*')
 def let_star(exps, env) :
 	'(let* ((x 10) (y (1+ x))) (* y 2)) -> 22'
-	new_env = Env()
+	new_env = Env('LET*')
 	new_envs = env + [new_env]
 	assert type(exps.car) == List
 	for i in exps.car :
@@ -581,6 +576,100 @@ def if_(exps, env) :
 		return evaluate(true, env)
 	else :
 		return evaluate(false, env)
+
+# Iteration
+
+@lisp_builtin('DO')
+def do(exps, env) :
+	'(do () (t 1)) -> 1'
+	new_env = Env('DO')
+	new_envs = env + [new_env]
+	params = iter(exps)
+	var_list = []	# ("var symbol", increment s-exp)
+	for i in next(params) :	# initialize variables
+		l = tuple(i)
+		if len(l) == 2 :
+			symbol, init = l
+			incr = None
+		else :
+			symbol, init, incr = l
+		assert type(symbol) == Symbol
+		new_env.set_var(symbol.value, evaluate(init, env))
+		if incr != None :
+			var_list.append((symbol.value, incr))
+	exit_clause = iter(next(params))
+	exit_test = next(exit_clause)
+	forms = None
+	while True :
+		if is_true(evaluate(exit_test, new_envs)) :
+			break
+		if forms == None :
+			forms = list(params)
+		for i in forms :
+			evaluate(i, new_envs)
+		new_values = []
+		for s, i in var_list :
+			new_values.append((s, evaluate(i, new_envs)))
+		for s, i in new_values :
+			new_env.set_var(s, i)
+	ans = Nil
+	for i in exit_clause :
+		ans = evaluate(i, new_envs)
+	return ans
+
+class ProgInterrupt(Exception) :
+	def __init__(self, env, code, value) :
+		super().__init__()
+		self.env = env
+		self.code = code
+		self.value = value
+
+# TODO: set_var should accept Symbol as argument
+
+@lisp_builtin('PROG')
+def prog(exps, env) :
+	'(prog ((x 1)) (return x)) -> 1'
+	new_env = Env('PROG')
+	new_envs = env + [new_env]
+	params = iter(exps)
+	for i in next(params) :	# initialize variables
+		symbol, init = i
+		assert type(symbol) == Symbol
+		new_env.set_var(symbol.value, evaluate(init, env))
+	sequence = []
+	labels = {}
+	for i in params :
+		if type(i) == List :
+			sequence.append(i)
+		else :
+			labels[i.value] = len(sequence)
+	cur = 0
+	while cur < len(sequence) :
+		try :
+			evaluate(sequence[cur], new_envs)
+		except ProgInterrupt as e :
+			if e.env != new_env :
+				raise e
+			if e.code == 'return' :
+				return e.value
+			else :
+				assert e.code == 'go'
+				cur = labels[e.value.value]
+				continue
+		cur += 1
+	return Nil
+
+@lisp_builtin('GO')
+def go(exps, env) :
+	'Used by PROG'
+	value, = exps
+	raise ProgInterrupt(env[-1], 'go', value)
+
+@lisp_builtin('RETURN')
+def return_(exps, env) :
+	'Used by PROG'
+	value, = eval_params(exps, env)
+	raise ProgInterrupt(env[-1], 'return', value)
 
 # Evaluate
 

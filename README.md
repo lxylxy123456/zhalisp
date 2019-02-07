@@ -26,6 +26,7 @@ A "zha" Clisp interpreter implementation
 	* If enabled, complex + fraction will have different behavior than Clisp
 * `eq` have different behavior than Clisp (currently same as `eql`)
 * `typep` does not implement fully
+* `prog` may have incorrect behavior (due to `go` and `return` statements)
 
 ## Implemented Functions
 
@@ -78,6 +79,8 @@ A "zha" Clisp interpreter implementation
 |`SET`		|`set_`		|`(SET 'X 1)` <br> `X`				|`1` <br> `1`				|						|
 |`COND`		|`cond`		|`(COND (nil 1) (t 2))`				|`2`						| Conditions			|
 |`IF`		|`if_`		|`(IF (> 1 2) 1 2)`					|`2`						| 						|
+|`DO`		|`do`		|`(DO () (T 1))`					|`1`						| Iteration				|
+|`PROG`		|`prog`		|`(PROG ((X 1)) (RETURN X))`		|`1`						| 						|
 
 ### To be implemented
 * string

@@ -653,3 +653,100 @@
 -> CLEAR-ENV
 => ; Chapter 5
 
+-> (defun do-length (l) (do ((ll l (cdr ll)) (sum 0 (1+ sum))) ((atom ll) sum)))
+=> DO-LENGTH
+
+-> (do-length '(a b c))
+=> 3
+
+-> (do-length 3)
+=> 0
+
+-> (do-length '(a (b c)))
+=> 2
+
+-> (defun do-length (l)
+	(do ((ll l) (sum 0))
+		((atom ll) sum)
+		(setq ll (cdr ll))
+		(setq sum (1+ sum))))
+=> DO-LENGTH
+
+-> (do-length '(a b c))
+=> 3
+
+-> (do-length 3)
+=> 0
+
+-> (do-length '(a (b c)))
+=> 2
+
+-> (defun do-rev (l)
+	(do ((x l (cdr x)) (res nil (cons (car x) res))) ((null x) res)))
+=> DO-REV
+
+-> (do-rev '(a b c))
+=> (C B A)
+
+-> (defun prog-length (l)
+	(prog ((sum 0))
+		again
+		(cond ((atom l) (return sum)))
+		(setq sum (1+ sum))
+		(setq l (cdr l))
+		(go again)))
+=> PROG-LENGTH
+
+-> (prog-length '(a b c))
+=> 3
+
+-> (prog-length 3)
+=> 0
+
+-> (prog-length '(a (b c)))
+=> 2
+
+-> (defun prog-member (e l)
+	(prog ()
+		label1
+		(cond ((atom l) (return nil))
+			((equal e (car l)) (return l))
+			(t (setq l (cdr l)) (go label1)))))
+=> PROG-MEMBER
+
+-> (prog-member 'b '(a b c))
+=> (B C)
+
+-> (prog-member 'x '(a b c))
+=> NIL
+
+-> (prog-member 'y '(x (y) z))
+=> NIL
+
+-> (prog-member '(a b) '(a b c))
+=> NIL
+
+-> (defun another-prog-member (e l)
+	(prog ()
+		label1
+		(cond ((atom l) (return nil))
+			((equal e (car l)) (return l)))
+		(setq l (cdr l))
+		(go label1)))
+=> ANOTHER-PROG-MEMBER
+
+-> (another-prog-member 'b '(a b c))
+=> (B C)
+
+-> (another-prog-member 'x '(a b c))
+=> NIL
+
+-> (another-prog-member 'y '(x (y) z))
+=> NIL
+
+-> (another-prog-member '(a b) '(a b c))
+=> NIL
+
+-> CLEAR-ENV
+=> ; Chapter 6
+
