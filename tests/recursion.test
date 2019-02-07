@@ -1,0 +1,23 @@
+-> (defun factorial (n) (cond ((zerop n) 1) (t (* n (factorial (1- n))))))
+=> FACTORIAL
+
+-> (factorial 100)
+=> ERROR
+
+-> (SETRECURSIONLIMIT 11000)
+=> 11000
+
+-> (factorial 100)
+=> 93326215443944152681699238856266700490715968264381621468592963895217599993229915608941463976156518286253697920827223758251185210916864000000000000000000000000
+
+-> (numberp (factorial 1000))
+=> T
+
+-> (defun f (n) (cond ((zerop n) 1) (t (+ n (f (1- n))))))
+=> F
+
+-> (SETRECURSIONLIMIT 10001000)
+=> 10001000
+
+-> (f 10000)
+=> 

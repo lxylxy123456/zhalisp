@@ -86,10 +86,13 @@ def build_list(*l) :
 				ptr = ptr.cdr
 	return ans
 
+# quote an s-exp
 quoter = lambda x: List(Symbol('quote'), List(x, Nil))
 
+# quote 1 s-expression as argument
 arg1 = lambda x: List(quoter(x), Nil)
 
+# quote 2 s-expressions as arguments
 arg2 = lambda x, y: List(quoter(x), List(quoter(y), Nil))
 
 builtin_functions = {}
@@ -712,6 +715,16 @@ def print_(exps, env) :
 	'Used by PROG'
 	value, = eval_params(exps, env)
 	env[0].print(value)
+	return value
+
+# Special functions
+
+@lisp_builtin('SETRECURSIONLIMIT')
+def setrecursionlimit(exps, env) :
+	value, = eval_params(exps, env)
+	assert type(value) == Number and type(value.value) == int
+	assert value.value in range(1000, 2147483648)
+	__import__('sys').setrecursionlimit(value.value)
 	return value
 
 # Evaluate

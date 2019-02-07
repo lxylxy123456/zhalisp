@@ -1,6 +1,32 @@
 # zhalisp
-A "zha" Clisp interpreter implementation
+A "zha" Clisp interpreter implementation, written in Python 3
 * Zha ([Wiktionary](https://en.wiktionary.org/wiki/%E6%AE%98%E6%B8%A3#Noun)) here means not efficient / limited / bad design. 
+
+## Usage
+* Execute `backend.py` with no arguments will result in shell mode. Type an s-expression and press Enter. 
+* Execute `tests.py` with test file names (ends with `.test`) as arguments will perform tests with the test files. 
+
+### Example
+```
+$ python3 backend.py
+-> (defun factorial (n) (cond ((zerop n) 1) (t (* n (factorial (1- n))))))
+=> FACTORIAL
+-> (factorial 20)
+=> 2432902008176640000
+-> (defun fib (n)
+    (cond ((or (equal n 1) (equal n 2)) 1) (t (+ (fib (1- n)) (fib (- n 2))))))
+=> FIB
+-> (fib 7)
+=> 13
+-> CLEAR-ENV
+=> CLEAR-ENV
+-> (fib 7)
+Traceback (most recent call last):
+  ...
+NameError: Cannot find function: FIB
+-> (exit)
+$ 
+```
 
 ## Project Structure
 * `backend.py`: connecting the interpreter parts together, actually doing nothing
@@ -28,6 +54,8 @@ A "zha" Clisp interpreter implementation
 * `typep` does not implement fully
 * `prog` may have incorrect behavior (due to `go` and `return` statements)
 * `symbol-function` has difficulties to be implemented
+* Cannot do recursion with too many levels (has `RecursionError`)
+	* The limit can be increased using `SETRECURSIONLIMIT`, but may have Segmentation fault
 
 ## Implemented Functions
 
@@ -63,6 +91,7 @@ A "zha" Clisp interpreter implementation
 |`CAR`		|`car`		|`(CAR '(0 1 2))`					|`0`						| List operations		|
 |`CDR`		|`cdr`		|`(CDR '(0 1 2))`					|`(1 2)`					|						|
 |`CONS`		|`cons`		|`(CONS 0 '(1 2))`					|`(0 1 2)`					|						|
+|`MEMBER`	|`member`	|`(MEMBER '1 '(0 1 2))`				|`(1 2)`					|						|
 |`LIST`		|`list_`	|`(LIST (+ 1 2) (- 3 4))`			|`(3 -1)`					|						|
 |`MAPCAR`	|`mapcar`	|`(MAPCAR #'+ '(1 2) '(10 20))`		|`(11 22)`					| High-Order Functions	|
 |`MAPC`		|`mapc`		|`(MAPC #'+ '(1 2) '(10 20))`		|`(1 2)`					|						|
@@ -85,8 +114,14 @@ A "zha" Clisp interpreter implementation
 |`PROG`		|`prog`		|`(PROG ((X 1)) (RETURN X))`		|`1`						| 						|
 |`PRINT`	|`print_`	|`(PRINT 2)`						|`2`						| I/O					|
 
+## Special functions
+* `CLEAR-ENV` clears current environment (all variables and functions)
+* `(EXIT)` exits interactive mode (cannot be nested function call)
+* `(SETRECURSIONLIMIT 1000)` sets Python [recursion limit](https://docs.python.org/3/library/sys.html#sys.setrecursionlimit)
+
 ### To be implemented
 * string
 * complex
 * `load` (P51)
+* allow built-in functions written in Lisp
 
