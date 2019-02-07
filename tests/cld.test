@@ -750,3 +750,137 @@
 -> CLEAR-ENV
 => ; Chapter 6
 
+-> (defun recursive-length (l) (if (null l) 0 (1+ (recursive-length (cdr l)))))
+=> RECURSIVE-LENGTH
+
+-> (recursive-length '(1 2 3 4))
+=> 4
+
+-> (recursive-length nil)
+=> 0
+
+-> (defun recursive-member (e l)
+	(and l (or (equal e (car l)) (recursive-member e (cdr l)))))
+=> RECURSIVE-MEMBER
+
+-> (recursive-member 'b '(a b c))
+=> T
+
+-> (recursive-member 'x '(a b c))
+=> NIL
+
+-> (recursive-member 'y '(x (y) z))
+=> NIL
+
+-> (recursive-member '(a b) '(a b c))
+=> NIL
+
+-> (defun recursive-member (e l)
+	(cond ((null l) nil) 
+		(t (or (equal e (car l)) (recursive-member e (cdr l))))))
+=> RECURSIVE-MEMBER
+
+-> (recursive-member 'b '(a b c))
+=> T
+
+-> (recursive-member 'x '(a b c))
+=> NIL
+
+-> (recursive-member 'y '(x (y) z))
+=> NIL
+
+-> (recursive-member '(a b) '(a b c))
+=> NIL
+
+-> (defun recursive-member (e l)
+	(cond ((null l) nil)
+		((equal e (car l)) l)
+		(t (recursive-member e (cdr l)))))
+=> RECURSIVE-MEMBER
+
+-> (recursive-member 'b '(a b c))
+=> (B C)
+
+-> (recursive-member 'x '(a b c))
+=> NIL
+
+-> (recursive-member 'y '(x (y) z))
+=> NIL
+
+-> (recursive-member '(a b) '(a b c))
+=> NIL
+
+-> (defun factorial (n) (cond ((zerop n) 1) (t (* n (factorial (1- n))))))
+=> FACTORIAL
+
+-> (factorial 3)
+=> 6
+
+-> (factorial 6)
+=> 720
+
+-> (factorial -1)
+=> ERROR
+
+-> (factorial 0.1)
+=> ERROR
+
+-> (defun our-subst (in out struct)
+	(if (atom struct) struct (cons (if (equal out (car struct)) in
+	(our-subst in out (car struct))) (our-subst in out (cdr struct)))))
+=> OUR-SUBST
+
+-> (our-subst 3 2 '(1 2 3 4 5 (1 2 3)))
+=> (1 3 3 4 5 (1 3 3))
+
+-> (defun our-subst (in out struct)
+	(cond ((atom struct) struct)
+		((equal out (car struct))
+			(cons in (our-subst in out (cdr struct))))
+		(t (cons (our-subst in out (car struct))
+			(our-subst in out (cdr struct))))))
+=> OUR-SUBST
+
+-> (our-subst 3 2 '(1 2 3 4 5 (1 2 3)))
+=> (1 3 3 4 5 (1 3 3))
+
+-> (defun our-subst (in out struct)
+	(cond ((equal out struct) in)
+		((atom struct) struct)
+		(t (cons (our-subst in out (car struct))
+			(our-subst in out (cdr struct))))))
+=> OUR-SUBST
+
+-> (our-subst 3 2 '(1 2 3 4 5 (1 2 3)))
+=> (1 3 3 4 5 (1 3 3))
+
+-> (defun fib (n)
+	(cond ((or (equal n 1) (equal n 2)) 1) (t (+ (fib (1- n)) (fib (- n 2))))))
+=> FIB
+
+-> (fib 7)
+=> 13
+
+-> (defun iterative-reverse (l)
+	(do ((ll l (cdr ll))
+		(result nil (cons (car ll) result)))
+		((null ll) result)))
+=> ITERATIVE-REVERSE
+
+-> (iterative-reverse '(a b c d))
+=> (D C B A)
+
+-> (defun reverse-2 (original revdlist)
+	(cond ((null original) revdlist)
+		(t (reverse-2 (cdr original) (cons (car original) revdlist)))))
+=> REVERSE-2
+
+-> (defun recursive-reverse (l) (reverse-2 l nil))
+=> RECURSIVE-REVERSE
+
+-> (recursive-reverse '(a b c d e))
+=> (E D C B A)
+
+-> CLEAR-ENV
+=> ; Chapter 7
+

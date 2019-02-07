@@ -55,7 +55,8 @@ def test(file) :
 			print('-> CLEAR-ENV\n=> CLEAR-ENV\n')
 			continue
 		for qq, aa in zip_longest(build_tree(q), build_tree(a)) :
-			assert qq and aa
+			assert qq
+			# when aa is None, will raise error, so user can see qq evaluated
 			aaa = str(aa)
 			if aaa.strip() == 'ERROR' :
 				error_flag = False
