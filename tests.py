@@ -23,6 +23,10 @@
 	Example
 		-> (+ 1 2)
 		=> 3
+	Printing
+		-> (+ (print 1) 2)
+		=> 1
+			3
 	To clear environment
 		-> CLEAR-ENV
 		=> ...
@@ -36,8 +40,17 @@ from frontend import build_tree
 from builtin import evaluate
 from backend import eval_str
 
+def build_test_env(stdout) :
+	env = [Env()]
+	env[0].print = lambda x: stdout.append(x)
+	return env
+
+def match(a, b) :
+	return str(a) == str(b)
+
 def test(file) :
 	tests = []
+	stdout = []
 	state = 0
 	for ln in open(file).read().split('\n') :
 		if not ln :
@@ -48,12 +61,42 @@ def test(file) :
 			tests[-1].append(ln[2:].lstrip())
 		else :
 			tests[-1][-1] += '\n' + ln
-	env = [Env()]
+	env = build_test_env(stdout)
 	for q, a in tests :
 		if q.strip().upper() == 'CLEAR-ENV' :
-			env = [Env()]
+			env = build_test_env(stdout)
 			print('-> CLEAR-ENV\n=> CLEAR-ENV\n')
 			continue
+		aa = iter(build_tree(a))
+		for qq in build_tree(q) :
+			aaa = str(next(aa, None))
+			# when None, will raise error, so user can see qq evaluated
+			if aaa.strip() == 'ERROR' :
+				error_flag = False
+				try :
+					print('->', qq)
+					print('=>', evaluate(qq, env))
+				except Exception :
+					error_flag = True
+					print('=> ERROR')
+				if not error_flag :
+					raise Exception('Test fails: should error')
+			else :
+				stdout.clear()
+				print('->', qq)
+				qqq = str(evaluate(qq, env))
+				for i in stdout :
+					print('p>', i)
+					if not match(i, aaa) :
+						raise Exception('Test fails: wrong print output')
+					aaa = str(next(aa, None))
+				print('=>', qqq)
+				if qqq != aaa :
+					print('!>', aaa)
+					raise Exception('Test fails: wrong answer')
+		assert next(aa, None) == None
+		print()
+	if 0 :
 		for qq, aa in zip_longest(build_tree(q), build_tree(a)) :
 			assert qq
 			# when aa is None, will raise error, so user can see qq evaluated

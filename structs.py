@@ -147,6 +147,7 @@ class List :
 class Env :
 	def __init__(self, scope='global') :
 		self.scope = scope
+		self.print = print
 		self.variable = {}
 		self.function = {}
 	def __repr__(self) :

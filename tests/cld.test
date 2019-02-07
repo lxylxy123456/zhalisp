@@ -1059,3 +1059,73 @@
 -> CLEAR-ENV
 => ; Chapter 9
 
+-> (defun sum-loop (func n)
+	(do ((i n (1- i))
+		(result 0 (+ (funcall func i) result)))
+		((zerop i) result)))
+=> SUM-LOOP
+
+-> (sum-loop (lambda (x) (* x x x)) 15)
+=> 14400
+
+-> (symbol-function 'cubed)
+=> ERROR	; cannot implement symbol-function
+
+-> ((lambda (x y) (cons y x)) '(b) 'a)
+=> (A B)
+
+-> (defun xcons (x y) (cons y x))
+=> XCONS
+
+-> (xcons '(b) 'a)
+=> (A B)
+
+-> ((lambda () 'hello))
+=> HELLO
+
+-> (defun say-hello () 'hello)
+=> SAY-HELLO
+
+-> (say-hello)
+=> HELLO
+
+-> (sum-loop (function sqrt) 10)
+=> 22.468278186204103
+
+-> (sum-loop (function (lambda (x) (* x x x))) 15)
+=> 14400
+
+-> (sum-loop #'sqrt 10)
+=> 22.468278186204103
+
+-> (sum-loop #'(lambda (x) (* x x x)) 15)
+=> 14400
+
+-> (defun func1 (x y z) (- (+ x y) z))
+	(defun func2 (temp) (print (1+ temp)))
+	(defun func3 (temp) (print (1- temp)))
+	(setq X 10)
+	(setq Y 12)
+	(setq Z 20)
+=> FUNC1
+	FUNC2
+	FUNC3
+	10
+	12
+	20
+
+-> (prog (temp) (setq temp (func1 x y z)) (func2 temp) (func3 temp))
+=> 3
+	1
+	NIL
+
+-> ((lambda (temp) (func2 temp) (func3 temp)) (func1 x y z))
+=> 3
+	1
+	1
+
+-> (let ((temp (func1 x y z))) (func2 temp) (func3 temp))
+=> 3
+	1
+	1
+

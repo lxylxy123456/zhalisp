@@ -97,6 +97,7 @@ builtin_functions = {}
 def lisp_builtin(symbol) :
 	assert type(symbol) == str and symbol == symbol.upper()
 	def f(func) :
+		assert symbol not in builtin_functions
 		builtin_functions[symbol] = func
 		return func
 	return f
@@ -465,6 +466,26 @@ def defun(exps, env) :
 	env[0].set_fun(f_name, result)
 	return f_name
 
+@lisp_builtin('LAMBDA')
+def lambda_(exps, env) :
+	'(lambda (x) (* x x x))'
+
+	def result(exps_, env_) :
+		new_env = Env('DEFUN')
+		new_envs = env + [new_env]		# determines lexical / static scoping
+		actual_args = eval_params(exps_, env_)
+		for f, a in zip(formal_args, actual_args) :
+			new_env.set_var(f, a)
+		for stmt in f_stmt :
+			ans = evaluate(stmt, new_envs)
+		return ans
+
+	f_args = exps.car
+	f_stmt = exps.cdr
+	formal_args = list(f_args)
+	assert all(map(lambda x: type(x) == Symbol, formal_args))
+	return result
+
 @lisp_builtin('APPLY')
 def apply(exps, env) :
 	"(apply #'+ '(1 2 3))"
@@ -485,8 +506,13 @@ def funcall(exps, env) :
 def function(exps, env) :
 	"(function +) OR #'+"
 	name, = exps
-	assert type(name) == Symbol
-	return find_func(name, env)
+	if type(name) == Symbol :
+		return find_func(name, env)
+	elif type(name) == List and type(name.car) == Symbol and \
+		name.car.value == 'LAMBDA' :
+		return evaluate(name, env)
+	else :
+		raise Exception('Unexpected argument to FUNCTION')
 
 @lisp_builtin('QUOTE')
 def quote(exps, env) :
@@ -632,7 +658,16 @@ def prog(exps, env) :
 	new_envs = env + [new_env]
 	params = iter(exps)
 	for i in next(params) :	# initialize variables
-		symbol, init = i
+		if type(i) == Symbol :
+			symbol = i
+			init = Nil
+		else :
+			l = tuple(i)
+			if len(l) == 1 :
+				symbol, = i
+				init = Nil
+			else :
+				symbol, init = i
 		assert type(symbol) == Symbol
 		new_env.set_var(symbol, evaluate(init, env))
 	sequence = []
@@ -670,6 +705,15 @@ def return_(exps, env) :
 	value, = eval_params(exps, env)
 	raise ProgInterrupt(env[-1], 'return', value)
 
+# I/O
+
+@lisp_builtin('PRINT')
+def print_(exps, env) :
+	'Used by PROG'
+	value, = eval_params(exps, env)
+	env[0].print(value)
+	return value
+
 # Evaluate
 
 def evaluate(exp, env) :
@@ -678,9 +722,14 @@ def evaluate(exp, env) :
 	if te == List :
 		if exp.nil() :
 			return exp
-		assert type(exp.car) == Symbol
-		func = find_func(exp.car, env)
-		return call_func(func, exp.cdr, env)
+		if type(exp.car) == Symbol :
+			func = find_func(exp.car, env)
+			return call_func(func, exp.cdr, env)
+		elif type(exp.car) == List and type(exp.car.car) == Symbol and \
+			exp.car.car.value == 'LAMBDA' :
+			return call_func(evaluate(exp.car, env), exp.cdr, env)
+		else :
+			raise Exception('Unexpected argument to evaluate')
 	elif te == Number :
 		return exp
 	elif te == Symbol :

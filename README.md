@@ -27,6 +27,7 @@ A "zha" Clisp interpreter implementation
 * `eq` have different behavior than Clisp (currently same as `eql`)
 * `typep` does not implement fully
 * `prog` may have incorrect behavior (due to `go` and `return` statements)
+* `symbol-function` has difficulties to be implemented
 
 ## Implemented Functions
 
@@ -68,6 +69,7 @@ A "zha" Clisp interpreter implementation
 |`MAPLIST`	|`maplist`	|`(MAPLIST #'cons '(2 3) '(20 30))` |`(((2 3) 20 30) ((3) 30))`	|						|
 |`APPEND`	|`append`	|`(APPEND '(1 2) '(3 4) '(5 6))`	|`(1 2 3 4 5 6)`			|						|
 |`DEFUN`	|`defun`	|`(DEFUN F (X) (* X X))`			|`F`						| Functions				|
+|`LAMBDA`	|`lambda_`	|`((LAMBDA (X) (* X X X)) 10)`		|`1000`						|						|
 |`APPLY`	|`apply`	|`(APPLY #'+ '(1 2 3))`				|`6`						|						|
 |`FUNCALL`	|`funcall`	|`(FUNCALL #'+ 1 2 3)`				|`6`						|						|
 |`FUNCTION`	|`function`	|`(FUNCALL (FUNCTION +) 1 2 3)`		|`6`						|						|
@@ -81,10 +83,10 @@ A "zha" Clisp interpreter implementation
 |`IF`		|`if_`		|`(IF (> 1 2) 1 2)`					|`2`						| 						|
 |`DO`		|`do`		|`(DO () (T 1))`					|`1`						| Iteration				|
 |`PROG`		|`prog`		|`(PROG ((X 1)) (RETURN X))`		|`1`						| 						|
+|`PRINT`	|`print_`	|`(PRINT 2)`						|`2`						| I/O					|
 
 ### To be implemented
 * string
 * complex
-* lambda
 * `load` (P51)
 
