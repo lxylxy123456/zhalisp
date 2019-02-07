@@ -108,3 +108,21 @@
 -> t
 => t
 
+-> (defun r (x) (return x))
+=> R
+
+-> (prog () (r 1))
+=> ERROR
+
+-> (prog () (return 1))
+=> 1
+
+-> (defun g (x) (go x))
+=> G
+
+-> (prog () (g x) (/ 0 0) x)
+=> ERROR
+
+-> (prog () (go x) (/ 0 0) x)
+=> NIL
+
