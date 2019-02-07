@@ -146,26 +146,28 @@ class List :
 
 class Env :
 	def __init__(self, scope='global') :
+		self.scope = scope
 		self.variable = {}
 		self.function = {}
 	def __repr__(self) :
-		return 'Env<var=%s, fun=%s>' % (self.variable, self.function)
+		return 'Env<scope=%s, var=%s, fun=%s>' % \
+				(self.scope, self.variable, self.function)
 	def has_var(self, k) :
-		assert type(k) == str
-		return self.variable.__contains__(k)
+		assert type(k) == Symbol
+		return self.variable.__contains__(k.value)
 	def get_var(self, k, default=None) :
-		assert type(k) == str
-		return self.variable.get(k, default)
+		assert type(k) == Symbol
+		return self.variable.get(k.value, default)
 	def set_var(self, k, v) :
-		assert type(k) == str
-		self.variable.__setitem__(k, v)
+		assert type(k) == Symbol
+		self.variable.__setitem__(k.value, v)
 	def has_fun(self, k) :
-		assert type(k) == str
-		return self.function.__contains__(k)
+		assert type(k) == Symbol
+		return self.function.__contains__(k.value)
 	def get_fun(self, k, default=None) :
-		assert type(k) == str
-		return self.function.get(k, default)
+		assert type(k) == Symbol
+		return self.function.get(k.value, default)
 	def set_fun(self, k, v) :
-		assert type(k) == str
-		self.function.__setitem__(k, v)
+		assert type(k) == Symbol
+		self.function.__setitem__(k.value, v)
 

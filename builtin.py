@@ -40,14 +40,14 @@ def eval_params(exps, env) :
 def call_func(func, args, env) :
 	'func: a Func object; args: a List'
 	if type(func) == Symbol :
-		func = find_func(func.value, env)
+		func = find_func(func, env)
 	return func(args, env)
 
 def find_func(name, env) :
 	'Find function from builtin and environments'
-	if name in builtin_functions :
-		return builtin_functions[name]
-	matched = re.fullmatch('C([AD]{1,4})R', name)
+	if name.value in builtin_functions :
+		return builtin_functions[name.value]
+	matched = re.fullmatch('C([AD]{1,4})R', name.value)
 	if matched :
 		return caordr(matched.groups()[0])
 	for i in reversed(env) :
@@ -451,7 +451,7 @@ def defun(exps, env) :
 		new_envs = env + [new_env]		# determines lexical / static scoping
 		actual_args = eval_params(exps_, env_)
 		for f, a in zip(formal_args, actual_args) :
-			new_env.set_var(f.value, a)
+			new_env.set_var(f, a)
 		for stmt in f_stmt :
 			ans = evaluate(stmt, new_envs)
 		return ans
@@ -462,7 +462,7 @@ def defun(exps, env) :
 	f_stmt = exps.cdr.cdr
 	formal_args = list(f_args)
 	assert all(map(lambda x: type(x) == Symbol, formal_args))
-	env[0].set_fun(f_name.value, result)
+	env[0].set_fun(f_name, result)
 	return f_name
 
 @lisp_builtin('APPLY')
@@ -486,7 +486,7 @@ def function(exps, env) :
 	"(function +) OR #'+"
 	name, = exps
 	assert type(name) == Symbol
-	return find_func(name.value, env)
+	return find_func(name, env)
 
 @lisp_builtin('QUOTE')
 def quote(exps, env) :
@@ -510,7 +510,7 @@ def let(exps, env) :
 	for i in exps.car :
 		assert type(i) == List
 		assert i.cdr.cdr.nil()
-		new_env.set_var(i.car.value, evaluate(i.cdr.car, env))
+		new_env.set_var(i.car, evaluate(i.cdr.car, env))
 	ans = Nil
 	for i in exps.cdr :
 		ans = evaluate(i, new_envs)
@@ -525,7 +525,7 @@ def let_star(exps, env) :
 	for i in exps.car :
 		assert type(i) == List
 		assert i.cdr.cdr.nil()
-		new_env.set_var(i.car.value, evaluate(i.cdr.car, new_envs))
+		new_env.set_var(i.car, evaluate(i.cdr.car, new_envs))
 	ans = Nil
 	for i in exps.cdr :
 		ans = evaluate(i, new_envs)
@@ -535,12 +535,12 @@ def let_star(exps, env) :
 def setq(exps, env) :
 	'(setq x 10) -> 10'
 	assert exps.cdr.cdr.nil()
-	k = exps.car.value
+	k = exps.car
 	v = evaluate(exps.cdr.car, env)
 	for e in reversed(env) :
 		if e.has_var(k) :
 			break
-	e.set_var(exps.car.value, evaluate(exps.cdr.car, env))
+	e.set_var(exps.car, evaluate(exps.cdr.car, env))
 	return v
 
 @lisp_builtin('SET')
@@ -548,9 +548,9 @@ def set_(exps, env) :
 	"(set 'x 'y) -> y; x -> y"
 	k, v = eval_params(exps, env)
 	for e in reversed(env) :
-		if e.has_var(k.value) :
+		if e.has_var(k) :
 			break
-	e.set_var(k.value, v)
+	e.set_var(k, v)
 	return v
 
 # Conditions
@@ -594,9 +594,9 @@ def do(exps, env) :
 		else :
 			symbol, init, incr = l
 		assert type(symbol) == Symbol
-		new_env.set_var(symbol.value, evaluate(init, env))
+		new_env.set_var(symbol, evaluate(init, env))
 		if incr != None :
-			var_list.append((symbol.value, incr))
+			var_list.append((symbol, incr))
 	exit_clause = iter(next(params))
 	exit_test = next(exit_clause)
 	forms = None
@@ -624,8 +624,6 @@ class ProgInterrupt(Exception) :
 		self.code = code
 		self.value = value
 
-# TODO: set_var should accept Symbol as argument
-
 @lisp_builtin('PROG')
 def prog(exps, env) :
 	'(prog ((x 1)) (return x)) -> 1'
@@ -635,7 +633,7 @@ def prog(exps, env) :
 	for i in next(params) :	# initialize variables
 		symbol, init = i
 		assert type(symbol) == Symbol
-		new_env.set_var(symbol.value, evaluate(init, env))
+		new_env.set_var(symbol, evaluate(init, env))
 	sequence = []
 	labels = {}
 	for i in params :
@@ -680,12 +678,12 @@ def evaluate(exp, env) :
 		if exp.nil() :
 			return exp
 		assert type(exp.car) == Symbol
-		func = find_func(exp.car.value, env)
+		func = find_func(exp.car, env)
 		return call_func(func, exp.cdr, env)
 	elif te == Number :
 		return exp
 	elif te == Symbol :
-		return find_var(exp.value, env)
+		return find_var(exp, env)
 	elif te == Bool :
 		return exp
 	else :
