@@ -5,6 +5,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <exception>
 
 enum Type {
   sexp,
@@ -20,7 +21,8 @@ class Sexp {
  public:
   virtual std::string str() const = 0;
   virtual std::string repr() const = 0;
-  virtual bool type(Type tid) {
+  virtual std::string type() const { return "Sexp"; }
+  virtual bool type(Type tid) const {
     return tid == sexp;
   }
 };
@@ -30,7 +32,8 @@ class Dot: public Sexp {
   // ~Dot() { std::cout << "~Dot" << std::endl; }
   virtual std::string str() const { return "."; }
   virtual std::string repr() const { return "DOT<.>"; }
-  virtual bool type(Type tid) {
+  virtual std::string type() const { return "Dot"; }
+  virtual bool type(Type tid) const {
     return tid == sexp || tid == dot;
   }
 };
@@ -46,7 +49,8 @@ class Number: public Sexp {
   // ~Number() { std::cout << "~Number" << std::endl; }
   virtual std::string str() const { return std::to_string(value); }
   virtual std::string repr() const { return "NUMBER<" + str() + ">"; }
-  virtual bool type(Type tid) {
+  virtual std::string type() const { return "Number"; }
+  virtual bool type(Type tid) const {
     return tid == sexp || tid == atom || tid == number;
   }
 
@@ -60,10 +64,13 @@ class Symbol: public Sexp {
   // ~Symbol() { std::cout << "~Symbol" << std::endl; }
   virtual std::string str() const { return value; }
   virtual std::string repr() const { return "SYMBOL<" + value + ">"; }
-  virtual bool type(Type tid) {
+  virtual std::string type() const { return "Symbol"; }
+  virtual bool type(Type tid) const {
     return tid == sexp || tid == atom || tid == symbol;
   }
   const std::string& get_value() { return value; }
+  static std::shared_ptr<Symbol> lisp_quote;
+  static std::shared_ptr<Symbol> lisp_function;
 
  private:
   std::string value;
@@ -75,7 +82,8 @@ class Bool: public Sexp {
   std::string str() const { return "T"; }
   std::string repr() const { return "Bool<T>"; }
   static std::shared_ptr<Bool> lisp_t;
-  virtual bool type(Type tid) {
+  virtual std::string type() const { return "Bool"; }
+  virtual bool type(Type tid) const {
     return tid == sexp || tid == atom;
   }
 };
@@ -84,12 +92,18 @@ class List: public Sexp {
  public:
   List(std::shared_ptr<Sexp> a, std::shared_ptr<List> d): l_car(a), l_cdr(d) {}
   // ~List() { std::cout << "~List " << this << std::endl; }
-  std::string str() const { return "0/0"; }
-  std::string repr() const { return "0/0"; }
-  virtual bool type(Type tid) {
+  std::string str() const {
+    std::string ans = "(" + this->car()->str();
+    for (std::shared_ptr<List> i = this->cdr(); !i->nil(); i = i->cdr())
+      ans += " " + i->car()->str();
+    return ans + ")";
+  }
+  std::string repr() const { return "List<" + str() + ">"; }
+  virtual std::string type() const { return "List"; }
+  virtual bool type(Type tid) const {
     return tid == sexp || tid == list;
   }
-  virtual bool nil() { return false; }
+  virtual bool nil() const { return false; }
   virtual const std::shared_ptr<Sexp> car() const { return l_car; }
   virtual const std::shared_ptr<List> cdr() const { return l_cdr; }
 
@@ -103,23 +117,30 @@ class Nil: public List {
   Nil(): List(nullptr, nullptr) {}
   // ~Nil() { std::cout << "~Nil " << this << std::endl; }
   std::string str() const { return "NIL"; }
-  std::string repr() const { return "List<()>"; }
-  virtual bool type(Type tid) {
+  std::string repr() const { return "Nil<()>"; }
+  virtual std::string type() const { return "Nil"; }
+  virtual bool type(Type tid) const {
     return tid == sexp || tid == list || tid == null;
   }
-  virtual bool nil() { return true; }
+  virtual bool nil() const { return true; }
   virtual const std::shared_ptr<Sexp> car() const { return lisp_nil; }
   virtual const std::shared_ptr<List> cdr() const { return lisp_nil; }
   static std::shared_ptr<Nil> lisp_nil;
 };
 
+std::shared_ptr<Symbol> Symbol::lisp_quote(new Symbol("QUOTE"));
+std::shared_ptr<Symbol> Symbol::lisp_function(new Symbol("FUNCTION"));
+std::shared_ptr<Bool> Bool::lisp_t(new Bool{});
 std::shared_ptr<Nil> Nil::lisp_nil(new Nil{});
 
-std::shared_ptr<Bool> Bool::lisp_t(new Bool{});
+class SyntaxError: public std::exception {
+ public:
+  SyntaxError(std::string d): desc(d) {}
+  std::string desc;
+};
 
 #endif
 
-#define TEST
 #ifdef TEST
 #include <iostream>
 #include <typeinfo>
