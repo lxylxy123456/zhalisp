@@ -50,7 +50,7 @@ std::shared_ptr<Sexp> parse(std::string s) {
 }
 
 int main() {
-	yy_scan_string("(1 2 3)");
+	yy_scan_string("(1 2 3 a 1/2 3.4) (4 a b) jkl");
 	assert(!yyparse());
 	std::cout << (yyval->str()) << std::endl;
 }

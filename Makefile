@@ -1,5 +1,5 @@
 
-CXXFLAGS=-Wall -g -std=c++11 -pthread
+CXXFLAGS=-Wall -g -std=c++11
 
 SOURCES = $(wildcard *.cpp)
 
@@ -18,7 +18,7 @@ lint: $(SOURCES)
 yacc: lex.l translate.y
 	lex lex.l
 	yacc translate.y
-	g++ y.tab.c -g
+	$(CXX) -lgmp -lgmpxx y.tab.c -g
 
 clean:
 	rm -f $(TARGETS) a.out

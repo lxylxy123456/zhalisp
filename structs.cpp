@@ -2,15 +2,22 @@
 #define STRUCTS_CPP
 
 #include <cassert>
+#include <gmpxx.h>
 #include <memory>
 #include <sstream>
 #include <string>
 #include <exception>
 
+#include <iostream> // 0/0
+
 enum Type {
   sexp,
   dot,
   number,
+  integer,  // Note: integers are rational
+  rational,
+  float_,
+  complex,
   symbol,
   atom,
   list,
@@ -40,6 +47,67 @@ class Dot: public Sexp {
 
 class Number: public Sexp {
  public:
+  virtual std::string str() const = 0;
+  virtual std::string repr() const = 0;
+  virtual std::string type() const { return "Number"; }
+  virtual bool type(Type tid) const {
+    return tid == sexp || tid == number;
+  }
+};
+
+class Integer: public Number {
+ public:
+  Integer(const mpz_class& z): value(z) {}
+  // ~Integer() { std::cout << "~Integer" << std::endl; }
+  virtual std::string str() const { return value.get_str(); }
+  virtual std::string repr() const { return "INTEGER<" + str() + ">"; }
+  virtual std::string type() const { return "Integer"; }
+  virtual bool type(Type tid) const {
+    return tid == sexp || tid == atom || tid == number || tid == integer ||
+           tid == rational;
+  }
+
+ private:
+  mpz_class value;
+};
+
+class Rational: public Number {
+ public:
+  Rational(const mpq_class& q): value(q) {}
+  // ~Rational() { std::cout << "~Rational" << std::endl; }
+  virtual std::string str() const { return value.get_str(); }
+  virtual std::string repr() const { return "RATIONAL<" + str() + ">"; }
+  virtual std::string type() const { return "Rational"; }
+  virtual bool type(Type tid) const {
+    return tid == sexp || tid == atom || tid == number || tid == rational;
+  }
+
+ private:
+  mpq_class value;
+};
+
+class Float: public Number {
+ public:
+  Float(const mpf_class& f): value(f) {}
+  // ~Float() { std::cout << "~Float" << std::endl; }
+  virtual std::string str() const {
+    std::ostringstream os;
+    os << value;
+    return os.str();
+  }
+  virtual std::string repr() const { return "FLOAT<" + str() + ">"; }
+  virtual std::string type() const { return "Float"; }
+  virtual bool type(Type tid) const {
+    return tid == sexp || tid == atom || tid == number || tid == float_;
+  }
+
+ private:
+  mpf_class value;
+};
+
+/*
+class Number: public Sexp {
+ public:
   Number(int v): value(v) {}
   Number(std::string s) {
     std::istringstream ss(s);
@@ -56,7 +124,10 @@ class Number: public Sexp {
 
  private:
   int value;  // TODO: allow other types of numbers
+  // TODO: use GMP (#include <gmpxx.h>, -lgmp, -lgmpxx)
+  // TODO: https://gmplib.org/manual/index.html
 };
+*/
 
 class Symbol: public Sexp {
  public:
@@ -141,22 +212,22 @@ class SyntaxError: public std::exception {
 
 #endif
 
+// #define TEST
 #ifdef TEST
 #include <iostream>
 #include <typeinfo>
 
 int main() {
-  Number a("123");
-  std::cout << a.str() << std::endl;
-  std::cout << a.repr() << std::endl;
+	mpf_class F;
+	F = "12344389.0";
+  std::shared_ptr<Float> f = std::shared_ptr<Float>(new Float(F));
+  std::cout << f->str() << std::endl;
+  
   std::shared_ptr<List> b(new List(Bool::lisp_t, Nil::lisp_nil));
-  std::shared_ptr<List> c(new List(std::shared_ptr<Sexp>(new Number{10}), b));
-  std::shared_ptr<List> d(new List(std::shared_ptr<Sexp>(new Number{19}), c));
+  std::shared_ptr<List> c(new List(std::shared_ptr<Sexp>(new Symbol{"10"}), b));
+  std::shared_ptr<List> d(new List(std::shared_ptr<Sexp>(new Symbol{"19"}), c));
 
-  for (std::shared_ptr<List> i = d; i != Nil::lisp_nil; i = i->cdr()) {
-    std::cout << i->car()->str() << ' ';
-  }
-  std::cout << std::endl;
+  std::cout << d->str() << std::endl;
 }
 #endif
 
