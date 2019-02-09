@@ -39,8 +39,12 @@ exps	: sexp exps				{ $$ = NEWLIST($1, DPCL($2)); }
 
 %%
 
-#include "lex.yy.c"
 #include <iostream>
+
+#include "lex.yy.c"
+#include "translate.h"
+
+SyntaxError::SyntaxError(std::string d): desc(d) {}
 
 int yyerror(const char *msg) {
 	throw SyntaxError(msg);

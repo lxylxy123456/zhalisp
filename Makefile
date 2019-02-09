@@ -2,25 +2,28 @@
 CXXFLAGS=-Wall -g -std=c++11 -lgmp -lgmpxx \
 		-Wno-unused-function -Wno-class-memaccess
 
-SOURCES = $(wildcard *.cpp)
+STRUCTS = $(wildcard structs/*.h)
 
-TARGETS = $(SOURCES:.cpp=)
+STRUCTS_O = $(STRUCTS:.h=.o)
 
-all:
+structs/%.o: structs/%.cpp
+	$(CXX) $(CXXFLAGS) -c -o $@ $^
 
-ALL: $(TARGETS)
-
-$(TARGETS): %: %.cpp
+tmp: tmp.cpp $(STRUCTS_O) translate.o
 	$(CXX) $(CXXFLAGS) -o $@ $^
+
+structs.o: structs.cpp
+	echo structs/
+	$(CXX) $(CXXFLAGS) -c -o $@ $^
 
 lint: $(SOURCES)
 	cpplint $^
 
-yacc: lex.l translate.y
+translate.o: lex.l translate.y
 	lex lex.l
 	yacc translate.y
-	$(CXX) $(CXXFLAGS) y.tab.c -g
+	$(CXX) $(CXXFLAGS) y.tab.c -g -c -o $@
 
 clean:
-	rm -f $(TARGETS) a.out
+	rm -f lex.yy.c y.tab.c a.out tmp structs/*.o *.o
 

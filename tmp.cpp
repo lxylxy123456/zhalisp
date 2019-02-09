@@ -1,5 +1,7 @@
+#include <iostream>
+
 #include "structs.cpp"
-#include "y.tab.c"
+#include "translate.h"
 
 int main(int argc, char* argv[]) {
   for (int i = 1; i < argc; i++) {
