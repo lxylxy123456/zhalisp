@@ -1,6 +1,5 @@
 #include <iostream>
 
-#include "structs.cpp"
 #include "translate.h"
 
 int main(int argc, char* argv[]) {

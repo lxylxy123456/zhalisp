@@ -1,7 +1,7 @@
 #ifndef TRANSLATE_H
 #define TRANSLATE_H
 
-#include "structs.cpp"
+#include "structs.h"
 
 class SyntaxError: public std::exception {
  public:

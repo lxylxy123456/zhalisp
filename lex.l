@@ -1,6 +1,5 @@
 %{
-#include "structs.cpp"
-#include <gmpxx.h>
+#include "structs.h"
 #define NEWTYP(TYPE, ARG) static_cast<std::shared_ptr<TYPE>>(new TYPE(ARG))
 %}
 

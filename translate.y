@@ -2,8 +2,8 @@
 #include <ctype.h>
 #include <stdio.h>
 
-#include "structs.cpp"
-#include <memory>
+#include "translate.h"
+
 #define YYSTYPE std::shared_ptr<Sexp>
 
 #define NEWLIST(CAR, CDR) static_cast<std::shared_ptr<List>>(new List(CAR, CDR))
@@ -39,10 +39,7 @@ exps	: sexp exps				{ $$ = NEWLIST($1, DPCL($2)); }
 
 %%
 
-#include <iostream>
-
 #include "lex.yy.c"
-#include "translate.h"
 
 SyntaxError::SyntaxError(std::string d): desc(d) {}
 

@@ -1,13 +1,5 @@
-#ifndef STRUCTS_CPP
-#define STRUCTS_CPP
-
-#include <gmpxx.h>
-
-#include <cassert>
-#include <memory>
-#include <sstream>
-#include <string>
-#include <exception>
+#ifndef STRUCTS_H
+#define STRUCTS_H
 
 #include "structs/sexp.h"
 #include "structs/dot.h"
