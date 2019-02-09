@@ -4,7 +4,7 @@
 #include "rational.h"
 #include "float.h"
 
-Complex::Complex(const PTR<Number>& r, const PTR<Number>& i): real(r),imag(i) {}
+Complex::Complex(const PTR<Number>&r, const PTR<Number>&i): real(r), imag(i) {}
 
 Complex::Complex(const PTR<Symbol>& c,
                  const PTR<Number>& r,
