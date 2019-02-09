@@ -45,6 +45,24 @@ class Dot: public Sexp {
   }
 };
 
+class Symbol: public Sexp {
+ public:
+  Symbol(std::string s): value(s) {}
+  // ~Symbol() { std::cout << "~Symbol" << std::endl; }
+  virtual std::string str() const { return value; }
+  virtual std::string repr() const { return "SYMBOL<" + value + ">"; }
+  virtual std::string type() const { return "Symbol"; }
+  virtual bool type(Type tid) const {
+    return tid == sexp || tid == atom || tid == symbol;
+  }
+  const std::string& get_value() { return value; }
+  static std::shared_ptr<Symbol> lisp_quote;
+  static std::shared_ptr<Symbol> lisp_function;
+
+ private:
+  std::string value;
+};
+
 class Number: public Sexp {
  public:
   virtual std::string str() const = 0;
@@ -105,46 +123,25 @@ class Float: public Number {
   mpf_class value;
 };
 
-/*
-class Number: public Sexp {
+class Complex: public Number {
  public:
-  Number(int v): value(v) {}
-  Number(std::string s) {
-    std::istringstream ss(s);
-    ss >> value;
-    assert(ss.eof());
+  Complex(const std::shared_ptr<Symbol>& c,
+          const std::shared_ptr<Number>& r,
+          const std::shared_ptr<Number>& i): real(r), imag(i) {
+            assert(c->get_value() == "C");
+          }
+  // ~Complex() { std::cout << "~Complex" << std::endl; }
+  virtual std::string str() const {
+    return "#C(" + real->str() + " " + imag->str() + ")";
   }
-  // ~Number() { std::cout << "~Number" << std::endl; }
-  virtual std::string str() const { return std::to_string(value); }
-  virtual std::string repr() const { return "NUMBER<" + str() + ">"; }
-  virtual std::string type() const { return "Number"; }
+  virtual std::string repr() const { return "COMPLEX<" + str() + ">"; }
+  virtual std::string type() const { return "Complex"; }
   virtual bool type(Type tid) const {
-    return tid == sexp || tid == atom || tid == number;
+    return tid == sexp || tid == atom || tid == number || tid == complex;
   }
 
  private:
-  int value;  // TODO: allow other types of numbers
-  // TODO: use GMP (#include <gmpxx.h>, -lgmp, -lgmpxx)
-  // TODO: https://gmplib.org/manual/index.html
-};
-*/
-
-class Symbol: public Sexp {
- public:
-  Symbol(std::string s): value(s) {}
-  // ~Symbol() { std::cout << "~Symbol" << std::endl; }
-  virtual std::string str() const { return value; }
-  virtual std::string repr() const { return "SYMBOL<" + value + ">"; }
-  virtual std::string type() const { return "Symbol"; }
-  virtual bool type(Type tid) const {
-    return tid == sexp || tid == atom || tid == symbol;
-  }
-  const std::string& get_value() { return value; }
-  static std::shared_ptr<Symbol> lisp_quote;
-  static std::shared_ptr<Symbol> lisp_function;
-
- private:
-  std::string value;
+  std::shared_ptr<Number> real, imag;
 };
 
 class Bool: public Sexp {
@@ -161,7 +158,8 @@ class Bool: public Sexp {
 
 class List: public Sexp {
  public:
-  List(std::shared_ptr<Sexp> a, std::shared_ptr<List> d): l_car(a), l_cdr(d) {}
+  List(const std::shared_ptr<Sexp>& a,
+       const std::shared_ptr<List>& d): l_car(a), l_cdr(d) {}
   // ~List() { std::cout << "~List " << this << std::endl; }
   std::string str() const {
     std::string ans = "(" + this->car()->str();
