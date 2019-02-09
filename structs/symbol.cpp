@@ -1,6 +1,12 @@
 #include "symbol.h"
 
-Symbol::Symbol(std::string s): value(s) {}
+#include <algorithm>
+#include <cctype>
+
+Symbol::Symbol(std::string s): value(s.length(), 0) {
+  std::transform(s.begin(), s.end(), value.begin(), toupper);
+  // Ref: https://stackoverflow.com/questions/735204/
+}
 
 std::string Symbol::str() const {
   return value;
