@@ -53,11 +53,3 @@ std::shared_ptr<Sexp> parse(std::string s) {
 	return yyval;
 }
 
-int main() {
-	yy_scan_string("(1 a 1/2 3.4) (4 a b) jkl 890 #C(12 123)");
-	assert(!yyparse());
-	std::cout << (yyval->str()) << std::endl;
-}
-
-// lex lex.l && yacc translate.y && gcc y.tab.c && ./a.out
-

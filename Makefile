@@ -1,5 +1,6 @@
 
-CXXFLAGS=-Wall -g -std=c++11
+CXXFLAGS=-Wall -g -std=c++11 -lgmp -lgmpxx \
+		-Wno-unused-function -Wno-class-memaccess
 
 SOURCES = $(wildcard *.cpp)
 
@@ -18,7 +19,7 @@ lint: $(SOURCES)
 yacc: lex.l translate.y
 	lex lex.l
 	yacc translate.y
-	$(CXX) -lgmp -lgmpxx y.tab.c -g
+	$(CXX) $(CXXFLAGS) y.tab.c -g
 
 clean:
 	rm -f $(TARGETS) a.out

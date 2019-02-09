@@ -3,6 +3,7 @@ DESCRIPTION
 
 ## TODO
 * Use ostream objects instead of str() in structs.cpp
+* Upper case for Symbol class
 * How to format float output? [https://stackoverflow.com/questions/18832856/](https://stackoverflow.com/questions/18832856/)
 * Memory leak problem: in front end some memory is still reachable
 
