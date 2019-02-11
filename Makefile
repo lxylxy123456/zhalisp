@@ -1,5 +1,4 @@
-CXXFLAGS=-Wall -g -std=c++11 -lgmp -lgmpxx \
-		-Wno-unused-function -Wno-class-memaccess
+CXXFLAGS=-Wall -g -std=c++11 -lgmp -lgmpxx
 
 STRUCTS = $(wildcard structs/*.h)
 
@@ -11,7 +10,8 @@ structs/%.o: structs/%.cpp
 translate.o: lex.l translate.y
 	lex lex.l
 	yacc translate.y
-	$(CXX) $(CXXFLAGS) y.tab.c -g -c -o $@
+	$(CXX) $(CXXFLAGS) y.tab.c -g -c -o $@ \
+		-Wno-unused-function -Wno-class-memaccess
 
 tmp: tmp.cpp $(STRUCTS_O) translate.o evaluate.o
 	$(CXX) $(CXXFLAGS) -o $@ $^

@@ -3,9 +3,8 @@
 #include <algorithm>
 #include <cctype>
 
-Symbol::Symbol(std::string s): value(s.length(), 0) {
-  std::transform(s.begin(), s.end(), value.begin(), toupper);
-  // Ref: https://stackoverflow.com/questions/735204/
+Symbol::Symbol(const char * const s): value(s) {
+  std::transform(value.begin(), value.end(), value.begin(), toupper);
 }
 
 Symbol::~Symbol() {

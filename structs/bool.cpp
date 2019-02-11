@@ -1,7 +1,7 @@
 #include "bool.h"
 
-Bool::Bool(std::string s) {
-  if (s.length() != 1 || (s[0] != 't' && s[0] != 'T'))
+Bool::Bool(const char * const s) {
+  if (s[1] != '\0' || (s[0] != 't' && s[0] != 'T'))
     throw std::invalid_argument("Incorrect type name");
 }
 

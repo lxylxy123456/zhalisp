@@ -5,7 +5,7 @@
 
 class Bool: public Sexp {
  public:
-  Bool(std::string);
+  Bool(const char * const s);
   virtual ~Bool();
   std::string str() const;
   std::string repr() const;
