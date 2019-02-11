@@ -9,6 +9,6 @@ class SyntaxError: public std::exception {
   std::string desc;
 };
 
-std::shared_ptr<Sexp> parse(std::string s);
+std::shared_ptr<List> parse(std::string s);
 
 #endif

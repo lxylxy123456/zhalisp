@@ -9,7 +9,7 @@ class Dot: public Sexp {
   virtual std::string str() const;
   virtual std::string repr() const;
   virtual Type type() const;
-  virtual bool type(Type tid) const;
+  virtual bool type(Type) const;
 };
 
 #endif

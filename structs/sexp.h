@@ -7,15 +7,15 @@
 #define PTR std::shared_ptr
 
 enum Type {
-  sexp,
+  sexp,			// not possible return value for type()
   dot,
   symbol,
-  number,
+  number,		// not possible return value for type()
   integer,  // Note: integers are rational
   rational,
   float_,
   complex,
-  atom,
+  atom,			// not possible return value for type()
   bool_,
   list,
   null
@@ -42,7 +42,7 @@ class Sexp {
   virtual std::string str() const = 0;
   virtual std::string repr() const = 0;
   virtual Type type() const;
-  virtual bool type(Type tid) const;
+  virtual bool type(Type) const;
   const char* strtype();
 };
 

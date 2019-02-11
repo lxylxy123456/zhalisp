@@ -8,14 +8,14 @@
 
 class Complex: public Number {
  public:
-  Complex(const PTR<Number>& r, const PTR<Number>& i);
-  Complex(const PTR<Symbol>& c, const PTR<Number>& r, const PTR<Number>& i);
+  Complex(const PTR<Number>&, const PTR<Number>&);
+  Complex(const PTR<Symbol>&, const PTR<Number>&, const PTR<Number>&);
   virtual ~Complex();
   virtual std::string str() const;
   virtual std::string repr() const;
   virtual Type type() const;
-  virtual bool type(Type tid) const;
-  virtual Number* operator+(const Sexp& rhs) const;
+  virtual bool type(Type) const;
+  virtual Number* operator+(const Sexp&) const;
   friend Integer;
   friend Rational;
   friend Float;

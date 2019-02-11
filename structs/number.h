@@ -11,8 +11,8 @@ class Number: public Sexp {
   virtual std::string str() const = 0;
   virtual std::string repr() const = 0;
   virtual Type type() const;
-  virtual bool type(Type tid) const;
-  virtual Number* operator+(const Sexp& rhs) const = 0;
+  virtual bool type(Type) const;
+  virtual Number* operator+(const Sexp&) const = 0;
 };
 
 class Integer;

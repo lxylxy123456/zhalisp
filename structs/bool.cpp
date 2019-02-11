@@ -1,5 +1,10 @@
 #include "bool.h"
 
+Bool::Bool(std::string s) {
+  if (s.length() != 1 || (s[0] != 't' && s[0] != 'T'))
+    throw std::invalid_argument("Incorrect type name");
+}
+
 Bool::~Bool() {
 //  std::cout << "~Bool" << std::endl;
 }
@@ -20,5 +25,5 @@ bool Bool::type(Type tid) const {
   return tid == sexp || tid == atom;
 }
 
-PTR<Bool> Bool::lisp_t(new Bool{});
+PTR<Bool> Bool::lisp_t(new Bool{"T"});
 

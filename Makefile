@@ -1,4 +1,3 @@
-
 CXXFLAGS=-Wall -g -std=c++11 -lgmp -lgmpxx \
 		-Wno-unused-function -Wno-class-memaccess
 
@@ -14,7 +13,7 @@ translate.o: lex.l translate.y
 	yacc translate.y
 	$(CXX) $(CXXFLAGS) y.tab.c -g -c -o $@
 
-tmp: tmp.cpp $(STRUCTS_O) translate.o
+tmp: tmp.cpp $(STRUCTS_O) translate.o evaluate.o
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 lint: *.cpp structs/*.cpp

@@ -7,13 +7,13 @@
 
 class Float: public Number {
  public:
-  Float(const mpf_class& f);
+  Float(const mpf_class&);
   virtual ~Float();
   virtual std::string str() const;
   virtual std::string repr() const;
   virtual Type type() const;
-  virtual bool type(Type tid) const;
-  virtual Number* operator+(const Sexp& rhs) const;
+  virtual bool type(Type) const;
+  virtual Number* operator+(const Sexp&) const;
   friend Integer;
   friend Rational;
   friend Complex;

@@ -5,12 +5,12 @@
 
 class Symbol: public Sexp {
  public:
-  Symbol(std::string s);
+  Symbol(std::string);
   virtual ~Symbol();
   virtual std::string str() const;
   virtual std::string repr() const;
   virtual Type type() const;
-  virtual bool type(Type tid) const;
+  virtual bool type(Type) const;
   const std::string& get_value();
   static PTR<Symbol> lisp_quote;
   static PTR<Symbol> lisp_function;

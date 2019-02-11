@@ -48,9 +48,9 @@ int yyerror(const char *msg) {
 	return printf("%s\n", msg); 
 }
 
-std::shared_ptr<Sexp> parse(std::string s) {
+std::shared_ptr<List> parse(std::string s) {
 	yy_scan_string(s.c_str());
 	assert(!yyparse());
-	return yyval;
+	return std::dynamic_pointer_cast<List>(yyval);
 }
 

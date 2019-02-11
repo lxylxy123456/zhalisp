@@ -11,6 +11,10 @@ id	[A-Za-z0-9\+\-\*\/\_\?\>\<\=\!\.]+
 ;.+		{ /* skip comments */ }
 {id}	{
 			try {
+				yylval = NEWTYP(Bool, yytext);
+				return ID;
+			} catch (std::invalid_argument& e) {}
+			try {
 				mpz_class z;
 				z = yytext;
 				yylval = NEWTYP(Integer, z);

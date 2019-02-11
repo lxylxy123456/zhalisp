@@ -5,12 +5,13 @@
 
 class Bool: public Sexp {
  public:
+  Bool(std::string);
   virtual ~Bool();
   std::string str() const;
   std::string repr() const;
-  static PTR<Bool> lisp_t;
   virtual Type type() const;
-  virtual bool type(Type tid) const;
+  virtual bool type(Type) const;
+  static PTR<Bool> lisp_t;
 };
 
 #endif
