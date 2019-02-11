@@ -6,7 +6,7 @@
 class List: public Sexp {
  public:
   List(const PTR<Sexp>& a, const PTR<List>& d);
-  // ~List() { std::cout << "~List " << this << std::endl; }
+  virtual ~List();
   std::string str() const;
   std::string repr() const;
   virtual Type type() const;

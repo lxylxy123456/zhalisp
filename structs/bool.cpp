@@ -1,5 +1,9 @@
 #include "bool.h"
 
+Bool::~Bool() {
+//  std::cout << "~Bool" << std::endl;
+}
+
 std::string Bool::str() const {
   return "T";
 }

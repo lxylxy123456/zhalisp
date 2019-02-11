@@ -8,6 +8,10 @@ Symbol::Symbol(std::string s): value(s.length(), 0) {
   // Ref: https://stackoverflow.com/questions/735204/
 }
 
+Symbol::~Symbol() {
+//  std::cout << "~Symbol" << std::endl;
+}
+
 std::string Symbol::str() const {
   return value;
 }

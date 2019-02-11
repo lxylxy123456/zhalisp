@@ -6,6 +6,10 @@
 
 Float::Float(const mpf_class& f): value(f) {}
 
+Float::~Float() {
+//  std::cout << "~Float" << std::endl;
+}
+
 std::string Float::str() const {
   std::ostringstream os;
   os << value;

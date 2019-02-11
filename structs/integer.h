@@ -6,7 +6,7 @@
 class Integer: public Number {
  public:
   Integer(const mpz_class& z);
-  // ~Integer() { std::cout << "~Integer" << std::endl; }
+  virtual ~Integer();
   virtual std::string str() const;
   virtual std::string repr() const;
   virtual Type type() const;

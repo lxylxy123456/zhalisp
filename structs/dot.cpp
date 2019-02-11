@@ -1,5 +1,9 @@
 #include "dot.h"
 
+Dot::~Dot() {
+//  std::cout << "~Dot" << std::endl;
+}
+
 std::string Dot::str() const {
   return ".";
 }

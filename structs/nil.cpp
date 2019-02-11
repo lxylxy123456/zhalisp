@@ -1,6 +1,11 @@
 #include "nil.h"
 
 Nil::Nil(): List(nullptr, nullptr) {}
+
+Nil::~Nil() {
+//  std::cout << "~Nil" << std::endl;
+}
+
 std::string Nil::str() const {
   return "NIL";
 }

@@ -8,6 +8,10 @@ Rational::Rational(const mpq_class& q): value(q) {
   value.canonicalize();
 }
 
+Rational::~Rational() {
+//  std::cout << "~Rational" << std::endl;
+}
+
 std::string Rational::str() const {
   return value.get_str();
 }

@@ -38,6 +38,7 @@ const char * const type_desc[] = {
 
 class Sexp {
  public:
+  virtual ~Sexp();
   virtual std::string str() const = 0;
   virtual std::string repr() const = 0;
   virtual Type type() const;

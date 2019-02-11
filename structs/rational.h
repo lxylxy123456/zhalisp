@@ -6,7 +6,7 @@
 class Rational: public Number {
  public:
   Rational(const mpq_class& q);
-  // ~Rational() { std::cout << "~Rational" << std::endl; }
+  virtual ~Rational();
   virtual std::string str() const;
   virtual std::string repr() const;
   virtual Type type() const;

@@ -5,7 +5,7 @@
 
 class Dot: public Sexp {
  public:
-  // ~Dot() { std::cout << "~Dot" << std::endl; }
+  virtual ~Dot();
   virtual std::string str() const;
   virtual std::string repr() const;
   virtual Type type() const;

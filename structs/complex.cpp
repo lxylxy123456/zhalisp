@@ -12,6 +12,10 @@ Complex::Complex(const PTR<Symbol>& c,
                    assert(c->get_value() == "C");
                  }
 
+Complex::~Complex() {
+//  std::cout << "~Complex" << std::endl;
+}
+
 std::string Complex::str() const {
   return "#C(" + real->str() + " " + imag->str() + ")";
 }

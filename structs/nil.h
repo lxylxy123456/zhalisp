@@ -6,7 +6,7 @@
 class Nil: public List {
  public:
   Nil();
-  // ~Nil() { std::cout << "~Nil " << this << std::endl; }
+  virtual ~Nil();
   std::string str() const;
   std::string repr() const;
   virtual Type type() const;

@@ -8,7 +8,7 @@
 class Float: public Number {
  public:
   Float(const mpf_class& f);
-  // ~Float() { std::cout << "~Float" << std::endl; }
+  virtual ~Float();
   virtual std::string str() const;
   virtual std::string repr() const;
   virtual Type type() const;

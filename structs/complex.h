@@ -10,7 +10,7 @@ class Complex: public Number {
  public:
   Complex(const PTR<Number>& r, const PTR<Number>& i);
   Complex(const PTR<Symbol>& c, const PTR<Number>& r, const PTR<Number>& i);
-  // ~Complex() { std::cout << "~Complex" << std::endl; }
+  virtual ~Complex();
   virtual std::string str() const;
   virtual std::string repr() const;
   virtual Type type() const;

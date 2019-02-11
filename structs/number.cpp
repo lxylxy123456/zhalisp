@@ -1,5 +1,9 @@
 #include "number.h"
 
+Number::~Number() {
+//  std::cout << "~Number" << std::endl;
+}
+
 Type Number::type() const {
   return number;
 }

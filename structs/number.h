@@ -7,6 +7,7 @@
 
 class Number: public Sexp {
  public:
+  virtual ~Number();
   virtual std::string str() const = 0;
   virtual std::string repr() const = 0;
   virtual Type type() const;

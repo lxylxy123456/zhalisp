@@ -6,7 +6,7 @@
 class Symbol: public Sexp {
  public:
   Symbol(std::string s);
-  // ~Symbol() { std::cout << "~Symbol" << std::endl; }
+  virtual ~Symbol();
   virtual std::string str() const;
   virtual std::string repr() const;
   virtual Type type() const;

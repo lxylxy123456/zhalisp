@@ -5,7 +5,7 @@
 
 class Bool: public Sexp {
  public:
-  // ~Bool() { std::cout << "~Bool" << std::endl; }
+  virtual ~Bool();
   std::string str() const;
   std::string repr() const;
   static PTR<Bool> lisp_t;

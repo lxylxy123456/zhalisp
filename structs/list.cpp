@@ -2,6 +2,10 @@
 
 List::List(const PTR<Sexp>& a, const PTR<List>& d): l_car(a), l_cdr(d) {}
 
+List::~List() {
+//  std::cout << "~List" << std::endl;
+}
+
 std::string List::str() const {
   std::string ans = "(" + this->car()->str();
   for (PTR<List> i = this->cdr(); !i->nil(); i = i->cdr())

@@ -6,6 +6,10 @@
 
 Integer::Integer(const mpz_class& z): value(z) {}
 
+Integer::~Integer() {
+//  std::cout << "~Integer" << std::endl;
+}
+
 std::string Integer::str() const {
   return value.get_str();
 }
