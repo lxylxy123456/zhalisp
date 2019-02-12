@@ -30,21 +30,32 @@ bool Float::type(Type tid) const {
 
 Number* Float::operator+(const Sexp& rhs) const {
   switch (rhs.type()) {
-    case integer: {
-      const Integer& r = dynamic_cast<const Integer&>(rhs);
-      return new Float(value + r.value);
-    }
-    case rational: {
-      const Rational& r = dynamic_cast<const Rational&>(rhs);
-      return new Float(value + r.value);
-    }
-    case float_: {
-      const Float& r = dynamic_cast<const Float&>(rhs);
-      return new Float(value + r.value);
-    }
+    case integer :
+      return new Float(value + DCCI(rhs).value);
+    case rational :
+      return new Float(value + DCCR(rhs).value);
+    case float_ :
+      return new Float(value + DCCF(rhs).value);
     case complex: {
-      const Complex& r = dynamic_cast<const Complex&>(rhs);
+      const Complex& r = DCCC(rhs);
       return new Complex(PTR<Number>(*this + *r.real), r.imag);
+    }
+    default:
+      throw std::invalid_argument("Not number");
+  }
+}
+
+Number* Float::operator-(const Sexp& rhs) const {
+  switch (rhs.type()) {
+    case integer :
+      return new Float(value - DCCI(rhs).value);
+    case rational :
+      return new Float(value - DCCR(rhs).value);
+    case float_ :
+      return new Float(value - DCCF(rhs).value);
+    case complex: {
+      const Complex& r = DCCC(rhs);
+      return new Complex(PTR<Number>(*this - *r.real), r.imag);
     }
     default:
       throw std::invalid_argument("Not number");

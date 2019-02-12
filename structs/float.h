@@ -14,6 +14,7 @@ class Float: public Number {
   virtual Type type() const;
   virtual bool type(Type) const;
   virtual Number* operator+(const Sexp&) const;
+  virtual Number* operator-(const Sexp&) const;
   friend Integer;
   friend Rational;
   friend Complex;

@@ -34,25 +34,42 @@ bool Complex::type(Type tid) const {
 
 Number* Complex::operator+(const Sexp& rhs) const {
   switch (rhs.type()) {
-    case integer: {
-      const Integer& r = dynamic_cast<const Integer&>(rhs);
-      return new Complex(PTR<Number>(*real + r), imag);
-    }
-    case rational: {
-      const Rational& r = dynamic_cast<const Rational&>(rhs);
-      return new Complex(PTR<Number>(*real + r), imag);
-    }
-    case float_: {
-      const Float& r = dynamic_cast<const Float&>(rhs);
-      return new Complex(PTR<Number>(*real + r), imag);
-    }
+    case integer :
+      return new Complex(PTR<Number>(*real + DCCI(rhs)), imag);
+    case rational :
+      return new Complex(PTR<Number>(*real + DCCR(rhs)), imag);
+    case float_ :
+      return new Complex(PTR<Number>(*real + DCCF(rhs)), imag);
     case complex: {
-      const Complex& r = dynamic_cast<const Complex&>(rhs);
-      Number *re = *real + *r.real, *im = *imag + *r.imag;
-      if (im->type(integer) && dynamic_cast<const Integer*>(im)->value == 0)
+      const Complex& r = DCCC(rhs);
+      Number *re = *real + *r.real;
+      PTR<Number> im(*imag + *r.imag);
+      if (im->type(integer) && DPCI(im)->value == 0)
         return re;
       else
-        return new Complex(PTR<Number>(re), PTR<Number>(im));
+        return new Complex(PTR<Number>(re), im);
+    }
+    default:
+      throw std::invalid_argument("Not number");
+  }
+}
+
+Number* Complex::operator-(const Sexp& rhs) const {
+  switch (rhs.type()) {
+    case integer :
+      return new Complex(PTR<Number>(*real - DCCI(rhs)), imag);
+    case rational :
+      return new Complex(PTR<Number>(*real - DCCR(rhs)), imag);
+    case float_ :
+      return new Complex(PTR<Number>(*real - DCCF(rhs)), imag);
+    case complex: {
+      const Complex& r = DCCC(rhs);
+      Number *re = *real - *r.real;
+      PTR<Number> im(*imag - *r.imag);
+      if (im->type(integer) && DPCI(im)->value == 0)
+        return re;
+      else
+        return new Complex(PTR<Number>(re), im);
     }
     default:
       throw std::invalid_argument("Not number");

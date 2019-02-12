@@ -30,25 +30,42 @@ bool Rational::type(Type tid) const {
 
 Number* Rational::operator+(const Sexp& rhs) const {
   switch (rhs.type()) {
-    case integer: {
-      const Integer& r = dynamic_cast<const Integer&>(rhs);
-      return new Rational(value + r.value);
-    }
+    case integer :
+      return new Rational(value + DCCI(rhs).value);
     case rational: {
-      const Rational& r = dynamic_cast<const Rational&>(rhs);
-      mpq_class result = value + r.value;
+      mpq_class result = value + DCCR(rhs).value;
       if (result.get_den() == 1)
         return new Integer(result.get_num());
       else
         return new Rational(result);
     }
-    case float_: {
-      const Float& r = dynamic_cast<const Float&>(rhs);
-      return new Float(value + r.value);
-    }
+    case float_ :
+      return new Float(value + DCCF(rhs).value);
     case complex: {
-      const Complex& r = dynamic_cast<const Complex&>(rhs);
+      const Complex& r = DCCC(rhs);
       return new Complex(PTR<Number>(*this + *r.real), r.imag);
+    }
+    default:
+      throw std::invalid_argument("Not number");
+  }
+}
+
+Number* Rational::operator-(const Sexp& rhs) const {
+  switch (rhs.type()) {
+    case integer :
+      return new Rational(value - DCCI(rhs).value);
+    case rational: {
+      mpq_class result = value - DCCR(rhs).value;
+      if (result.get_den() == 1)
+        return new Integer(result.get_num());
+      else
+        return new Rational(result);
+    }
+    case float_ :
+      return new Float(value - DCCF(rhs).value);
+    case complex: {
+      const Complex& r = DCCC(rhs);
+      return new Complex(PTR<Number>(*this - *r.real), r.imag);
     }
     default:
       throw std::invalid_argument("Not number");

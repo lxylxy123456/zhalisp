@@ -9,13 +9,26 @@
     throw std::invalid_argument("Too many arguments");
 */
 
-PTR<Sexp> plus (PTR<List> args, T_ENV env) {
-  std::shared_ptr<Number> op1 = DPC<Number>(args->car());
-  std::shared_ptr<Number> op2 = DPC<Number>(args->cdr()->car());
-  return PTR<Number>(op1->operator+(*op2));
+PTR<Sexp> plus(PTR<List> args, T_ENV env) {
+  PTR<Number>&& ans = DPC<Number>(evaluate(args->car(), env));
+  if (args->cdr()->nil())  // len(args) < 2
+    throw std::invalid_argument("To few arguments");
+  for (auto i = args->cdr(); !i->nil(); i = i->cdr()) {
+    PTR<Number>&& rhs = DPC<Number>(evaluate(i->car(), env));
+    ans = PTR<Number>(ans->operator+(*rhs));
+  }
+  return ans;
 }
 
-PTR<Sexp> evaluate (PTR<Sexp> arg, T_ENV env) {
+PTR<Sexp> minus(PTR<List> args, T_ENV env) {
+  PTR<Number>&& opl = DPC<Number>(evaluate(args->car(), env));
+  PTR<Number>&& opr = DPC<Number>(evaluate(args->cdr()->car(), env));
+  if (!args->cdr()->cdr()->nil())  // len(args) > 2
+    throw std::invalid_argument("Too many arguments");
+  return PTR<Number>(opl->operator-(*opr));;
+}
+
+PTR<Sexp> evaluate(PTR<Sexp> arg, T_ENV env) {
   switch (arg->type()) {
   case dot :
     throw std::invalid_argument("Unexpected input value");
@@ -35,9 +48,10 @@ PTR<Sexp> evaluate (PTR<Sexp> arg, T_ENV env) {
     std::shared_ptr<List> args = DPC<List>(arg);
     switch (args->car()->type()) {
       case symbol :
-        assert(DPC<Symbol>(args->car())->get_value()=="+");
-          // 0/0
-        return plus(args->cdr(), env);
+        if (DPC<Symbol>(args->car())->get_value() == "+")
+          return plus(args->cdr(), env);
+        else if (DPC<Symbol>(args->car())->get_value() == "-")
+          return minus(args->cdr(), env);
         throw std::invalid_argument("To be implemented");
       case list :
         throw std::invalid_argument("To be implemented (lambda)");

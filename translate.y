@@ -12,7 +12,7 @@
 #define SCSPL static_cast<std::shared_ptr<List>>
 #define DPCL std::dynamic_pointer_cast<List>
 #define DPCS std::dynamic_pointer_cast<Symbol>
-#define DPCC std::dynamic_pointer_cast<Number>
+#define DPCN std::dynamic_pointer_cast<Number>
 %}
 
 %token ID
@@ -30,7 +30,7 @@ sexp	: '(' exps ')'			{ $$ = $2; }
 		| NUM					{ $$ = $1; }
 		| ID					{ $$ = $1; }
 		| '#' ID '(' NUM NUM ')'{ $$ = NEWTYPE(Complex, DPCS($2), 
-												DPCC($4), DPCC($5)); }
+												DPCN($4), DPCN($5)); }
 		;
 exps	: sexp exps				{ $$ = NEWLIST($1, DPCL($2)); }
 		| sexp '.' exps			{ $$ = NEWLIST($1, DPCL($3)); }
