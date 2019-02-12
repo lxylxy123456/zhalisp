@@ -17,6 +17,8 @@ std::map<const std::string, PTR<Sexp>(* const)(PTR<List>, ENV)> fmap = {
   {"-", minus},
   {"*", mul},
   {"/", div},
+  {"1+", one_plus},
+  {"1-", one_minus},
   {"SETQ", setq},
 };
 
@@ -72,6 +74,24 @@ PTR<Sexp> div(PTR<List> args, ENV env) {
     ans = PTR<Number>(ans->operator/(*rhs));
   }
   return ans;
+}
+
+PTR<Sexp> one_plus(PTR<List> args, ENV env) {
+  if (args->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->cdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  PTR<Number> opl = DPC<Number>(evaluate(args->car(), env));
+  return opl->operator+(*PTR<Number>(new Integer(1)));
+}
+
+PTR<Sexp> one_minus(PTR<List> args, ENV env) {
+  if (args->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->cdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  PTR<Number> opl = DPC<Number>(evaluate(args->car(), env));
+  return opl->operator-(*PTR<Number>(new Integer(1)));
 }
 
 // Unary Predicates

@@ -15,6 +15,8 @@ PTR<Sexp> minus(PTR<List>, ENV);
 PTR<Sexp> mul(PTR<List>, ENV);
 PTR<Sexp> div(PTR<List>, ENV);
 PTR<Sexp> setq(PTR<List>, ENV);
+PTR<Sexp> one_plus(PTR<List>, ENV);
+PTR<Sexp> one_minus(PTR<List>, ENV);
 
 PTR<Sexp> evaluate (PTR<Sexp>, ENV);
 
