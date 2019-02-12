@@ -5,10 +5,10 @@
 #include "complex.h"
 
 PTR<Number> reduced_rational(const mpq_class& q) {
-	if (q.get_den() == 1)
-	  return PTRNI(q.get_num());
-	else
-	  return PTRNR(q);
+  if (q.get_den() == 1)
+    return PTRNI(q.get_num());
+  else
+    return PTRNR(q);
 }
 
 Rational::Rational(const mpq_class& q): value(q) {

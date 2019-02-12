@@ -1,6 +1,7 @@
 #include "evaluate.h"
 
 #include <exception>
+#include <map>
 
 /*
   if (args->nil())
@@ -9,18 +10,19 @@
     throw std::invalid_argument("Too many arguments");
 */
 
+std::map<const std::string, PTR<Sexp>(*)(PTR<List>, T_ENV)> fmap = {
+  {"+", plus},
+  {"-", minus},
+  {"*", mul},
+  {"/", div},
+};
+
 // find_func takes sym and returns function from (PTR<List>, T_ENV) to PTR<Sexp>
 PTR<Sexp> (*find_func(PTR<Symbol> sym))(PTR<List>, T_ENV) {
-  if (sym->get_value() == "+")
-    return plus;
-  else if (sym->get_value() == "-")
-    return minus;
-  else if (sym->get_value() == "*")
-    return mul;
-  else if (sym->get_value() == "/")
-    return div;
-  else
-    throw std::invalid_argument("To be implemented");
+  PTR<Sexp>(*f)(PTR<List>, T_ENV) = fmap[sym->get_value()];
+  if (!f)
+    throw std::invalid_argument("Function not found");
+  return f;
 }
 
 PTR<Sexp> plus(PTR<List> args, T_ENV env) {
@@ -73,16 +75,6 @@ PTR<Sexp> evaluate(PTR<Sexp> arg, T_ENV env) {
     throw std::invalid_argument("Unexpected input value");
   case symbol :
     throw std::invalid_argument("To be implemented");
-  case integer :
-    return arg;
-  case rational :
-    return arg;
-  case float_ :
-    return arg;
-  case complex :
-    return arg;
-  case bool_ :
-    return arg;
   case list : {
     std::shared_ptr<List> args = DPC<List>(arg);
     switch (args->car()->type()) {
@@ -97,6 +89,11 @@ PTR<Sexp> evaluate(PTR<Sexp> arg, T_ENV env) {
     }
   }
   case null :
+  case integer :
+  case rational :
+  case float_ :
+  case complex :
+  case bool_ :
     return arg;
   default :   // sexp, number, atom
     throw std::invalid_argument("Unexpected type");

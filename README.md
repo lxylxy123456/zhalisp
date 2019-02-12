@@ -2,7 +2,6 @@
 DESCRIPTION
 
 ## TODO
-* Reduce use of #define
 * How to format float output? [https://stackoverflow.com/questions/18832856/](https://stackoverflow.com/questions/18832856/)
 
 ## References
