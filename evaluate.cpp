@@ -10,7 +10,7 @@
     throw std::invalid_argument("Too many arguments");
 */
 
-const std::map<const std::string, PTR<Sexp>(* const)(PTR<List>, T_ENV)> fmap = {
+std::map<const std::string, PTR<Sexp>(* const)(PTR<List>, T_ENV)> fmap = {
   {"+", plus},
   {"-", minus},
   {"*", mul},
