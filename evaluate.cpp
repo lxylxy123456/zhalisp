@@ -10,22 +10,27 @@
     throw std::invalid_argument("Too many arguments");
 */
 
-std::map<const std::string, PTR<Sexp>(* const)(PTR<List>, T_ENV)> fmap = {
+// Helper functions
+
+std::map<const std::string, PTR<Sexp>(* const)(PTR<List>, ENV)> fmap = {
   {"+", plus},
   {"-", minus},
   {"*", mul},
   {"/", div},
+  {"SETQ", setq},
 };
 
-// find_func takes sym and returns function from (PTR<List>, T_ENV) to PTR<Sexp>
-PTR<Sexp> (*find_func(PTR<Symbol> sym))(PTR<List>, T_ENV) {
-  PTR<Sexp>(*f)(PTR<List>, T_ENV) = fmap[sym->get_value()];
+// find_func takes sym and returns function from (PTR<List>, ENV) to PTR<Sexp>
+PTR<Sexp> (*find_func(PTR<Symbol> sym))(PTR<List>, ENV) {
+  PTR<Sexp>(*f)(PTR<List>, ENV) = fmap[sym->get_value()];
   if (!f)
     throw std::invalid_argument("Function not found");
   return f;
 }
 
-PTR<Sexp> plus(PTR<List> args, T_ENV env) {
+// Arithmetics
+
+PTR<Sexp> plus(PTR<List> args, ENV env) {
   PTR<Number> ans(new Integer(0));
   for (auto i = args; !i->nil(); i = i->cdr()) {
     PTR<Number> rhs = DPC<Number>(evaluate(i->car(), env));
@@ -34,7 +39,7 @@ PTR<Sexp> plus(PTR<List> args, T_ENV env) {
   return ans;
 }
 
-PTR<Sexp> minus(PTR<List> args, T_ENV env) {
+PTR<Sexp> minus(PTR<List> args, ENV env) {
   if (args->nil())
     throw std::invalid_argument("Too few arguments");
   else if (args->cdr()->nil())
@@ -47,7 +52,7 @@ PTR<Sexp> minus(PTR<List> args, T_ENV env) {
   return ans;
 }
 
-PTR<Sexp> mul(PTR<List> args, T_ENV env) {
+PTR<Sexp> mul(PTR<List> args, ENV env) {
   PTR<Number> ans(new Integer(1));
   for (auto i = args; !i->nil(); i = i->cdr()) {
     PTR<Number> rhs = DPC<Number>(evaluate(i->car(), env));
@@ -56,7 +61,7 @@ PTR<Sexp> mul(PTR<List> args, T_ENV env) {
   return ans;
 }
 
-PTR<Sexp> div(PTR<List> args, T_ENV env) {
+PTR<Sexp> div(PTR<List> args, ENV env) {
   if (args->nil())
     throw std::invalid_argument("Too few arguments");
   else if (args->cdr()->nil())
@@ -69,17 +74,49 @@ PTR<Sexp> div(PTR<List> args, T_ENV env) {
   return ans;
 }
 
-PTR<Sexp> evaluate(PTR<Sexp> arg, T_ENV env) {
+// Unary Predicates
+
+// Binary Predicates
+
+// Logic
+
+// List operations
+
+// High-Order Functions
+
+// Functions
+
+// Variables
+
+PTR<Sexp> setq(PTR<List> args, ENV env) {
+  assert(args->cdr()->cdr()->nil());
+  PTR<Symbol> k = DPC<Symbol>(args->car());
+  PTR<Sexp> v = evaluate(args->cdr()->car(), env);
+  env->set_var(k, v);
+  return v;
+}
+
+// Conditions
+
+// Iteration
+
+// I/O
+
+// Special functions
+
+// Evaluate
+
+PTR<Sexp> evaluate(PTR<Sexp> arg, ENV env) {
   switch (arg->type()) {
   case dot :
     throw std::invalid_argument("Unexpected input value");
   case symbol :
-    throw std::invalid_argument("To be implemented");
+    return env->find_var(DPC<Symbol>(arg));
   case list : {
     std::shared_ptr<List> args = DPC<List>(arg);
     switch (args->car()->type()) {
       case symbol : {
-        PTR<Sexp> (*f)(PTR<List>, T_ENV) = find_func(DPC<Symbol>(args->car()));
+        PTR<Sexp> (*f)(PTR<List>, ENV) = find_func(DPC<Symbol>(args->car()));
         return f(args->cdr(), env);
       }
       case list :

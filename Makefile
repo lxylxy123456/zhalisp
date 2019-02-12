@@ -4,8 +4,7 @@ STRUCTS = $(wildcard structs/*.h)
 
 STRUCTS_O = $(STRUCTS:.h=.o)
 
-structs/%.o: structs/%.cpp
-	$(CXX) $(CXXFLAGS) -c -o $@ $^
+all: tmp
 
 translate.o: lex.l translate.y
 	lex lex.l
@@ -13,7 +12,7 @@ translate.o: lex.l translate.y
 	$(CXX) $(CXXFLAGS) y.tab.c -g -c -o $@ \
 		-Wno-unused-function -Wno-class-memaccess
 
-tmp: tmp.cpp $(STRUCTS_O) translate.o evaluate.o
+tmp: tmp.cpp $(STRUCTS_O) translate.o evaluate.o environment.o
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 lint: *.cpp structs/*.cpp
