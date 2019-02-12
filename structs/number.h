@@ -22,8 +22,12 @@ class Number: public Sexp {
   virtual std::string repr() const = 0;
   virtual Type type() const;
   virtual bool type(Type) const;
+  virtual Number* operator+() const = 0;
+  virtual Number* operator-() const = 0;
   virtual Number* operator+(const Sexp&) const = 0;
   virtual Number* operator-(const Sexp&) const = 0;
+  virtual Number* operator*(const Sexp&) const = 0;
+  virtual Number* operator/(const Sexp&) const = 0;
 };
 
 class Integer;

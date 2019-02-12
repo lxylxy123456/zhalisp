@@ -9,6 +9,6 @@ Type Number::type() const {
 }
 
 bool Number::type(Type tid) const {
-  return tid == sexp || tid == number;
+  return tid == sexp || tid == atom || tid == number;
 }
 

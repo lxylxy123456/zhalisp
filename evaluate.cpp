@@ -28,6 +28,22 @@ PTR<Sexp> minus(PTR<List> args, T_ENV env) {
   return PTR<Number>(opl->operator-(*opr));;
 }
 
+PTR<Sexp> mul(PTR<List> args, T_ENV env) {
+  PTR<Number>&& opl = DPC<Number>(evaluate(args->car(), env));
+  PTR<Number>&& opr = DPC<Number>(evaluate(args->cdr()->car(), env));
+  if (!args->cdr()->cdr()->nil())  // len(args) > 2
+    throw std::invalid_argument("Too many arguments");
+  return PTR<Number>(opl->operator*(*opr));;
+}
+
+PTR<Sexp> div(PTR<List> args, T_ENV env) {
+  PTR<Number>&& opl = DPC<Number>(evaluate(args->car(), env));
+  PTR<Number>&& opr = DPC<Number>(evaluate(args->cdr()->car(), env));
+  if (!args->cdr()->cdr()->nil())  // len(args) > 2
+    throw std::invalid_argument("Too many arguments");
+  return PTR<Number>(opl->operator/(*opr));;
+}
+
 PTR<Sexp> evaluate(PTR<Sexp> arg, T_ENV env) {
   switch (arg->type()) {
   case dot :
@@ -52,6 +68,10 @@ PTR<Sexp> evaluate(PTR<Sexp> arg, T_ENV env) {
           return plus(args->cdr(), env);
         else if (DPC<Symbol>(args->car())->get_value() == "-")
           return minus(args->cdr(), env);
+        else if (DPC<Symbol>(args->car())->get_value() == "*")
+          return mul(args->cdr(), env);
+        else if (DPC<Symbol>(args->car())->get_value() == "/")
+          return div(args->cdr(), env);
         throw std::invalid_argument("To be implemented");
       case list :
         throw std::invalid_argument("To be implemented (lambda)");

@@ -4,6 +4,13 @@
 #include "rational.h"
 #include "float.h"
 
+Number* reduced_complex(Number* re, PTR<Number> im) {
+  if (im->type(integer) && DPCI(im)->value == 0)
+    return re;
+  else
+    return new Complex(PTR<Number>(re), im);
+}
+
 Complex::Complex(const PTR<Number>&r, const PTR<Number>&i): real(r), imag(i) {}
 
 Complex::Complex(const PTR<Symbol>& c,
@@ -32,6 +39,14 @@ bool Complex::type(Type tid) const {
   return tid == sexp || tid == atom || tid == number || tid == complex;
 }
 
+Number* Complex::operator+() const {
+  return new Complex(PTR<Number>(+*real), PTR<Number>(+*imag));
+}
+
+Number* Complex::operator-() const {
+  return new Complex(PTR<Number>(-*real), PTR<Number>(-*imag));
+}
+
 Number* Complex::operator+(const Sexp& rhs) const {
   switch (rhs.type()) {
     case integer :
@@ -44,10 +59,7 @@ Number* Complex::operator+(const Sexp& rhs) const {
       const Complex& r = DCCC(rhs);
       Number *re = *real + *r.real;
       PTR<Number> im(*imag + *r.imag);
-      if (im->type(integer) && DPCI(im)->value == 0)
-        return re;
-      else
-        return new Complex(PTR<Number>(re), im);
+      return reduced_complex(re, im);
     }
     default:
       throw std::invalid_argument("Not number");
@@ -66,10 +78,51 @@ Number* Complex::operator-(const Sexp& rhs) const {
       const Complex& r = DCCC(rhs);
       Number *re = *real - *r.real;
       PTR<Number> im(*imag - *r.imag);
-      if (im->type(integer) && DPCI(im)->value == 0)
-        return re;
-      else
-        return new Complex(PTR<Number>(re), im);
+      return reduced_complex(re, im);
+    }
+    default:
+      throw std::invalid_argument("Not number");
+  }
+}
+
+Number* Complex::operator*(const Sexp& rhs) const {
+  switch (rhs.type()) {
+    case integer :
+      return reduced_complex(*real * DCCI(rhs), PTR<Number>(*imag * DCCI(rhs)));
+    case rational :
+      return reduced_complex(*real * DCCR(rhs), PTR<Number>(*imag * DCCR(rhs)));
+    case float_ :
+      return reduced_complex(*real * DCCF(rhs), PTR<Number>(*imag * DCCF(rhs)));
+    case complex: {
+      const Complex& r = DCCC(rhs);
+      PTR<Number> r1r2(*real * *r.real);
+      PTR<Number> i1i2(*imag * *r.imag);
+      PTR<Number> i1r2(*imag * *r.real);
+      PTR<Number> r1i2(*real * *r.imag);
+      return reduced_complex(*r1r2 - *i1i2, PTR<Number>(*i1r2 + *r1i2));
+    }
+    default:
+      throw std::invalid_argument("Not number");
+  }
+}
+
+Number* Complex::operator/(const Sexp& rhs) const {
+  switch (rhs.type()) {
+    case integer :
+      return reduced_complex(*real / DCCI(rhs), PTR<Number>(*imag / DCCI(rhs)));
+    case rational :
+      return reduced_complex(*real / DCCR(rhs), PTR<Number>(*imag / DCCR(rhs)));
+    case float_ :
+      return reduced_complex(*real / DCCF(rhs), PTR<Number>(*imag / DCCF(rhs)));
+    case complex: {
+      const Complex& r = DCCC(rhs);
+      PTR<Number> r2i2(*r.real * *r.imag);
+      PTR<Number> r2i22(*r2i2 * *r2i2);
+      PTR<Number> r1r2(*real * *r.real);
+      PTR<Number> i1i2(*imag * *r.imag);
+      PTR<Number> i1r2(*imag * *r.real);
+      PTR<Number> r1i2(*real * *r.imag);
+      return reduced_complex(*r1r2 + *i1i2, PTR<Number>(*i1r2 - *r1i2));
     }
     default:
       throw std::invalid_argument("Not number");

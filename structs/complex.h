@@ -6,6 +6,8 @@
 #include "number.h"
 #include "symbol.h"
 
+Number* reduced_complex(Number* r, PTR<Number> i);
+
 class Complex: public Number {
  public:
   Complex(const PTR<Number>&, const PTR<Number>&);
@@ -15,8 +17,12 @@ class Complex: public Number {
   virtual std::string repr() const;
   virtual Type type() const;
   virtual bool type(Type) const;
+  virtual Number* operator+() const;
+  virtual Number* operator-() const;
   virtual Number* operator+(const Sexp&) const;
   virtual Number* operator-(const Sexp&) const;
+  virtual Number* operator*(const Sexp&) const;
+  virtual Number* operator/(const Sexp&) const;
   friend Integer;
   friend Rational;
   friend Float;
