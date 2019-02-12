@@ -9,6 +9,20 @@
     throw std::invalid_argument("Too many arguments");
 */
 
+// find_func takes sym and returns function from (PTR<List>, T_ENV) to PTR<Sexp>
+PTR<Sexp> (*find_func(PTR<Symbol> sym))(PTR<List>, T_ENV) {
+  if (sym->get_value() == "+")
+    return plus;
+  else if (sym->get_value() == "-")
+    return minus;
+  else if (sym->get_value() == "*")
+    return mul;
+  else if (sym->get_value() == "/")
+    return div;
+  else
+    throw std::invalid_argument("To be implemented");
+}
+
 PTR<Sexp> plus(PTR<List> args, T_ENV env) {
   PTR<Number> ans(new Integer(0));
   for (auto i = args; !i->nil(); i = i->cdr()) {
@@ -72,16 +86,10 @@ PTR<Sexp> evaluate(PTR<Sexp> arg, T_ENV env) {
   case list : {
     std::shared_ptr<List> args = DPC<List>(arg);
     switch (args->car()->type()) {
-      case symbol :
-        if (DPC<Symbol>(args->car())->get_value() == "+")
-          return plus(args->cdr(), env);
-        else if (DPC<Symbol>(args->car())->get_value() == "-")
-          return minus(args->cdr(), env);
-        else if (DPC<Symbol>(args->car())->get_value() == "*")
-          return mul(args->cdr(), env);
-        else if (DPC<Symbol>(args->car())->get_value() == "/")
-          return div(args->cdr(), env);
-        throw std::invalid_argument("To be implemented");
+      case symbol : {
+        PTR<Sexp> (*f)(PTR<List>, T_ENV) = find_func(DPC<Symbol>(args->car()));
+        return f(args->cdr(), env);
+      }
       case list :
         throw std::invalid_argument("To be implemented (lambda)");
       default :
