@@ -4,11 +4,11 @@
 #include "float.h"
 #include "complex.h"
 
-Number* reduced_rational(const mpq_class& q) {
+PTR<Number> reduced_rational(const mpq_class& q) {
 	if (q.get_den() == 1)
-	  return new Integer(q.get_num());
+	  return PTRNI(q.get_num());
 	else
-	  return new Rational(q);
+	  return PTRNR(q);
 }
 
 Rational::Rational(const mpq_class& q): value(q) {
@@ -35,56 +35,56 @@ bool Rational::type(Type tid) const {
   return tid == sexp || tid == atom || tid == number || tid == rational;
 }
 
-Number* Rational::operator+() const {
-  return new Rational(+value);
+PTR<Number> Rational::operator+() const {
+  return PTRNR(+value);
 }
 
-Number* Rational::operator-() const {
-  return new Rational(-value);
+PTR<Number> Rational::operator-() const {
+  return PTRNR(-value);
 }
 
-Number* Rational::operator+(const Sexp& rhs) const {
+PTR<Number> Rational::operator+(const Number& rhs) const {
   switch (rhs.type()) {
     case integer :
-      return new Rational(value + DCCI(rhs).value);
+      return PTRNR(value + DCCI(rhs).value);
     case rational :
       return reduced_rational(value + DCCR(rhs).value);
     case float_ :
-      return new Float(value + DCCF(rhs).value);
+      return PTRNF(value + DCCF(rhs).value);
     case complex: {
       const Complex& r = DCCC(rhs);
-      return new Complex(PTR<Number>(*this + *r.real), r.imag);
+      return PTRNC(PTR<Number>(*this + *r.real), r.imag);
     }
     default:
       throw std::invalid_argument("Not number");
   }
 }
 
-Number* Rational::operator-(const Sexp& rhs) const {
+PTR<Number> Rational::operator-(const Number& rhs) const {
   switch (rhs.type()) {
     case integer :
-      return new Rational(value - DCCI(rhs).value);
+      return PTRNR(value - DCCI(rhs).value);
     case rational :
       return reduced_rational(value - DCCR(rhs).value);
     case float_ :
-      return new Float(value - DCCF(rhs).value);
+      return PTRNF(value - DCCF(rhs).value);
     case complex: {
       const Complex& r = DCCC(rhs);
-      return new Complex(PTR<Number>(*this - *r.real), r.imag);
+      return PTRNC(PTR<Number>(*this - *r.real), r.imag);
     }
     default:
       throw std::invalid_argument("Not number");
   }
 }
 
-Number* Rational::operator*(const Sexp& rhs) const {
+PTR<Number> Rational::operator*(const Number& rhs) const {
   switch (rhs.type()) {
     case integer :
       return reduced_rational(value * DCCI(rhs).value);
     case rational :
       return reduced_rational(value * DCCR(rhs).value);
     case float_ :
-      return new Float(value * DCCF(rhs).value);
+      return PTRNF(value * DCCF(rhs).value);
     case complex: {
       const Complex& r = DCCC(rhs);
       return reduced_complex(*this * *r.real, PTR<Number>(*this * *r.imag));
@@ -94,14 +94,14 @@ Number* Rational::operator*(const Sexp& rhs) const {
   }
 }
 
-Number* Rational::operator/(const Sexp& rhs) const {
+PTR<Number> Rational::operator/(const Number& rhs) const {
   switch (rhs.type()) {
     case integer :
       return reduced_rational(value / DCCI(rhs).value);
     case rational :
       return reduced_rational(value / DCCR(rhs).value);
     case float_ :
-      return new Float(value / DCCF(rhs).value);
+      return PTRNF(value / DCCF(rhs).value);
     case complex: {
       const Complex& r = DCCC(rhs);
       PTR<Number> ri = PTR<Number>(*r.real * *r.imag);

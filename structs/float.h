@@ -13,12 +13,12 @@ class Float: public Number {
   virtual std::string repr() const;
   virtual Type type() const;
   virtual bool type(Type) const;
-  virtual Number* operator+() const;
-  virtual Number* operator-() const;
-  virtual Number* operator+(const Sexp&) const;
-  virtual Number* operator-(const Sexp&) const;
-  virtual Number* operator*(const Sexp&) const;
-  virtual Number* operator/(const Sexp&) const;
+  virtual PTR<Number> operator+() const;
+  virtual PTR<Number> operator-() const;
+  virtual PTR<Number> operator+(const Number&) const;
+  virtual PTR<Number> operator-(const Number&) const;
+  virtual PTR<Number> operator*(const Number&) const;
+  virtual PTR<Number> operator/(const Number&) const;
   friend Integer;
   friend Rational;
   friend Complex;

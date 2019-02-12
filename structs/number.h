@@ -15,6 +15,11 @@
 #define DPCF std::dynamic_pointer_cast<Float>
 #define DPCC std::dynamic_pointer_cast<Complex>
 
+#define PTRNI(X) PTR<Number>(new Integer(X))
+#define PTRNR(X) PTR<Number>(new Rational(X))
+#define PTRNF(X) PTR<Number>(new Float(X))
+#define PTRNC(X, Y) PTR<Number>(new Complex(X, Y))
+
 class Number: public Sexp {
  public:
   virtual ~Number();
@@ -22,12 +27,12 @@ class Number: public Sexp {
   virtual std::string repr() const = 0;
   virtual Type type() const;
   virtual bool type(Type) const;
-  virtual Number* operator+() const = 0;
-  virtual Number* operator-() const = 0;
-  virtual Number* operator+(const Sexp&) const = 0;
-  virtual Number* operator-(const Sexp&) const = 0;
-  virtual Number* operator*(const Sexp&) const = 0;
-  virtual Number* operator/(const Sexp&) const = 0;
+  virtual PTR<Number> operator+() const = 0;
+  virtual PTR<Number> operator-() const = 0;
+  virtual PTR<Number> operator+(const Number&) const = 0;
+  virtual PTR<Number> operator-(const Number&) const = 0;
+  virtual PTR<Number> operator*(const Number&) const = 0;
+  virtual PTR<Number> operator/(const Number&) const = 0;
 };
 
 class Integer;

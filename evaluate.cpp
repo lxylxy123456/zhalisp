@@ -10,38 +10,47 @@
 */
 
 PTR<Sexp> plus(PTR<List> args, T_ENV env) {
-  PTR<Number>&& ans = DPC<Number>(evaluate(args->car(), env));
-  if (args->cdr()->nil())  // len(args) < 2
-    throw std::invalid_argument("To few arguments");
-  for (auto i = args->cdr(); !i->nil(); i = i->cdr()) {
-    PTR<Number>&& rhs = DPC<Number>(evaluate(i->car(), env));
+  PTR<Number> ans(new Integer(0));
+  for (auto i = args; !i->nil(); i = i->cdr()) {
+    PTR<Number> rhs = DPC<Number>(evaluate(i->car(), env));
     ans = PTR<Number>(ans->operator+(*rhs));
   }
   return ans;
 }
 
 PTR<Sexp> minus(PTR<List> args, T_ENV env) {
-  PTR<Number>&& opl = DPC<Number>(evaluate(args->car(), env));
-  PTR<Number>&& opr = DPC<Number>(evaluate(args->cdr()->car(), env));
-  if (!args->cdr()->cdr()->nil())  // len(args) > 2
-    throw std::invalid_argument("Too many arguments");
-  return PTR<Number>(opl->operator-(*opr));;
+  if (args->nil())
+    throw std::invalid_argument("Too few arguments");
+  else if (args->cdr()->nil())
+    return DPC<Number>(args->car())->operator-();
+  PTR<Number> ans = DPC<Number>(args->car());
+  for (auto i = args->cdr(); !i->nil(); i = i->cdr()) {
+    PTR<Number> rhs = DPC<Number>(evaluate(i->car(), env));
+    ans = PTR<Number>(ans->operator-(*rhs));
+  }
+  return ans;
 }
 
 PTR<Sexp> mul(PTR<List> args, T_ENV env) {
-  PTR<Number>&& opl = DPC<Number>(evaluate(args->car(), env));
-  PTR<Number>&& opr = DPC<Number>(evaluate(args->cdr()->car(), env));
-  if (!args->cdr()->cdr()->nil())  // len(args) > 2
-    throw std::invalid_argument("Too many arguments");
-  return PTR<Number>(opl->operator*(*opr));;
+  PTR<Number> ans(new Integer(1));
+  for (auto i = args; !i->nil(); i = i->cdr()) {
+    PTR<Number> rhs = DPC<Number>(evaluate(i->car(), env));
+    ans = PTR<Number>(ans->operator*(*rhs));
+  }
+  return ans;
 }
 
 PTR<Sexp> div(PTR<List> args, T_ENV env) {
-  PTR<Number>&& opl = DPC<Number>(evaluate(args->car(), env));
-  PTR<Number>&& opr = DPC<Number>(evaluate(args->cdr()->car(), env));
-  if (!args->cdr()->cdr()->nil())  // len(args) > 2
-    throw std::invalid_argument("Too many arguments");
-  return PTR<Number>(opl->operator/(*opr));;
+  if (args->nil())
+    throw std::invalid_argument("Too few arguments");
+  else if (args->cdr()->nil())
+    return PTR<Number>(new Integer(1))->operator/(*DPC<Number>(args->car()));
+  PTR<Number> ans = DPC<Number>(args->car());
+  for (auto i = args->cdr(); !i->nil(); i = i->cdr()) {
+    PTR<Number> rhs = DPC<Number>(evaluate(i->car(), env));
+    ans = PTR<Number>(ans->operator/(*rhs));
+  }
+  return ans;
 }
 
 PTR<Sexp> evaluate(PTR<Sexp> arg, T_ENV env) {
