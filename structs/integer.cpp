@@ -107,3 +107,59 @@ PTR<Number> Integer::operator/(const Number& rhs) const {
   }
 }
 
+bool Integer::operator==(const Number& rhs) const {
+  return rhs.type() == integer && value == DCCI(rhs).value;
+}
+
+bool Integer::operator<(const Number& rhs) const {
+  switch (rhs.type()) {
+    case integer :
+      return value < DCCI(rhs).value;
+    case rational :
+      return value < DCCR(rhs).value;
+    case float_ :
+      return value < DCCF(rhs).value;
+    default:
+      throw std::invalid_argument("Not a real number");
+  }
+}
+
+bool Integer::operator<=(const Number& rhs) const {
+  switch (rhs.type()) {
+    case integer :
+      return value <= DCCI(rhs).value;
+    case rational :
+      return value <= DCCR(rhs).value;
+    case float_ :
+      return value <= DCCF(rhs).value;
+    default:
+      throw std::invalid_argument("Not a real number");
+  }
+}
+
+bool Integer::operator>(const Number& rhs) const {
+  switch (rhs.type()) {
+    case integer :
+      return value > DCCI(rhs).value;
+    case rational :
+      return value > DCCR(rhs).value;
+    case float_ :
+      return value > DCCF(rhs).value;
+    default:
+      throw std::invalid_argument("Not a real number");
+  }
+}
+
+bool Integer::operator>=(const Number& rhs) const {
+  switch (rhs.type()) {
+    case integer :
+      return value >= DCCI(rhs).value;
+    case rational :
+      return value >= DCCR(rhs).value;
+    case float_ :
+      return value >= DCCF(rhs).value;
+    default:
+      throw std::invalid_argument("Not a real number");
+  }
+}
+

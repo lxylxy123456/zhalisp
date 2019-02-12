@@ -39,7 +39,7 @@ PTR<Sexp> Envs::find_var(PTR<Symbol> s) {
 
 void Envs::set_var(PTR<Symbol> s, PTR<Sexp> e) {
   for (auto i = envs.rbegin(); i != envs.rend(); i++)
-    if ((*i)->has_var(s)) 
+    if ((*i)->has_var(s))
       return (*i)->set_var(s, e);
   envs[0]->set_var(s, e);
 }

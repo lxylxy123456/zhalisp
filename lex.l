@@ -30,10 +30,7 @@ id	[A-Za-z0-9\+\-\*\/\_\?\>\<\=\!\.]+
 				mpq_class q;
 				q = yytext;
 				q.canonicalize();
-				if (q.get_den() == 1)
-					yylval = NEWTYP(Integer, q.get_num());
-				else
-					yylval = NEWTYP(Rational, q);
+				yylval = reduced_rational(q);
 				return NUM;
 			} catch (std::invalid_argument& e) {}
 			yylval = NEWTYP(Symbol, yytext); 

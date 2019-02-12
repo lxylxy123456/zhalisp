@@ -29,8 +29,8 @@ sexp	: '(' exps ')'			{ $$ = $2; }
 		| '#' '\'' sexp			{ $$ = NEWLIST2(Symbol::lisp_function, $3); }
 		| NUM					{ $$ = $1; }
 		| ID					{ $$ = $1; }
-		| '#' ID '(' NUM NUM ')'{ $$ = NEWTYPE(Complex, DPCS($2), 
-												DPCN($4), DPCN($5)); }
+		| '#' ID '(' NUM NUM ')'{ $$ = reduced_complex(DPCN($4), DPCN($5)); 
+									assert(DPCS($2)->get_value() == "C");}
 		;
 exps	: sexp exps				{ $$ = NEWLIST($1, DPCL($2)); }
 		| sexp '.' exps			{ $$ = NEWLIST($1, DPCL($3)); }

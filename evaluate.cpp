@@ -19,6 +19,11 @@ std::map<const std::string, PTR<Sexp>(* const)(PTR<List>, ENV)> fmap = {
   {"/", div},
   {"1+", one_plus},
   {"1-", one_minus},
+  {"=", eq_},
+  {"<", lt},
+  {"<=", le},
+  {">", gt},
+  {">=", ge},
   {"SETQ", setq},
 };
 
@@ -92,6 +97,56 @@ PTR<Sexp> one_minus(PTR<List> args, ENV env) {
     throw std::invalid_argument("Too many arguments");
   PTR<Number> opl = DPC<Number>(evaluate(args->car(), env));
   return opl->operator-(*PTR<Number>(new Integer(1)));
+}
+
+PTR<Sexp> eq_(PTR<List> args, ENV env) {
+  if (args->cdr()->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->cdr()->cdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  PTR<Number> opl = DPC<Number>(evaluate(args->car(), env));
+  PTR<Number> opr = DPC<Number>(evaluate(args->cdr()->car(), env));
+  return BOOL(opl->operator==(*opr));
+}
+
+PTR<Sexp> lt(PTR<List> args, ENV env) {
+  if (args->cdr()->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->cdr()->cdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  PTR<Number> opl = DPC<Number>(evaluate(args->car(), env));
+  PTR<Number> opr = DPC<Number>(evaluate(args->cdr()->car(), env));
+  return BOOL(opl->operator<(*opr));
+}
+
+PTR<Sexp> le(PTR<List> args, ENV env) {
+  if (args->cdr()->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->cdr()->cdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  PTR<Number> opl = DPC<Number>(evaluate(args->car(), env));
+  PTR<Number> opr = DPC<Number>(evaluate(args->cdr()->car(), env));
+  return BOOL(opl->operator<=(*opr));
+}
+
+PTR<Sexp> gt(PTR<List> args, ENV env) {
+  if (args->cdr()->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->cdr()->cdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  PTR<Number> opl = DPC<Number>(evaluate(args->car(), env));
+  PTR<Number> opr = DPC<Number>(evaluate(args->cdr()->car(), env));
+  return BOOL(opl->operator>(*opr));
+}
+
+PTR<Sexp> ge(PTR<List> args, ENV env) {
+  if (args->cdr()->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->cdr()->cdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  PTR<Number> opl = DPC<Number>(evaluate(args->car(), env));
+  PTR<Number> opr = DPC<Number>(evaluate(args->cdr()->car(), env));
+  return BOOL(opl->operator>=(*opr));
 }
 
 // Unary Predicates

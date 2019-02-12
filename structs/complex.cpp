@@ -13,12 +13,6 @@ PTR<Number> reduced_complex(PTR<Number> re, PTR<Number> im) {
 
 Complex::Complex(const PTR<Number>&r, const PTR<Number>&i): real(r), imag(i) {}
 
-Complex::Complex(const PTR<Symbol>& c,
-                 const PTR<Number>& r,
-                 const PTR<Number>& i): Complex(r, i) {
-                   assert(c->get_value() == "C");
-                 }
-
 Complex::~Complex() {
 //  std::cout << "~Complex" << std::endl;
 }
@@ -127,5 +121,28 @@ PTR<Number> Complex::operator/(const Number& rhs) const {
     default:
       throw std::invalid_argument("Not number");
   }
+}
+
+bool Complex::operator==(const Number& rhs) const {
+  if (rhs.type() != complex)
+    return false;
+  const Complex& r = DCCC(rhs);
+  return real == r.real && imag == r.imag;
+}
+
+bool Complex::operator<(const Number& rhs) const {
+  throw std::invalid_argument("Not a real number");
+}
+
+bool Complex::operator<=(const Number& rhs) const {
+  throw std::invalid_argument("Not a real number");
+}
+
+bool Complex::operator>(const Number& rhs) const {
+  throw std::invalid_argument("Not a real number");
+}
+
+bool Complex::operator>=(const Number& rhs) const {
+  throw std::invalid_argument("Not a real number");
 }
 

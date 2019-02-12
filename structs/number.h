@@ -3,6 +3,8 @@
 
 #include <gmpxx.h>
 
+#include "bool.h"
+#include "nil.h"
 #include "sexp.h"
 
 #define DCCI dynamic_cast<const Integer&>
@@ -33,6 +35,11 @@ class Number: public Sexp {
   virtual PTR<Number> operator-(const Number&) const = 0;
   virtual PTR<Number> operator*(const Number&) const = 0;
   virtual PTR<Number> operator/(const Number&) const = 0;
+  virtual bool operator==(const Number&) const = 0;
+  virtual bool operator<(const Number&) const = 0;
+  virtual bool operator<=(const Number&) const = 0;
+  virtual bool operator>(const Number&) const = 0;
+  virtual bool operator>=(const Number&) const = 0;
 };
 
 class Integer;

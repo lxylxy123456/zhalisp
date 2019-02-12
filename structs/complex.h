@@ -11,7 +11,6 @@ PTR<Number> reduced_complex(PTR<Number> r, PTR<Number> i);
 class Complex: public Number {
  public:
   Complex(const PTR<Number>&, const PTR<Number>&);
-  Complex(const PTR<Symbol>&, const PTR<Number>&, const PTR<Number>&);
   virtual ~Complex();
   virtual std::string str() const;
   virtual std::string repr() const;
@@ -23,6 +22,11 @@ class Complex: public Number {
   virtual PTR<Number> operator-(const Number&) const;
   virtual PTR<Number> operator*(const Number&) const;
   virtual PTR<Number> operator/(const Number&) const;
+  virtual bool operator==(const Number&) const;
+  virtual bool operator<(const Number&) const;
+  virtual bool operator<=(const Number&) const;
+  virtual bool operator>(const Number&) const;
+  virtual bool operator>=(const Number&) const;
   friend Integer;
   friend Rational;
   friend Float;

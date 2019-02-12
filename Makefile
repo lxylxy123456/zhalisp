@@ -15,7 +15,7 @@ translate.o: lex.l translate.y
 tmp: tmp.cpp $(STRUCTS_O) translate.o evaluate.o environment.o
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
-lint: *.cpp structs/*.cpp
+lint: *.h *.cpp structs/*.h structs/*.cpp
 	cpplint $^
 
 clean:

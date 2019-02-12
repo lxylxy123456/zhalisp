@@ -7,15 +7,15 @@
 #define PTR std::shared_ptr
 
 enum Type {
-  sexp,			// not possible return value for type()
+  sexp,     // not possible return value for type()
   dot,
   symbol,
-  number,		// not possible return value for type()
+  number,   // not possible return value for type()
   integer,  // Note: integers are rational
   rational,
   float_,
   complex,
-  atom,			// not possible return value for type()
+  atom,     // not possible return value for type()
   bool_,
   list,
   null
