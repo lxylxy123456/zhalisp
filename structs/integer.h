@@ -28,7 +28,6 @@ class Integer: public Number {
   virtual std::string str() const;
   virtual std::string repr() const;
   virtual Type type() const;
-  virtual bool type(Type) const;
   static PTR<Integer> lisp_0;
   static PTR<Integer> lisp_1;
   static PTR<Integer> lisp_2;

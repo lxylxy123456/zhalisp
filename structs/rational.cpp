@@ -49,11 +49,6 @@ Type Rational::type() const {
   return Type::rational;
 }
 
-bool Rational::type(Type tid) const {
-  return tid == Type::sexp || tid == Type::atom || tid == Type::number ||
-         tid == Type::rational;
-}
-
 PTR<Number> Rational::operator+() const {
   return PTRNR(+value);
 }

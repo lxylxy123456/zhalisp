@@ -46,7 +46,6 @@ class Number: public Sexp {
   virtual std::string str() const = 0;
   virtual std::string repr() const = 0;
   virtual Type type() const;
-  virtual bool type(Type) const;
   virtual PTR<Number> operator+() const = 0;
   virtual PTR<Number> operator-() const = 0;
   virtual PTR<Number> operator+(const Number&) const = 0;

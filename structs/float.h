@@ -30,7 +30,6 @@ class Float: public Number {
   virtual std::string str() const;
   virtual std::string repr() const;
   virtual Type type() const;
-  virtual bool type(Type) const;
   virtual PTR<Number> operator+() const;
   virtual PTR<Number> operator-() const;
   virtual PTR<Number> operator+(const Number&) const;

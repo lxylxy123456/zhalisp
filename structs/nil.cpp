@@ -36,10 +36,6 @@ Type Nil::type() const {
   return Type::null;
 }
 
-bool Nil::type(Type tid) const {
-  return tid == Type::sexp || tid == Type::list || tid == Type::null;
-}
-
 bool Nil::nil() const {
   return true;
 }

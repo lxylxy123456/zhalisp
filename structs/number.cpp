@@ -26,7 +26,3 @@ Type Number::type() const {
   return Type::number;
 }
 
-bool Number::type(Type tid) const {
-  return tid == Type::sexp || tid == Type::atom || tid == Type::number;
-}
-

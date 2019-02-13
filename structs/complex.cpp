@@ -23,7 +23,8 @@
 #include "float.h"
 
 PTR<Number> reduced_complex(PTR<Number> re, PTR<Number> im) {
-  if (im->type(Type::integer) && DPCI(im)->value == 0)
+  if (static_cast<Sexp*>(im.get())->type(Type::integer) && DPCI(im)->value == 0)
+    // 0/0
     return re;
   else
     return PTRNC(re, im);
@@ -45,11 +46,6 @@ std::string Complex::repr() const {
 
 Type Complex::type() const {
   return Type::complex;
-}
-
-bool Complex::type(Type tid) const {
-  return tid == Type::sexp || tid == Type::atom || tid == Type::number ||
-         tid == Type::complex;
 }
 
 PTR<Number> Complex::operator+() const {

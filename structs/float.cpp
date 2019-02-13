@@ -42,11 +42,6 @@ Type Float::type() const {
   return Type::float_;
 }
 
-bool Float::type(Type tid) const {
-  return tid == Type::sexp || tid == Type::atom || tid == Type::number ||
-          tid == Type::float_;
-}
-
 PTR<Number> Float::operator+() const {
   return PTRNF(+value);
 }

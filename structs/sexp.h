@@ -39,28 +39,13 @@ enum struct Type : int {
   null
 };
 
-const char * const type_desc[] = {
-  "sexp",
-  "dot",
-  "symbol",
-  "number",
-  "integer",
-  "rational",
-  "float",
-  "complex",
-  "atom",
-  "bool",
-  "list",
-  "null"
-};
-
 class Sexp {
  public:
   virtual ~Sexp();
   virtual std::string str() const = 0;
   virtual std::string repr() const = 0;
   virtual Type type() const;
-  virtual bool type(Type) const;
+  bool type(Type) const;
   const char* strtype();
 };
 

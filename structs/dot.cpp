@@ -34,7 +34,3 @@ Type Dot::type() const {
   return Type::dot;
 }
 
-bool Dot::type(Type tid) const {
-  return tid == Type::sexp || tid == Type::dot;
-}
-

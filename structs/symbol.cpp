@@ -41,10 +41,6 @@ Type Symbol::type() const {
   return Type::symbol;
 }
 
-bool Symbol::type(Type tid) const {
-  return tid == Type::sexp || tid == Type::atom || tid == Type::symbol;
-}
-
 const std::string& Symbol::get_value() {
   return value;
 }

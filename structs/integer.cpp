@@ -40,11 +40,6 @@ Type Integer::type() const {
   return Type::integer;
 }
 
-bool Integer::type(Type tid) const {
-  return tid == Type::sexp || tid == Type::atom || tid == Type::number ||
-         tid == Type::integer || tid == Type::rational;
-}
-
 PTR<Integer> Integer::lisp_0(new Integer{0});
 
 PTR<Integer> Integer::lisp_1(new Integer{1});

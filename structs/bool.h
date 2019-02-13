@@ -28,7 +28,6 @@ class Bool: public Sexp {
   std::string str() const;
   std::string repr() const;
   virtual Type type() const;
-  virtual bool type(Type) const;
   static PTR<Bool> lisp_t;
 };
 

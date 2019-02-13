@@ -27,10 +27,42 @@ Type Sexp::type() const {
 }
 
 bool Sexp::type(Type tid) const {
-  return tid == Type::sexp;
+  static const int type_matrix[] = {
+    // nlbacftinsds
+    // uiotolanuyoe
+    // lsoomottmmtx
+    // ltlmpaiebb_p
+    0b0000000000001,   // sexp
+    0b0000000000011,   // dot
+    0b0000100000101,   // symbol
+    0b0000100001001,   // number
+    0b0000100111001,   // integer
+    0b0000100101001,   // rational
+    0b0000101001001,   // float_
+    0b0000110001001,   // complex
+    0b0000100000001,   // atom
+    0b0001100000001,   // bool_
+    0b0010000000001,   // list
+    0b0110100000001,   // null
+  };
+  return type_matrix[static_cast<int>(type())] & (1 << static_cast<int>(tid));
 }
 
 const char* Sexp::strtype() {
+  static const char * const type_desc[] = {
+    "sexp",
+    "dot",
+    "symbol",
+    "number",
+    "integer",
+    "rational",
+    "float",
+    "complex",
+    "atom",
+    "bool",
+    "list",
+    "null"
+  };
   return type_desc[static_cast<int>(type())];
 }
 

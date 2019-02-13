@@ -39,10 +39,6 @@ Type List::type() const {
   return Type::list;
 }
 
-bool List::type(Type tid) const {
-  return tid == Type::sexp || tid == Type::list;
-}
-
 bool List::nil() const {
   return false;
 }

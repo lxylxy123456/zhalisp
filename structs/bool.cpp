@@ -39,9 +39,5 @@ Type Bool::type() const {
   return Type::bool_;
 }
 
-bool Bool::type(Type tid) const {
-  return tid == Type::sexp || tid == Type::atom;
-}
-
 PTR<Bool> Bool::lisp_t(new Bool{"T"});
 
