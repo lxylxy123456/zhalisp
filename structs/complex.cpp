@@ -34,26 +34,24 @@ bool Complex::type(Type tid) const {
 }
 
 PTR<Number> Complex::operator+() const {
-  return PTRNC(PTR<Number>(+*real), PTR<Number>(+*imag));
+  return PTRNC(+*real, +*imag);
 }
 
 PTR<Number> Complex::operator-() const {
-  return PTRNC(PTR<Number>(-*real), PTR<Number>(-*imag));
+  return PTRNC(-*real, -*imag);
 }
 
 PTR<Number> Complex::operator+(const Number& rhs) const {
   switch (rhs.type()) {
     case integer :
-      return PTRNC(PTR<Number>(*real + DCCI(rhs)), imag);
+      return PTRNC(*real + DCCI(rhs), imag);
     case rational :
-      return PTRNC(PTR<Number>(*real + DCCR(rhs)), imag);
+      return PTRNC(*real + DCCR(rhs), imag);
     case float_ :
-      return PTRNC(PTR<Number>(*real + DCCF(rhs)), imag);
+      return PTRNC(*real + DCCF(rhs), imag);
     case complex: {
       const Complex& r = DCCC(rhs);
-      PTR<Number> re = *real + *r.real;
-      PTR<Number> im(*imag + *r.imag);
-      return reduced_complex(re, im);
+      return reduced_complex(*real + *r.real, *imag + *r.imag);
     }
     default:
       throw std::invalid_argument("Not number");
@@ -63,16 +61,14 @@ PTR<Number> Complex::operator+(const Number& rhs) const {
 PTR<Number> Complex::operator-(const Number& rhs) const {
   switch (rhs.type()) {
     case integer :
-      return PTRNC(PTR<Number>(*real - DCCI(rhs)), imag);
+      return PTRNC(*real - DCCI(rhs), imag);
     case rational :
-      return PTRNC(PTR<Number>(*real - DCCR(rhs)), imag);
+      return PTRNC(*real - DCCR(rhs), imag);
     case float_ :
-      return PTRNC(PTR<Number>(*real - DCCF(rhs)), imag);
+      return PTRNC(*real - DCCF(rhs), imag);
     case complex: {
       const Complex& r = DCCC(rhs);
-      PTR<Number> re = *real - *r.real;
-      PTR<Number> im(*imag - *r.imag);
-      return reduced_complex(re, im);
+      return reduced_complex(*real - *r.real, *imag - *r.imag);
     }
     default:
       throw std::invalid_argument("Not number");
@@ -82,18 +78,18 @@ PTR<Number> Complex::operator-(const Number& rhs) const {
 PTR<Number> Complex::operator*(const Number& rhs) const {
   switch (rhs.type()) {
     case integer :
-      return reduced_complex(*real * DCCI(rhs), PTR<Number>(*imag * DCCI(rhs)));
+      return reduced_complex(*real * DCCI(rhs), *imag * DCCI(rhs));
     case rational :
-      return reduced_complex(*real * DCCR(rhs), PTR<Number>(*imag * DCCR(rhs)));
+      return reduced_complex(*real * DCCR(rhs), *imag * DCCR(rhs));
     case float_ :
-      return reduced_complex(*real * DCCF(rhs), PTR<Number>(*imag * DCCF(rhs)));
+      return reduced_complex(*real * DCCF(rhs), *imag * DCCF(rhs));
     case complex: {
       const Complex& r = DCCC(rhs);
-      PTR<Number> r1r2(*real * *r.real);
-      PTR<Number> i1i2(*imag * *r.imag);
-      PTR<Number> i1r2(*imag * *r.real);
-      PTR<Number> r1i2(*real * *r.imag);
-      return reduced_complex(*r1r2 - *i1i2, PTR<Number>(*i1r2 + *r1i2));
+      PTR<Number> r1r2 = *real * *r.real;
+      PTR<Number> i1i2 = *imag * *r.imag;
+      PTR<Number> i1r2 = *imag * *r.real;
+      PTR<Number> r1i2 = *real * *r.imag;
+      return reduced_complex(*r1r2 - *i1i2, *i1r2 + *r1i2);
     }
     default:
       throw std::invalid_argument("Not number");
@@ -103,20 +99,20 @@ PTR<Number> Complex::operator*(const Number& rhs) const {
 PTR<Number> Complex::operator/(const Number& rhs) const {
   switch (rhs.type()) {
     case integer :
-      return reduced_complex(*real / DCCI(rhs), PTR<Number>(*imag / DCCI(rhs)));
+      return reduced_complex(*real / DCCI(rhs), *imag / DCCI(rhs));
     case rational :
-      return reduced_complex(*real / DCCR(rhs), PTR<Number>(*imag / DCCR(rhs)));
+      return reduced_complex(*real / DCCR(rhs), *imag / DCCR(rhs));
     case float_ :
-      return reduced_complex(*real / DCCF(rhs), PTR<Number>(*imag / DCCF(rhs)));
+      return reduced_complex(*real / DCCF(rhs), *imag / DCCF(rhs));
     case complex: {
       const Complex& r = DCCC(rhs);
-      PTR<Number> r2i2(*r.real * *r.imag);
-      PTR<Number> r2i22(*r2i2 * *r2i2);
-      PTR<Number> r1r2(*real * *r.real);
-      PTR<Number> i1i2(*imag * *r.imag);
-      PTR<Number> i1r2(*imag * *r.real);
-      PTR<Number> r1i2(*real * *r.imag);
-      return reduced_complex(*r1r2 + *i1i2, PTR<Number>(*i1r2 - *r1i2));
+      PTR<Number> r2i2 = *r.real * *r.imag;
+      PTR<Number> r2i22 = *r2i2 * *r2i2;
+      PTR<Number> r1r2 = *real * *r.real;
+      PTR<Number> i1i2 = *imag * *r.imag;
+      PTR<Number> i1r2 = *imag * *r.real;
+      PTR<Number> r1i2 = *real * *r.imag;
+      return reduced_complex(*r1r2 + *i1i2, *i1r2 - *r1i2);
     }
     default:
       throw std::invalid_argument("Not number");
@@ -148,16 +144,8 @@ bool Complex::operator>=(const Number& rhs) const {
 
 PTR<Number> Complex::sqrt_() const {
   // tex(solve([a = c**2 - d**2, b = 2 * c * d], [c, d])[2]);
-  PTR<Number> two(new Integer(2));
-  PTR<Number> a2 = *real * *real;
-  PTR<Number> b2 = *imag * *imag;
-  PTR<Number> a2b2 = *a2 + *b2;
-  PTR<Number> sa2b2 = a2b2->sqrt_();
-  PTR<Number> sa2b2pa = *sa2b2 + *real;
-  PTR<Number> c = (*sa2b2pa / *two)->sqrt_();
-  PTR<Number> sa2b2ma = *sa2b2 - *real;
-  PTR<Number> sa2b2madb = *sa2b2ma / *imag;
-  PTR<Number> d = *c * *sa2b2madb;
-  return reduced_complex(c, d);
+  PTR<Number> sa2b2 = (*(*real * *real) + *(*imag * *imag))->sqrt_();
+  PTR<Number> c = (*(*sa2b2 + *real) / *Integer::lisp_2)->sqrt_();
+  return reduced_complex(c, *c * *(*(*sa2b2 - *real) / *imag));
 }
 

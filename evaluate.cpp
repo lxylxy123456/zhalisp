@@ -39,10 +39,10 @@ PTR<Sexp> (*find_func(PTR<Symbol> sym))(PTR<List>, ENV) {
 // Arithmetics
 
 PTR<Sexp> plus(PTR<List> args, ENV env) {
-  PTR<Number> ans(new Integer(0));
+  PTR<Number> ans = Integer::lisp_0;
   for (auto i = args; !i->nil(); i = i->cdr()) {
     PTR<Number> rhs = DPC<Number>(evaluate(i->car(), env));
-    ans = PTR<Number>(ans->operator+(*rhs));
+    ans = ans->operator+(*rhs);
   }
   return ans;
 }
@@ -55,16 +55,16 @@ PTR<Sexp> minus(PTR<List> args, ENV env) {
   PTR<Number> ans = DPC<Number>(evaluate(args->car(), env));
   for (auto i = args->cdr(); !i->nil(); i = i->cdr()) {
     PTR<Number> rhs = DPC<Number>(evaluate(i->car(), env));
-    ans = PTR<Number>(ans->operator-(*rhs));
+    ans = ans->operator-(*rhs);
   }
   return ans;
 }
 
 PTR<Sexp> mul(PTR<List> args, ENV env) {
-  PTR<Number> ans(new Integer(1));
+  PTR<Number> ans(Integer::lisp_1);
   for (auto i = args; !i->nil(); i = i->cdr()) {
     PTR<Number> rhs = DPC<Number>(evaluate(i->car(), env));
-    ans = PTR<Number>(ans->operator*(*rhs));
+    ans = ans->operator*(*rhs);
   }
   return ans;
 }
@@ -74,12 +74,12 @@ PTR<Sexp> div(PTR<List> args, ENV env) {
     throw std::invalid_argument("Too few arguments");
   } else if (args->cdr()->nil()) {
     PTR<Number> evaluated = DPC<Number>(evaluate(args->car(), env));
-    return PTR<Number>(new Integer(1))->operator/(*evaluated);
+    return PTR<Number>(Integer::lisp_1)->operator/(*evaluated);
   }
   PTR<Number> ans = DPC<Number>(evaluate(args->car(), env));
   for (auto i = args->cdr(); !i->nil(); i = i->cdr()) {
     PTR<Number> rhs = DPC<Number>(evaluate(i->car(), env));
-    ans = PTR<Number>(ans->operator/(*rhs));
+    ans = ans->operator/(*rhs);
   }
   return ans;
 }
@@ -90,7 +90,7 @@ PTR<Sexp> one_plus(PTR<List> args, ENV env) {
   if (!args->cdr()->nil())
     throw std::invalid_argument("Too many arguments");
   PTR<Number> opl = DPC<Number>(evaluate(args->car(), env));
-  return opl->operator+(*PTR<Number>(new Integer(1)));
+  return opl->operator+(*PTR<Number>(Integer::lisp_1));
 }
 
 PTR<Sexp> one_minus(PTR<List> args, ENV env) {
@@ -99,7 +99,7 @@ PTR<Sexp> one_minus(PTR<List> args, ENV env) {
   if (!args->cdr()->nil())
     throw std::invalid_argument("Too many arguments");
   PTR<Number> opl = DPC<Number>(evaluate(args->car(), env));
-  return opl->operator-(*PTR<Number>(new Integer(1)));
+  return opl->operator-(*PTR<Number>(Integer::lisp_1));
 }
 
 PTR<Sexp> eq_(PTR<List> args, ENV env) {
