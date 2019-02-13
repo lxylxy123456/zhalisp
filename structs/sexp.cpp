@@ -61,7 +61,7 @@ const char* Sexp::strtype() {
     "atom",
     "bool",
     "list",
-    "null"
+    "null",
   };
   return type_desc[static_cast<int>(type())];
 }
