@@ -40,6 +40,7 @@ class Number: public Sexp {
   virtual bool operator<=(const Number&) const = 0;
   virtual bool operator>(const Number&) const = 0;
   virtual bool operator>=(const Number&) const = 0;
+  virtual PTR<Number> sqrt_() const = 0;
 };
 
 class Integer;

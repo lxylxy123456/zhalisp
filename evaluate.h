@@ -23,6 +23,7 @@ PTR<Sexp> lt(PTR<List>, ENV);
 PTR<Sexp> le(PTR<List>, ENV);
 PTR<Sexp> gt(PTR<List>, ENV);
 PTR<Sexp> ge(PTR<List>, ENV);
+PTR<Sexp> sqrt_(PTR<List>, ENV);
 
 PTR<Sexp> evaluate(PTR<Sexp>, ENV);
 

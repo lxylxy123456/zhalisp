@@ -163,3 +163,11 @@ bool Integer::operator>=(const Number& rhs) const {
   }
 }
 
+PTR<Number> Integer::sqrt_() const {
+  mpz_class int_result = ::sqrt(value);
+  if (value == int_result * int_result)
+    return PTRNI(int_result);
+  else
+    return PTRNF(::sqrt(mpf_class(value)));
+}
+

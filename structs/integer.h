@@ -22,6 +22,7 @@ class Integer: public Number {
   virtual bool operator<=(const Number&) const;
   virtual bool operator>(const Number&) const;
   virtual bool operator>=(const Number&) const;
+  virtual PTR<Number> sqrt_() const;
   friend Rational;
   friend Float;
   friend Complex;

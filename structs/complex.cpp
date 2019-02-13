@@ -146,3 +146,18 @@ bool Complex::operator>=(const Number& rhs) const {
   throw std::invalid_argument("Not a real number");
 }
 
+PTR<Number> Complex::sqrt_() const {
+  // tex(solve([a = c**2 - d**2, b = 2 * c * d], [c, d])[2]);
+  PTR<Number> two(new Integer(2));
+  PTR<Number> a2 = *real * *real;
+  PTR<Number> b2 = *imag * *imag;
+  PTR<Number> a2b2 = *a2 + *b2;
+  PTR<Number> sa2b2 = a2b2->sqrt_();
+  PTR<Number> sa2b2pa = *sa2b2 + *real;
+  PTR<Number> c = (*sa2b2pa / *two)->sqrt_();
+  PTR<Number> sa2b2ma = *sa2b2 - *real;
+  PTR<Number> sa2b2madb = *sa2b2ma / *imag;
+  PTR<Number> d = *c * *sa2b2madb;
+  return reduced_complex(c, d);
+}
+

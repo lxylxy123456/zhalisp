@@ -24,6 +24,7 @@ std::map<const std::string, PTR<Sexp>(* const)(PTR<List>, ENV)> fmap = {
   {"<=", le},
   {">", gt},
   {">=", ge},
+  {"SQRT", sqrt_},
   {"SETQ", setq},
 };
 
@@ -50,8 +51,8 @@ PTR<Sexp> minus(PTR<List> args, ENV env) {
   if (args->nil())
     throw std::invalid_argument("Too few arguments");
   else if (args->cdr()->nil())
-    return DPC<Number>(args->car())->operator-();
-  PTR<Number> ans = DPC<Number>(args->car());
+    return DPC<Number>(evaluate(args->car(), env))->operator-();
+  PTR<Number> ans = DPC<Number>(evaluate(args->car(), env));
   for (auto i = args->cdr(); !i->nil(); i = i->cdr()) {
     PTR<Number> rhs = DPC<Number>(evaluate(i->car(), env));
     ans = PTR<Number>(ans->operator-(*rhs));
@@ -69,11 +70,13 @@ PTR<Sexp> mul(PTR<List> args, ENV env) {
 }
 
 PTR<Sexp> div(PTR<List> args, ENV env) {
-  if (args->nil())
+  if (args->nil()) {
     throw std::invalid_argument("Too few arguments");
-  else if (args->cdr()->nil())
-    return PTR<Number>(new Integer(1))->operator/(*DPC<Number>(args->car()));
-  PTR<Number> ans = DPC<Number>(args->car());
+  } else if (args->cdr()->nil()) {
+    PTR<Number> evaluated = DPC<Number>(evaluate(args->car(), env));
+    return PTR<Number>(new Integer(1))->operator/(*evaluated);
+  }
+  PTR<Number> ans = DPC<Number>(evaluate(args->car(), env));
   for (auto i = args->cdr(); !i->nil(); i = i->cdr()) {
     PTR<Number> rhs = DPC<Number>(evaluate(i->car(), env));
     ans = PTR<Number>(ans->operator/(*rhs));
@@ -147,6 +150,15 @@ PTR<Sexp> ge(PTR<List> args, ENV env) {
   PTR<Number> opl = DPC<Number>(evaluate(args->car(), env));
   PTR<Number> opr = DPC<Number>(evaluate(args->cdr()->car(), env));
   return BOOL(opl->operator>=(*opr));
+}
+
+PTR<Sexp> sqrt_(PTR<List> args, ENV env) {
+  if (args->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->cdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  PTR<Number> op = DPC<Number>(evaluate(args->car(), env));
+  return op->sqrt_();
 }
 
 // Unary Predicates

@@ -164,3 +164,7 @@ bool Float::operator>=(const Number& rhs) const {
   }
 }
 
+PTR<Number> Float::sqrt_() const {
+  return PTRNF(::sqrt(value));
+}
+

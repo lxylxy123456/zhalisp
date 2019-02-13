@@ -27,6 +27,7 @@ class Complex: public Number {
   virtual bool operator<=(const Number&) const;
   virtual bool operator>(const Number&) const;
   virtual bool operator>=(const Number&) const;
+  virtual PTR<Number> sqrt_() const;
   friend Integer;
   friend Rational;
   friend Float;

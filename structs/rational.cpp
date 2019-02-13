@@ -171,3 +171,11 @@ bool Rational::operator>=(const Number& rhs) const {
   }
 }
 
+PTR<Number> Rational::sqrt_() const {
+  mpq_class rat_result(::sqrt(value.get_num()), ::sqrt(value.get_den()));
+  if (value == rat_result * rat_result)
+    return PTRNR(rat_result);
+  else
+    return PTRNF(::sqrt(mpf_class(value)));
+}
+
