@@ -26,7 +26,7 @@ Type Sexp::type() const {
   return Type::sexp;
 }
 
-bool Sexp::type(Type tid) const {
+bool Sexp::has_type(Type tid) const {
   static const int type_matrix[] = {
     // nlbacftinsds
     // uiotolanuyoe

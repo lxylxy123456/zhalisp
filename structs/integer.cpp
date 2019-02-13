@@ -28,6 +28,10 @@ Integer::~Integer() {
 //  std::cout << "~Integer" << std::endl;
 }
 
+const mpz_class& Integer::get_value() const {
+  return value;
+}
+
 std::string Integer::str() const {
   return value.get_str();
 }

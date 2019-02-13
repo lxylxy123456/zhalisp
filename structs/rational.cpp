@@ -37,6 +37,10 @@ Rational::~Rational() {
 //  std::cout << "~Rational" << std::endl;
 }
 
+const mpq_class& Rational::get_value() const {
+  return value;
+}
+
 std::string Rational::str() const {
   return value.get_str();
 }

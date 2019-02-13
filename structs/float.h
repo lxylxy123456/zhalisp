@@ -27,6 +27,7 @@ class Float: public Number {
  public:
   Float(const mpf_class&);
   virtual ~Float();
+  const mpf_class& get_value() const;
   virtual std::string str() const;
   virtual std::string repr() const;
   virtual Type type() const;

@@ -30,6 +30,8 @@ class Complex: public Number {
  public:
   Complex(const PTR<Number>&, const PTR<Number>&);
   virtual ~Complex();
+  const PTR<Number>& get_real() const;
+  const PTR<Number>& get_imag() const;
   virtual std::string str() const;
   virtual std::string repr() const;
   virtual Type type() const;

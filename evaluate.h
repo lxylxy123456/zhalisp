@@ -43,6 +43,14 @@ PTR<Sexp> gt(PTR<List>, ENV);
 PTR<Sexp> ge(PTR<List>, ENV);
 PTR<Sexp> sqrt_(PTR<List>, ENV);
 PTR<Sexp> atom(PTR<List>, ENV);
+PTR<Sexp> listp(PTR<List>, ENV);
+PTR<Sexp> null(PTR<List>, ENV);
+PTR<Sexp> numberp(PTR<List>, ENV);
+PTR<Sexp> typep(PTR<List>, ENV);
+PTR<Sexp> symbolp(PTR<List>, ENV);
+PTR<Sexp> zerop(PTR<List>, ENV);
+PTR<Sexp> evenp(PTR<List>, ENV);
+PTR<Sexp> oddp(PTR<List>, ENV);
 
 PTR<Sexp> evaluate(PTR<Sexp>, ENV);
 

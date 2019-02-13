@@ -25,6 +25,7 @@ class Integer: public Number {
  public:
   Integer(const mpz_class&);
   virtual ~Integer();
+  const mpz_class& get_value() const;
   virtual std::string str() const;
   virtual std::string repr() const;
   virtual Type type() const;

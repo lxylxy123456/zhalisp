@@ -45,6 +45,14 @@ std::map<const std::string, PTR<Sexp>(* const)(PTR<List>, ENV)> fmap = {
   {"SQRT", sqrt_},
   {"SETQ", setq},
   {"ATOM", atom},
+  {"LISTP", listp},
+  {"NULL", null},
+  {"NUMBERP", numberp},
+  {"TYPEP", typep},
+  {"SYMBOLP", symbolp},
+  {"ZEROP", zerop},
+  {"EVENP", evenp},
+  {"ODDP", oddp},
 };
 
 // find_func takes sym and returns function from (PTR<List>, ENV) to PTR<Sexp>
@@ -187,7 +195,81 @@ PTR<Sexp> atom(PTR<List> args, ENV env) {
     throw std::invalid_argument("Too few arguments");
   if (!args->cdr()->nil())
     throw std::invalid_argument("Too many arguments");
-  return BOOL(evaluate(args->car(), env)->type(Type::atom));
+  return BOOL(evaluate(args->car(), env)->has_type(Type::atom));
+}
+
+PTR<Sexp> listp(PTR<List> args, ENV env) {
+  if (args->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->cdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  return BOOL(evaluate(args->car(), env)->has_type(Type::list));
+}
+
+PTR<Sexp> null(PTR<List> args, ENV env) {
+  if (args->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->cdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  return BOOL(evaluate(args->car(), env)->has_type(Type::null));
+}
+
+PTR<Sexp> numberp(PTR<List> args, ENV env) {
+  if (args->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->cdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  return BOOL(evaluate(args->car(), env)->has_type(Type::number));
+}
+
+PTR<Sexp> typep(PTR<List> args, ENV env) {
+  // 0/0
+  if (args->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->cdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  return BOOL(evaluate(args->car(), env)->has_type(Type::list));
+}
+
+PTR<Sexp> symbolp(PTR<List> args, ENV env) {
+  if (args->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->cdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  return BOOL(evaluate(args->car(), env)->has_type(Type::symbol));
+}
+
+PTR<Sexp> zerop(PTR<List> args, ENV env) {
+  if (args->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->cdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  PTR<Integer> int1 = DPCI(evaluate(args->car(), env));
+  if (!int1)
+    throw std::invalid_argument("Invalid argument type");
+  return BOOL(int1->get_value() == 0);
+}
+
+PTR<Sexp> evenp(PTR<List> args, ENV env) {
+  if (args->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->cdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  PTR<Integer> int1 = DPCI(evaluate(args->car(), env));
+  if (!int1)
+    throw std::invalid_argument("Invalid argument type");
+  return BOOL(int1->get_value() % 2 == 0);
+}
+
+PTR<Sexp> oddp(PTR<List> args, ENV env) {
+  if (args->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->cdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  PTR<Integer> int1 = DPCI(evaluate(args->car(), env));
+  if (!int1)
+    throw std::invalid_argument("Invalid argument type");
+  return BOOL(int1->get_value() % 2 == 1);
 }
 
 // Binary Predicates

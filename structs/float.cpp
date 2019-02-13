@@ -28,6 +28,10 @@ Float::~Float() {
 //  std::cout << "~Float" << std::endl;
 }
 
+const mpf_class& Float::get_value() const {
+  return value;
+}
+
 std::string Float::str() const {
   std::ostringstream os;
   os << value;
