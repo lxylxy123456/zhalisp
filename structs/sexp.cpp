@@ -23,14 +23,14 @@ Sexp::~Sexp() {
 }
 
 Type Sexp::type() const {
-  return sexp;
+  return Type::sexp;
 }
 
 bool Sexp::type(Type tid) const {
-  return tid == sexp;
+  return tid == Type::sexp;
 }
 
 const char* Sexp::strtype() {
-  return type_desc[type()];
+  return type_desc[static_cast<int>(type())];
 }
 

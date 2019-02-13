@@ -37,12 +37,12 @@ std::string Integer::repr() const {
 }
 
 Type Integer::type() const {
-  return integer;
+  return Type::integer;
 }
 
 bool Integer::type(Type tid) const {
-  return tid == sexp || tid == atom || tid == number || tid == integer ||
-         tid == rational;
+  return tid == Type::sexp || tid == Type::atom || tid == Type::number ||
+         tid == Type::integer || tid == Type::rational;
 }
 
 PTR<Integer> Integer::lisp_0(new Integer{0});
@@ -61,13 +61,13 @@ PTR<Number> Integer::operator-() const {
 
 PTR<Number> Integer::operator+(const Number& rhs) const {
   switch (rhs.type()) {
-    case integer :
+    case Type::integer :
       return PTRNI(value + DCCI(rhs).value);
-    case rational :
+    case Type::rational :
       return PTRNR(value + DCCR(rhs).value);
-    case float_ :
+    case Type::float_ :
       return PTRNF(value + DCCF(rhs).value);
-    case complex: {
+    case Type::complex: {
       const Complex& r = DCCC(rhs);
       return PTRNC(*this + *r.real, r.imag);
     }
@@ -78,13 +78,13 @@ PTR<Number> Integer::operator+(const Number& rhs) const {
 
 PTR<Number> Integer::operator-(const Number& rhs) const {
   switch (rhs.type()) {
-    case integer :
+    case Type::integer :
       return PTRNI(value - DCCI(rhs).value);
-    case rational :
+    case Type::rational :
       return PTRNR(value - DCCR(rhs).value);
-    case float_ :
+    case Type::float_ :
       return PTRNF(value - DCCF(rhs).value);
-    case complex: {
+    case Type::complex: {
       const Complex& r = DCCC(rhs);
       return PTRNC(*this - *r.real, r.imag);
     }
@@ -95,13 +95,13 @@ PTR<Number> Integer::operator-(const Number& rhs) const {
 
 PTR<Number> Integer::operator*(const Number& rhs) const {
   switch (rhs.type()) {
-    case integer :
+    case Type::integer :
       return PTRNI(value * DCCI(rhs).value);
-    case rational :
+    case Type::rational :
       return reduced_rational(value * DCCR(rhs).value);
-    case float_ :
+    case Type::float_ :
       return PTRNF(value * DCCF(rhs).value);
-    case complex: {
+    case Type::complex: {
       const Complex& r = DCCC(rhs);
       return reduced_complex(*this * *r.real, *this * *r.imag);
     }
@@ -112,13 +112,13 @@ PTR<Number> Integer::operator*(const Number& rhs) const {
 
 PTR<Number> Integer::operator/(const Number& rhs) const {
   switch (rhs.type()) {
-    case integer :
+    case Type::integer :
       return reduced_rational(value / mpq_class(DCCI(rhs).value));
-    case rational :
+    case Type::rational :
       return reduced_rational(value / DCCR(rhs).value);
-    case float_ :
+    case Type::float_ :
       return PTRNF(value * DCCF(rhs).value);
-    case complex: {
+    case Type::complex: {
       const Complex& r = DCCC(rhs);
       PTR<Number> ri = *r.real * *r.imag;
       PTR<Number> denom = *ri * *ri;
@@ -132,16 +132,16 @@ PTR<Number> Integer::operator/(const Number& rhs) const {
 }
 
 bool Integer::operator==(const Number& rhs) const {
-  return rhs.type() == integer && value == DCCI(rhs).value;
+  return rhs.type() == Type::integer && value == DCCI(rhs).value;
 }
 
 bool Integer::operator<(const Number& rhs) const {
   switch (rhs.type()) {
-    case integer :
+    case Type::integer :
       return value < DCCI(rhs).value;
-    case rational :
+    case Type::rational :
       return value < DCCR(rhs).value;
-    case float_ :
+    case Type::float_ :
       return value < DCCF(rhs).value;
     default:
       throw std::invalid_argument("Not a real number");
@@ -150,11 +150,11 @@ bool Integer::operator<(const Number& rhs) const {
 
 bool Integer::operator<=(const Number& rhs) const {
   switch (rhs.type()) {
-    case integer :
+    case Type::integer :
       return value <= DCCI(rhs).value;
-    case rational :
+    case Type::rational :
       return value <= DCCR(rhs).value;
-    case float_ :
+    case Type::float_ :
       return value <= DCCF(rhs).value;
     default:
       throw std::invalid_argument("Not a real number");
@@ -163,11 +163,11 @@ bool Integer::operator<=(const Number& rhs) const {
 
 bool Integer::operator>(const Number& rhs) const {
   switch (rhs.type()) {
-    case integer :
+    case Type::integer :
       return value > DCCI(rhs).value;
-    case rational :
+    case Type::rational :
       return value > DCCR(rhs).value;
-    case float_ :
+    case Type::float_ :
       return value > DCCF(rhs).value;
     default:
       throw std::invalid_argument("Not a real number");
@@ -176,11 +176,11 @@ bool Integer::operator>(const Number& rhs) const {
 
 bool Integer::operator>=(const Number& rhs) const {
   switch (rhs.type()) {
-    case integer :
+    case Type::integer :
       return value >= DCCI(rhs).value;
-    case rational :
+    case Type::rational :
       return value >= DCCR(rhs).value;
-    case float_ :
+    case Type::float_ :
       return value >= DCCF(rhs).value;
     default:
       throw std::invalid_argument("Not a real number");

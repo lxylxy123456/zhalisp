@@ -23,7 +23,7 @@
 #include "float.h"
 
 PTR<Number> reduced_complex(PTR<Number> re, PTR<Number> im) {
-  if (im->type(integer) && DPCI(im)->value == 0)
+  if (im->type(Type::integer) && DPCI(im)->value == 0)
     return re;
   else
     return PTRNC(re, im);
@@ -44,11 +44,12 @@ std::string Complex::repr() const {
 }
 
 Type Complex::type() const {
-  return complex;
+  return Type::complex;
 }
 
 bool Complex::type(Type tid) const {
-  return tid == sexp || tid == atom || tid == number || tid == complex;
+  return tid == Type::sexp || tid == Type::atom || tid == Type::number ||
+         tid == Type::complex;
 }
 
 PTR<Number> Complex::operator+() const {
@@ -61,13 +62,13 @@ PTR<Number> Complex::operator-() const {
 
 PTR<Number> Complex::operator+(const Number& rhs) const {
   switch (rhs.type()) {
-    case integer :
+    case Type::integer :
       return PTRNC(*real + DCCI(rhs), imag);
-    case rational :
+    case Type::rational :
       return PTRNC(*real + DCCR(rhs), imag);
-    case float_ :
+    case Type::float_ :
       return PTRNC(*real + DCCF(rhs), imag);
-    case complex: {
+    case Type::complex: {
       const Complex& r = DCCC(rhs);
       return reduced_complex(*real + *r.real, *imag + *r.imag);
     }
@@ -78,13 +79,13 @@ PTR<Number> Complex::operator+(const Number& rhs) const {
 
 PTR<Number> Complex::operator-(const Number& rhs) const {
   switch (rhs.type()) {
-    case integer :
+    case Type::integer :
       return PTRNC(*real - DCCI(rhs), imag);
-    case rational :
+    case Type::rational :
       return PTRNC(*real - DCCR(rhs), imag);
-    case float_ :
+    case Type::float_ :
       return PTRNC(*real - DCCF(rhs), imag);
-    case complex: {
+    case Type::complex: {
       const Complex& r = DCCC(rhs);
       return reduced_complex(*real - *r.real, *imag - *r.imag);
     }
@@ -95,13 +96,13 @@ PTR<Number> Complex::operator-(const Number& rhs) const {
 
 PTR<Number> Complex::operator*(const Number& rhs) const {
   switch (rhs.type()) {
-    case integer :
+    case Type::integer :
       return reduced_complex(*real * DCCI(rhs), *imag * DCCI(rhs));
-    case rational :
+    case Type::rational :
       return reduced_complex(*real * DCCR(rhs), *imag * DCCR(rhs));
-    case float_ :
+    case Type::float_ :
       return reduced_complex(*real * DCCF(rhs), *imag * DCCF(rhs));
-    case complex: {
+    case Type::complex: {
       const Complex& r = DCCC(rhs);
       PTR<Number> r1r2 = *real * *r.real;
       PTR<Number> i1i2 = *imag * *r.imag;
@@ -116,13 +117,13 @@ PTR<Number> Complex::operator*(const Number& rhs) const {
 
 PTR<Number> Complex::operator/(const Number& rhs) const {
   switch (rhs.type()) {
-    case integer :
+    case Type::integer :
       return reduced_complex(*real / DCCI(rhs), *imag / DCCI(rhs));
-    case rational :
+    case Type::rational :
       return reduced_complex(*real / DCCR(rhs), *imag / DCCR(rhs));
-    case float_ :
+    case Type::float_ :
       return reduced_complex(*real / DCCF(rhs), *imag / DCCF(rhs));
-    case complex: {
+    case Type::complex: {
       const Complex& r = DCCC(rhs);
       PTR<Number> r2i2 = *r.real * *r.imag;
       PTR<Number> r2i22 = *r2i2 * *r2i2;
@@ -138,7 +139,7 @@ PTR<Number> Complex::operator/(const Number& rhs) const {
 }
 
 bool Complex::operator==(const Number& rhs) const {
-  if (rhs.type() != complex)
+  if (rhs.type() != Type::complex)
     return false;
   const Complex& r = DCCC(rhs);
   return real == r.real && imag == r.imag;

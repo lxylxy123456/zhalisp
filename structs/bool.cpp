@@ -36,11 +36,11 @@ std::string Bool::repr() const {
 }
 
 Type Bool::type() const {
-  return bool_;
+  return Type::bool_;
 }
 
 bool Bool::type(Type tid) const {
-  return tid == sexp || tid == atom;
+  return tid == Type::sexp || tid == Type::atom;
 }
 
 PTR<Bool> Bool::lisp_t(new Bool{"T"});

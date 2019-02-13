@@ -38,11 +38,11 @@ std::string Symbol::repr() const {
 }
 
 Type Symbol::type() const {
-  return symbol;
+  return Type::symbol;
 }
 
 bool Symbol::type(Type tid) const {
-  return tid == sexp || tid == atom || tid == symbol;
+  return tid == Type::sexp || tid == Type::atom || tid == Type::symbol;
 }
 
 const std::string& Symbol::get_value() {

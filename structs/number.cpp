@@ -23,10 +23,10 @@ Number::~Number() {
 }
 
 Type Number::type() const {
-  return number;
+  return Type::number;
 }
 
 bool Number::type(Type tid) const {
-  return tid == sexp || tid == atom || tid == number;
+  return tid == Type::sexp || tid == Type::atom || tid == Type::number;
 }
 

@@ -24,7 +24,7 @@
 
 #define PTR std::shared_ptr
 
-enum Type {
+enum struct Type : int {
   sexp,     // not possible return value for type()
   dot,
   symbol,

@@ -33,11 +33,11 @@ std::string Nil::repr() const {
 }
 
 Type Nil::type() const {
-  return null;
+  return Type::null;
 }
 
 bool Nil::type(Type tid) const {
-  return tid == sexp || tid == list || tid == null;
+  return tid == Type::sexp || tid == Type::list || tid == Type::null;
 }
 
 bool Nil::nil() const {

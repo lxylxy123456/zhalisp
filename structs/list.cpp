@@ -36,11 +36,11 @@ std::string List::repr() const {
 }
 
 Type List::type() const {
-  return list;
+  return Type::list;
 }
 
 bool List::type(Type tid) const {
-  return tid == sexp || tid == list;
+  return tid == Type::sexp || tid == Type::list;
 }
 
 bool List::nil() const {

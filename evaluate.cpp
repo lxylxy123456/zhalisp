@@ -44,6 +44,7 @@ std::map<const std::string, PTR<Sexp>(* const)(PTR<List>, ENV)> fmap = {
   {">=", ge},
   {"SQRT", sqrt_},
   {"SETQ", setq},
+  {"ATOM", atom},
 };
 
 // find_func takes sym and returns function from (PTR<List>, ENV) to PTR<Sexp>
@@ -181,6 +182,14 @@ PTR<Sexp> sqrt_(PTR<List> args, ENV env) {
 
 // Unary Predicates
 
+PTR<Sexp> atom(PTR<List> args, ENV env) {
+  if (args->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->cdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  return BOOL(evaluate(args->car(), env)->type(Type::atom));
+}
+
 // Binary Predicates
 
 // Logic
@@ -213,29 +222,29 @@ PTR<Sexp> setq(PTR<List> args, ENV env) {
 
 PTR<Sexp> evaluate(PTR<Sexp> arg, ENV env) {
   switch (arg->type()) {
-  case dot :
+  case Type::dot :
     throw std::invalid_argument("Unexpected input value");
-  case symbol :
+  case Type::symbol :
     return env->find_var(DPC<Symbol>(arg));
-  case list : {
+  case Type::list : {
     std::shared_ptr<List> args = DPC<List>(arg);
     switch (args->car()->type()) {
-      case symbol : {
+      case Type::symbol : {
         PTR<Sexp> (*f)(PTR<List>, ENV) = find_func(DPC<Symbol>(args->car()));
         return f(args->cdr(), env);
       }
-      case list :
+      case Type::list :
         throw std::invalid_argument("To be implemented (lambda)");
       default :
         throw std::invalid_argument("Not calling a function");
     }
   }
-  case null :
-  case integer :
-  case rational :
-  case float_ :
-  case complex :
-  case bool_ :
+  case Type::null :
+  case Type::integer :
+  case Type::rational :
+  case Type::float_ :
+  case Type::complex :
+  case Type::bool_ :
     return arg;
   default :   // sexp, number, atom
     throw std::invalid_argument("Unexpected type");

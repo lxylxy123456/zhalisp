@@ -31,10 +31,10 @@ std::string Dot::repr() const {
 }
 
 Type Dot::type() const {
-  return dot;
+  return Type::dot;
 }
 
 bool Dot::type(Type tid) const {
-  return tid == sexp || tid == dot;
+  return tid == Type::sexp || tid == Type::dot;
 }
 
