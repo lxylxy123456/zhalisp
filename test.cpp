@@ -95,8 +95,8 @@ void test(const std::string& file_name) {
       if (strip(aaa->str()) == "ERROR") {
         bool error_flag = false;
         try {
-          std::cout << "-> " << qq->str() << std::endl;
-          std::cout << "=> " << evaluate(qq, env)->str() << std::endl;
+          std::cout << "-> " << qq->car()->str() << std::endl;
+          std::cout << "=> " << evaluate(qq->car(), env)->str() << std::endl;
         } catch (void*) {   // 0/0
           error_flag = true;
           std::cout << "=> ERROR" << std::endl;
@@ -106,10 +106,11 @@ void test(const std::string& file_name) {
         }
       } else {
         sout.str("");
-        std::cout << "-> " << qq->str() << std::endl;
-        PTR<Sexp> qqq = evaluate(qq, env);
+        std::cout << "-> " << qq->car()->str() << std::endl;
+        PTR<Sexp> qqq = evaluate(qq->car(), env);
         std::istringstream sin(sout.str());
         for (std::string ln; std::getline(sin, ln); ) {
+          std::cout << "p> " << ln << std::endl;
           if (aaa->str() != ln) {
             throw std::runtime_error("Test fails: wrong print output");
           }
@@ -117,6 +118,7 @@ void test(const std::string& file_name) {
           aaa = aa->car();
           aa = aa->cdr();
         }
+        std::cout << "=> " << qqq->str() << std::endl;
         if (!match(qqq, aaa)) {
           std::cout << "!> " << aaa->str() << std::endl;
           throw std::runtime_error("Test fails: wrong answer");
