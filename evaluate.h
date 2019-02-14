@@ -25,7 +25,6 @@
 #define PTR std::shared_ptr
 #define ENV PTR<Envs>
 #define BOOL(X) ((X) ? (PTR<Sexp>)Bool::lisp_t : (PTR<Sexp>)Nil::lisp_nil)
-#define IS_TRUE(X) (!((X)->nil()))
 
 #define DPC std::dynamic_pointer_cast
 #define DPCN DPC<Number>
@@ -66,6 +65,8 @@ PTR<Sexp> or_(PTR<List>, ENV);
 PTR<Sexp> not_(PTR<List>, ENV);
 PTR<Sexp> car(PTR<List>, ENV);
 PTR<Sexp> cdr(PTR<List>, ENV);
+PTR<Sexp> cons(PTR<List>, ENV);
+PTR<Sexp> list_(PTR<List>, ENV);
 
 PTR<Sexp> quote(PTR<List>, ENV);
 

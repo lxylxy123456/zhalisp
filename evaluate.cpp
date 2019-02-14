@@ -62,6 +62,8 @@ std::map<const std::string, PTR<Sexp>(* const)(PTR<List>, ENV)> fmap = {
   {"NOT", not_},
   {"CAR", car},
   {"CDR", cdr},
+  {"CONS", cons},
+  {"LIST", list_},
 };
 
 // find_func takes sym and returns function from (PTR<List>, ENV) to PTR<Sexp>
@@ -428,6 +430,30 @@ PTR<Sexp> cdr(PTR<List> args, ENV env) {
   if (!args->cdr()->nil())
     throw std::invalid_argument("Too many arguments");
   return DPCL(evaluate(args->car(), env))->cdr();
+}
+
+// TODO: caordr
+
+PTR<Sexp> cons(PTR<List> args, ENV env) {
+  if (args->cdr()->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->cdr()->cdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  PTR<Sexp> car = evaluate(args->car(), env);
+  PTR<List> cdr = DPCL(evaluate(args->cdr()->car(), env));
+  if (!cdr)
+    throw std::invalid_argument("Invalid argument type");
+  return PTR<Sexp>(new List{car, cdr});
+}
+
+PTR<Sexp> list_(PTR<List> args, ENV env) {
+  PTR<List> ans = Nil::lisp_nil;
+  PTR<List>* next_ins = &ans;
+  for (PTR<List> i = args; !i->nil(); i = i->cdr()) {
+    *next_ins = PTR<List>(new List{evaluate(i->car(), env), Nil::lisp_nil});
+    next_ins = &(*next_ins)->rw_cdr();
+  }
+  return ans;
 }
 
 // High-Order Functions

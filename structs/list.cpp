@@ -47,3 +47,7 @@ const PTR<List> List::cdr() const {
   return l_cdr;
 }
 
+PTR<List>& List::rw_cdr() {
+  return l_cdr;
+}
+

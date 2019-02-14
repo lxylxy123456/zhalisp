@@ -52,5 +52,9 @@ const PTR<List> Nil::cdr() const {
   return lisp_nil;
 }
 
+PTR<List>& Nil::rw_cdr() {
+  throw std::invalid_argument("Cannot modify cdr of NIL");
+}
+
 PTR<Nil> Nil::lisp_nil(new Nil{});
 
