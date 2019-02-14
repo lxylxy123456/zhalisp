@@ -12,7 +12,7 @@ translate.o: lex.l translate.y
 	lex lex.l
 	yacc translate.y
 	$(CXX) $(CXXFLAGS) y.tab.c -g -c -o $@ \
-		-Wno-unused-function -Wno-class-memaccess
+		-Wno-unused-function #-Wno-class-memaccess
 
 tmp: tmp.cpp $(LIBRARY)
 	$(CXX) $(CXXFLAGS) -o $@ $^

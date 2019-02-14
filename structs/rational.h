@@ -22,6 +22,7 @@
 #include "number.h"
 
 // return Integer when integer, or Rational
+Number* reduced_rational_ns(const mpq_class& q);
 PTR<Number> reduced_rational(const mpq_class& q);
 
 class Rational: public Number {

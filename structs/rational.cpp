@@ -22,6 +22,13 @@
 #include "float.h"
 #include "complex.h"
 
+Number* reduced_rational_ns(const mpq_class& q) {
+  if (q.get_den() == 1)
+    return new Integer{q.get_num()};
+  else
+    return new Rational{q};
+}
+
 PTR<Number> reduced_rational(const mpq_class& q) {
   if (q.get_den() == 1)
     return PTRNI(q.get_num());

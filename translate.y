@@ -21,15 +21,16 @@
 
 #include "translate.h"
 
-#define YYSTYPE std::shared_ptr<Sexp>
+#define YYSTYPE Sexp*
 
-#define NEWLIST(CAR, CDR) static_cast<std::shared_ptr<List>>(new List(CAR, CDR))
-#define NEWLIST2(CAR1, CAR2) NEWLIST(CAR1, NEWLIST(CAR2, Nil::lisp_nil))
-#define NEWTYPE(TYPE, A,B,C) static_cast<std::shared_ptr<TYPE>>(new TYPE(A,B,C))
-#define SCSPL static_cast<std::shared_ptr<List>>
-#define DPCL std::dynamic_pointer_cast<List>
-#define DPCS std::dynamic_pointer_cast<Symbol>
-#define DPCN std::dynamic_pointer_cast<Number>
+#define NEWLST(CAR, CDR) new List(CAR, CDR)
+#define NEWLST2(CAR1, CAR2) NEWLST(CAR1, PTR<List>(NEWLST(CAR2, Nil::lisp_nil)))
+#define DCL dynamic_cast<List*>
+#define DCS dynamic_cast<Symbol*>
+#define DCN dynamic_cast<Number*>
+#define PTRS PTR<Sexp>
+#define PTRL PTR<List>
+#define PTRN PTR<Number>
 %}
 
 %token ID
@@ -37,26 +38,27 @@
 
 %%
 
-
-sexps	: sexp sexps			{ $$ = NEWLIST($1, DPCL($2)); }
-		| 						{ $$ = Nil::lisp_nil; }
-		;
-sexp	: '(' exps ')'			{ $$ = $2; }
-		| '\'' sexp				{ $$ = NEWLIST2(Symbol::lisp_quote, $2); }
-		| '#' '\'' sexp			{ $$ = NEWLIST2(Symbol::lisp_function, $3); }
-		| NUM					{ $$ = $1; }
-		| ID					{ $$ = $1; }
-		| '#' ID '(' NUM NUM ')'{ $$ = reduced_complex(DPCN($4), DPCN($5)); 
-									assert(DPCS($2)->get_value() == "C");}
-		;
-exps	: sexp exps				{ $$ = NEWLIST($1, DPCL($2)); }
-		| sexp '.' exps			{ $$ = NEWLIST($1, DPCL($3)); }
-		|						{ $$ = Nil::lisp_nil; }
-		;
+sexps:sexp sexps			{ $$ = NEWLST(PTRS($1), PTRL(DCL($2))); }
+	 |						{ $$ = new Nil; }
+	 ;
+sexp :'(' exps ')'			{ $$ = $2; }
+	 |'\'' sexp				{ $$ = NEWLST2(Symbol::lisp_quote, PTRS($2)); }
+	 |'#' '\'' sexp			{ $$ = NEWLST2(Symbol::lisp_function, PTRS($3)); }
+	 |NUM					{ $$ = $1; }
+	 |ID					{ $$ = $1; }
+	 |'#' ID '(' NUM NUM ')'{ $$ = reduced_complex(DCN($4), PTRN(DCN($5))); 
+									assert(DCS($2)->get_value() == "C");  }
+	 ;
+exps :sexp exps				{ $$ = NEWLST(PTRS($1), PTRL(DCL($2))); }
+	 |sexp '.' sexp			{ $$ = NEWLST(PTRS($1), PTRL(DCL($3))); }
+	 |						{ $$ = new Nil; }
+	 ;
 
 %%
 
 #include "lex.yy.c"
+
+// TODO: write a function to create PTR, in order to replace use of new Bool and new Nil. This function checks the pointer value and decides whether to use existing PTR object. 
 
 SyntaxError::SyntaxError(std::string d): desc(d) {}
 
@@ -68,6 +70,6 @@ int yyerror(const char *msg) {
 std::shared_ptr<List> parse(std::string s) {
 	yy_scan_string(s.c_str());
 	assert(!yyparse());
-	return std::dynamic_pointer_cast<List>(yyval);
+	return std::shared_ptr<List>(dynamic_cast<List*>(yyval));
 }
 

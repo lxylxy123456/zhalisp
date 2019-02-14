@@ -28,34 +28,34 @@ id	[A-Za-z0-9\+\-\*\/\_\?\>\<\=\!\.]+
 ;.+			{ /* skip comments */ }
 {id}		{
 				if ((yytext[0] | 32) == 't' && yytext[1] == '\0') {
-					yylval = Bool::lisp_t;
+					yylval = new Bool;
 					return ID;
 				}
 				if ((yytext[0] | 32) == 'n' && (yytext[1] | 32) == 'i' &&
 					(yytext[2] | 32) == 'l' && yytext[3] == '\0') {
-					yylval = Nil::lisp_nil;
+					yylval = new Nil;
 					return ID;
 				}
 				try {
 					mpz_class z;
 					z = yytext;
-					yylval = NEWTYP(Integer, z);
+					yylval = new Integer{z};
 					return NUM;
 				} catch (std::invalid_argument& e) {}
 				try {
 					mpf_class f;
 					f = yytext;
-					yylval = NEWTYP(Float, f);
+					yylval = new Float{f};
 					return NUM;
 				} catch (std::invalid_argument& e) {}
 				try {
 					mpq_class q;
 					q = yytext;
 					q.canonicalize();
-					yylval = reduced_rational(q);
+					yylval = reduced_rational_ns(q);
 					return NUM;
 				} catch (std::invalid_argument& e) {}
-				yylval = NEWTYP(Symbol, yytext); 
+				yylval = new Symbol{yytext};
 				return ID; 
 			}
 .			{ return yytext[0]; }

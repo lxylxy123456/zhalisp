@@ -22,8 +22,15 @@
 #include "rational.h"
 #include "float.h"
 
+Number* reduced_complex(Number* re, PTR<Number> im) {
+  if (im->has_type(Type::integer) && DPCI(im)->get_value() == 0)
+    return re;
+  else
+    return new Complex{PTR<Number>(re), im};
+}
+
 PTR<Number> reduced_complex(PTR<Number> re, PTR<Number> im) {
-  if (im->has_type(Type::integer) && DPCI(im)->value == 0)
+  if (im->has_type(Type::integer) && DPCI(im)->get_value() == 0)
     return re;
   else
     return PTRNC(re, im);

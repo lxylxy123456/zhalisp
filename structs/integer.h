@@ -47,7 +47,6 @@ class Integer: public Number {
   friend Rational;
   friend Float;
   friend Complex;
-  friend PTR<Number> reduced_complex(PTR<Number>, PTR<Number>);
 
  private:
   mpz_class value;
