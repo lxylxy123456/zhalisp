@@ -23,18 +23,19 @@
 
 class List: public Sexp {
  public:
-  List(const PTR<Sexp>&, const PTR<List>&);
+  List(const PTR<Sexp>&, const PTR<Sexp>&);
   virtual ~List();
   std::string str() const;
   std::string repr() const;
   virtual Type type() const;
   virtual const PTR<Sexp> car() const;
   virtual const PTR<List> cdr() const;
-  virtual PTR<List>& rw_cdr();          // used for building list online, danger
+  virtual const PTR<Sexp> r_cdr() const;
+  virtual PTR<Sexp>& rw_cdr();          // used for building list online, danger
 
  private:
   PTR<Sexp> l_car;
-  PTR<List> l_cdr;
+  PTR<Sexp> l_cdr;
 };
 
 #endif

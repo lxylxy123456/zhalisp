@@ -20,7 +20,7 @@
 #define NEWTYP(TYPE, ARG) static_cast<std::shared_ptr<TYPE>>(new TYPE(ARG))
 %}
 
-id	[A-Za-z0-9\+\-\*\/\_\?\>\<\=\!\.]+
+id	[A-Za-z0-9\+\-\*\/\_\?\>\<\=\!]+
 
 %%
 

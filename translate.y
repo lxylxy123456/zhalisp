@@ -24,7 +24,7 @@
 #define YYSTYPE Sexp*
 
 #define NEWLST(CAR, CDR) new List(CAR, CDR)
-#define NEWLST2(CAR1, CAR2) NEWLST(CAR1, PTR<List>(NEWLST(CAR2, Nil::lisp_nil)))
+#define NEWLST2(CAR1, CAR2) NEWLST(CAR1, PTR<Sexp>(NEWLST(CAR2, Nil::lisp_nil)))
 #define DCL dynamic_cast<List*>
 #define DCS dynamic_cast<Symbol*>
 #define DCN dynamic_cast<Number*>
@@ -36,7 +36,7 @@
 
 %%
 
-sexps:sexp sexps			{ $$ = NEWLST(PTRS($1), PTRL($2)); }
+sexps:sexp sexps			{ $$ = NEWLST(PTRS($1), PTRS($2)); }
 	 |						{ $$ = Nil::lisp_nil.get(); }
 	 ;
 sexp :'(' exps ')'			{ $$ = $2; }
@@ -47,8 +47,8 @@ sexp :'(' exps ')'			{ $$ = $2; }
 	 |'#' ID '(' NUM NUM ')'{ $$ = reduced_complex_ns(DCN($4), PTRN(DCN($5))); 
 									assert(DCS($2)->get_value() == "C");  }
 	 ;
-exps :sexp exps				{ $$ = NEWLST(PTRS($1), PTRL($2)); }
-	 |sexp '.' sexp			{ $$ = NEWLST(PTRS($1), PTRL($3)); }
+exps :sexp exps				{ $$ = NEWLST(PTRS($1), PTRS($2)); }
+	 |sexp '.' sexp			{ $$ = NEWLST(PTRS($1), PTRS($3)); }
 	 |						{ $$ = Nil::lisp_nil.get(); }
 	 ;
 

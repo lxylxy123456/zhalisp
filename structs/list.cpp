@@ -18,16 +18,26 @@
 
 #include "list.h"
 
-List::List(const PTR<Sexp>& a, const PTR<List>& d): l_car(a), l_cdr(d) {}
+List::List(const PTR<Sexp>& a, const PTR<Sexp>& d): l_car(a), l_cdr(d) {}
 
 List::~List() {
 //  std::cout << "~List" << std::endl;
 }
 
 std::string List::str() const {
-  std::string ans = "(" + this->car()->str();
-  for (PTR<List> i = this->cdr(); !i->nil(); i = i->cdr())
+  std::string ans = "(" + car()->str();
+  PTR<List> i = cdr();
+  if (!i)                                 // (1 . 2)
+    return ans + " . " + r_cdr()->str() + ")";
+  while (!i->nil()) {
     ans += " " + i->car()->str();
+    PTR<List> ii = i->cdr();
+    if (!ii) {                            // (1 2 3 . 4)
+      ans += " . " + i->rw_cdr()->str();
+      break;
+    }
+    i = ii;
+  }
   return ans + ")";
 }
 
@@ -44,10 +54,14 @@ const PTR<Sexp> List::car() const {
 }
 
 const PTR<List> List::cdr() const {
+  return std::dynamic_pointer_cast<List>(l_cdr);
+}
+
+const PTR<Sexp> List::r_cdr() const {
   return l_cdr;
 }
 
-PTR<List>& List::rw_cdr() {
+PTR<Sexp>& List::rw_cdr() {
   return l_cdr;
 }
 
