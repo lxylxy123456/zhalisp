@@ -82,6 +82,6 @@ int yyerror(const char *msg) {
 std::shared_ptr<List> parse(std::string s) {
 	yy_scan_string(s.c_str());
 	assert(!yyparse());
-	return std::shared_ptr<List>(dynamic_cast<List*>(yyval));
+	return PTRL(yyval);
 }
 
