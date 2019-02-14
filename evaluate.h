@@ -59,6 +59,8 @@ PTR<Sexp> eq(PTR<List>, ENV);
 PTR<Sexp> eql(PTR<List>, ENV);
 PTR<Sexp> equal(PTR<List>, ENV);
 
+PTR<Sexp> quote(PTR<List>, ENV);
+
 PTR<Sexp> evaluate(PTR<Sexp>, ENV);
 
 #endif

@@ -56,6 +56,7 @@ std::map<const std::string, PTR<Sexp>(* const)(PTR<List>, ENV)> fmap = {
   {"EQ", eq},
   {"EQL", eql},
   {"EQUAL", equal},
+  {"QUOTE", quote},
 };
 
 // find_func takes sym and returns function from (PTR<List>, ENV) to PTR<Sexp>
@@ -381,6 +382,11 @@ PTR<Sexp> equal(PTR<List> args, ENV env) {
 // High-Order Functions
 
 // Functions
+
+PTR<Sexp> quote(PTR<List> args, ENV env) {
+  assert(args->cdr()->nil());
+  return args->car();
+}
 
 // Variables
 
