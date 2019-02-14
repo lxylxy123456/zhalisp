@@ -28,12 +28,12 @@ id	[A-Za-z0-9\+\-\*\/\_\?\>\<\=\!\.]+
 ;.+			{ /* skip comments */ }
 {id}		{
 				if ((yytext[0] | 32) == 't' && yytext[1] == '\0') {
-					yylval = new Bool;
+					yylval = Bool::lisp_t.get();
 					return ID;
 				}
 				if ((yytext[0] | 32) == 'n' && (yytext[1] | 32) == 'i' &&
 					(yytext[2] | 32) == 'l' && yytext[3] == '\0') {
-					yylval = new Nil;
+					yylval = Nil::lisp_nil.get();
 					return ID;
 				}
 				try {

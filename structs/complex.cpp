@@ -22,7 +22,7 @@
 #include "rational.h"
 #include "float.h"
 
-Number* reduced_complex(Number* re, PTR<Number> im) {
+Number* reduced_complex_ns(Number* re, PTR<Number> im) {
   if (im->has_type(Type::integer) && DPCI(im)->get_value() == 0)
     return re;
   else

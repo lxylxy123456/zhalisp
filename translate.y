@@ -28,8 +28,6 @@
 #define DCL dynamic_cast<List*>
 #define DCS dynamic_cast<Symbol*>
 #define DCN dynamic_cast<Number*>
-#define PTRS PTR<Sexp>
-#define PTRL PTR<List>
 #define PTRN PTR<Number>
 %}
 
@@ -38,27 +36,41 @@
 
 %%
 
-sexps:sexp sexps			{ $$ = NEWLST(PTRS($1), PTRL(DCL($2))); }
-	 |						{ $$ = new Nil; }
+sexps:sexp sexps			{ $$ = NEWLST(PTRS($1), PTRL($2)); }
+	 |						{ $$ = Nil::lisp_nil.get(); }
 	 ;
 sexp :'(' exps ')'			{ $$ = $2; }
 	 |'\'' sexp				{ $$ = NEWLST2(Symbol::lisp_quote, PTRS($2)); }
 	 |'#' '\'' sexp			{ $$ = NEWLST2(Symbol::lisp_function, PTRS($3)); }
 	 |NUM					{ $$ = $1; }
 	 |ID					{ $$ = $1; }
-	 |'#' ID '(' NUM NUM ')'{ $$ = reduced_complex(DCN($4), PTRN(DCN($5))); 
+	 |'#' ID '(' NUM NUM ')'{ $$ = reduced_complex_ns(DCN($4), PTRN(DCN($5))); 
 									assert(DCS($2)->get_value() == "C");  }
 	 ;
-exps :sexp exps				{ $$ = NEWLST(PTRS($1), PTRL(DCL($2))); }
-	 |sexp '.' sexp			{ $$ = NEWLST(PTRS($1), PTRL(DCL($3))); }
-	 |						{ $$ = new Nil; }
+exps :sexp exps				{ $$ = NEWLST(PTRS($1), PTRL($2)); }
+	 |sexp '.' sexp			{ $$ = NEWLST(PTRS($1), PTRL($3)); }
+	 |						{ $$ = Nil::lisp_nil.get(); }
 	 ;
 
 %%
 
 #include "lex.yy.c"
 
-// TODO: write a function to create PTR, in order to replace use of new Bool and new Nil. This function checks the pointer value and decides whether to use existing PTR object. 
+PTR<Sexp> PTRS(Sexp* exp) {
+	void* addr = static_cast<void*>(exp);
+	if (addr == static_cast<void*>(Nil::lisp_nil.get()))
+		return Nil::lisp_nil;
+	if (addr == static_cast<void*>(Bool::lisp_t.get()))
+		return Bool::lisp_t;
+	return PTR<Sexp>(exp);
+}
+
+PTR<List> PTRL(Sexp* exp) {
+	void* addr = static_cast<void*>(exp);
+	if (addr == static_cast<void*>(Nil::lisp_nil.get()))
+		return Nil::lisp_nil;
+	return PTR<List>(dynamic_cast<List*>(exp));
+}
 
 SyntaxError::SyntaxError(std::string d): desc(d) {}
 

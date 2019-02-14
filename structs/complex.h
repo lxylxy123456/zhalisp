@@ -24,7 +24,7 @@
 #include "number.h"
 #include "symbol.h"
 
-Number* reduced_complex(Number* r, PTR<Number> i);
+Number* reduced_complex_ns(Number* r, PTR<Number> i);
 PTR<Number> reduced_complex(PTR<Number> r, PTR<Number> i);
 
 class Complex: public Number {
