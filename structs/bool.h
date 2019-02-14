@@ -23,7 +23,7 @@
 
 class Bool: public Sexp {
  public:
-  Bool(const char * const s);
+  Bool();
   virtual ~Bool();
   std::string str() const;
   std::string repr() const;

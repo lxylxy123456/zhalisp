@@ -18,10 +18,7 @@
 
 #include "bool.h"
 
-Bool::Bool(const char * const s) {
-  if (s[1] != '\0' || (s[0] != 't' && s[0] != 'T'))
-    throw std::invalid_argument("Incorrect type name");
-}
+Bool::Bool() {}
 
 Bool::~Bool() {
 //  std::cout << "~Bool" << std::endl;
@@ -39,5 +36,5 @@ Type Bool::type() const {
   return Type::boolean;
 }
 
-PTR<Bool> Bool::lisp_t(new Bool{"T"});
+PTR<Bool> Bool::lisp_t(new Bool{});
 

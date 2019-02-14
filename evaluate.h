@@ -64,6 +64,8 @@ PTR<Sexp> equal(PTR<List>, ENV);
 PTR<Sexp> and_(PTR<List>, ENV);
 PTR<Sexp> or_(PTR<List>, ENV);
 PTR<Sexp> not_(PTR<List>, ENV);
+PTR<Sexp> car(PTR<List>, ENV);
+PTR<Sexp> cdr(PTR<List>, ENV);
 
 PTR<Sexp> quote(PTR<List>, ENV);
 

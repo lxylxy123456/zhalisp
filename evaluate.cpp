@@ -60,6 +60,8 @@ std::map<const std::string, PTR<Sexp>(* const)(PTR<List>, ENV)> fmap = {
   {"AND", and_},
   {"OR", or_},
   {"NOT", not_},
+  {"CAR", car},
+  {"CDR", cdr},
 };
 
 // find_func takes sym and returns function from (PTR<List>, ENV) to PTR<Sexp>
@@ -387,14 +389,18 @@ PTR<Sexp> equal(PTR<List> args, ENV env) {
 PTR<Sexp> and_(PTR<List> args, ENV env) {
   if (!args)
     return BOOL(true);
-  while (args->car()->t() && args->cdr()->t()) {}
-  return args->car();
+  PTR<Sexp> car;
+  while ((car = evaluate(args->car(), env))->t() && args->cdr()->t())
+    args = args->cdr();
+  return car;
 }
 
 PTR<Sexp> or_(PTR<List> args, ENV env) {
   if (!args)
     return BOOL(false);
-  while (args->car()->nil() && args->cdr()->t()) {}
+  PTR<Sexp> car;
+  while ((car = evaluate(args->car(), env))->nil() && args->cdr()->t())
+    args = args->cdr();
   return args->car();
 }
 
@@ -403,10 +409,26 @@ PTR<Sexp> not_(PTR<List> args, ENV env) {
     throw std::invalid_argument("Too few arguments");
   if (!args->cdr()->nil())
     throw std::invalid_argument("Too many arguments");
-  return BOOL(args->car()->nil());
+  return BOOL(evaluate(args->car(), env)->nil());
 }
 
 // List operations
+
+PTR<Sexp> car(PTR<List> args, ENV env) {
+  if (args->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->cdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  return DPCL(evaluate(args->car(), env))->car();
+}
+
+PTR<Sexp> cdr(PTR<List> args, ENV env) {
+  if (args->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->cdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  return DPCL(evaluate(args->car(), env))->cdr();
+}
 
 // High-Order Functions
 
