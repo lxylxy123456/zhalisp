@@ -22,6 +22,14 @@ Sexp::~Sexp() {
 //  std::cout << "~Sexp" << std::endl;
 }
 
+bool Sexp::nil() const {
+  return false;
+}
+
+bool Sexp::t() const {
+  return true;
+}
+
 Type Sexp::type() const {
   return Type::sexp;
 }

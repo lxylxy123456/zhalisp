@@ -24,7 +24,8 @@
 
 #define PTR std::shared_ptr
 #define ENV PTR<Envs>
-#define BOOL(X) (X ? (PTR<Sexp>)Bool::lisp_t : (PTR<Sexp>)Nil::lisp_nil)
+#define BOOL(X) ((X) ? (PTR<Sexp>)Bool::lisp_t : (PTR<Sexp>)Nil::lisp_nil)
+#define IS_TRUE(X) (!((X)->nil()))
 
 #define DPC std::dynamic_pointer_cast
 #define DPCN DPC<Number>
@@ -32,6 +33,8 @@
 #define DPCL DPC<List>
 
 PTR<Sexp> (*find_func(PTR<Symbol> sym))(PTR<List>, ENV);
+bool is_eql(PTR<Sexp> a, PTR<Sexp> b);
+bool is_equal(PTR<Sexp> a, PTR<Sexp> b);
 
 PTR<Sexp> plus(PTR<List>, ENV);
 PTR<Sexp> minus(PTR<List>, ENV);
@@ -58,6 +61,9 @@ PTR<Sexp> oddp(PTR<List>, ENV);
 PTR<Sexp> eq(PTR<List>, ENV);
 PTR<Sexp> eql(PTR<List>, ENV);
 PTR<Sexp> equal(PTR<List>, ENV);
+PTR<Sexp> and_(PTR<List>, ENV);
+PTR<Sexp> or_(PTR<List>, ENV);
+PTR<Sexp> not_(PTR<List>, ENV);
 
 PTR<Sexp> quote(PTR<List>, ENV);
 

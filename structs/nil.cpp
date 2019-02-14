@@ -32,12 +32,16 @@ std::string Nil::repr() const {
   return "Nil<()>";
 }
 
-Type Nil::type() const {
-  return Type::null;
-}
-
 bool Nil::nil() const {
   return true;
+}
+
+bool Nil::t() const {
+  return false;
+}
+
+Type Nil::type() const {
+  return Type::null;
 }
 
 const PTR<Sexp> Nil::car() const {

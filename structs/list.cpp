@@ -39,10 +39,6 @@ Type List::type() const {
   return Type::list;
 }
 
-bool List::nil() const {
-  return false;
-}
-
 const PTR<Sexp> List::car() const {
   return l_car;
 }

@@ -57,6 +57,9 @@ std::map<const std::string, PTR<Sexp>(* const)(PTR<List>, ENV)> fmap = {
   {"EQL", eql},
   {"EQUAL", equal},
   {"QUOTE", quote},
+  {"AND", and_},
+  {"OR", or_},
+  {"NOT", not_},
 };
 
 // find_func takes sym and returns function from (PTR<List>, ENV) to PTR<Sexp>
@@ -65,6 +68,60 @@ PTR<Sexp> (*find_func(PTR<Symbol> sym))(PTR<List>, ENV) {
   if (!f)
     throw std::invalid_argument("Function not found");
   return f;
+}
+
+bool is_eql(PTR<Sexp> a, PTR<Sexp> b) {
+  Type ta = a->type();
+  if (ta != b->type())
+    return false;
+  switch (ta) {
+  case Type::integer :
+    return *DPCI(a) == *DPCI(b);
+  case Type::rational :
+    return *DPCR(a) == *DPCR(b);
+  case Type::float_ :
+    return *DPCF(a) == *DPCF(b);
+  case Type::complex :
+    return *DPCC(a) == *DPCC(b);
+  case Type::list :
+    return a.get() == b.get();
+  case Type::symbol :
+    return DPCS(a)->get_value() == DPCS(b)->get_value();
+  case Type::dot :
+  case Type::null :
+  case Type::boolean :
+    return true;
+  default :
+    throw std::invalid_argument("Invalid type");
+  }
+}
+
+bool is_equal(PTR<Sexp> a, PTR<Sexp> b) {
+  Type ta = a->type();
+  if (ta != b->type())
+    return false;
+  switch (ta) {
+  case Type::integer :
+    return *DPCI(a) == *DPCI(b);
+  case Type::rational :
+    return *DPCR(a) == *DPCR(b);
+  case Type::float_ :
+    return *DPCF(a) == *DPCF(b);
+  case Type::complex :
+    return *DPCC(a) == *DPCC(b);
+  case Type::list : {
+    PTR<List> la = DPCL(a), lb = DPCL(b);
+    return is_equal(la->car(), lb->car()) && is_equal(la->cdr(), lb->cdr());
+  }
+  case Type::symbol :
+    return DPCS(a)->get_value() == DPCS(b)->get_value();
+  case Type::dot :
+  case Type::null :
+  case Type::boolean :
+    return true;
+  default :
+    throw std::invalid_argument("Invalid type");
+  }
 }
 
 // Arithmetics
@@ -309,73 +366,45 @@ PTR<Sexp> eql(PTR<List> args, ENV env) {
   if (args->cdr()->nil())
     throw std::invalid_argument("Too few arguments");
   if (!args->cdr()->cdr()->nil())
-    throw std::invalid_argument("Too many arguments (not supporting 3rd arg)");
+    throw std::invalid_argument("Too many arguments");
   PTR<Sexp> a = evaluate(args->car(), env);
   PTR<Sexp> b = evaluate(args->cdr()->car(), env);
-  Type ta = a->type();
-  if (ta != b->type())
-    return BOOL(false);
-  switch (ta) {
-  case Type::integer :
-    return BOOL(*DPCI(a) == *DPCI(b));
-  case Type::rational :
-    return BOOL(*DPCR(a) == *DPCR(b));
-  case Type::float_ :
-    return BOOL(*DPCF(a) == *DPCF(b));
-  case Type::complex :
-    return BOOL(*DPCC(a) == *DPCC(b));
-  case Type::list :
-    return BOOL(a.get() == b.get());
-  case Type::symbol :
-    return BOOL(DPCS(a)->get_value() == DPCS(b)->get_value());
-  case Type::dot :
-  case Type::null :
-  case Type::boolean :
-    return BOOL(true);
-  default :
-    throw std::invalid_argument("Invalid type");
-  }
-}
-
-bool equal_recu(PTR<Sexp> a, PTR<Sexp> b) {
-  Type ta = a->type();
-  if (ta != b->type())
-    return false;
-  switch (ta) {
-  case Type::integer :
-    return *DPCI(a) == *DPCI(b);
-  case Type::rational :
-    return *DPCR(a) == *DPCR(b);
-  case Type::float_ :
-    return *DPCF(a) == *DPCF(b);
-  case Type::complex :
-    return *DPCC(a) == *DPCC(b);
-  case Type::list : {
-    PTR<List> la = DPCL(a), lb = DPCL(b);
-    return equal_recu(la->car(), lb->car()) && equal_recu(la->cdr(), lb->cdr());
-  }
-  case Type::symbol :
-    return DPCS(a)->get_value() == DPCS(b)->get_value();
-  case Type::dot :
-  case Type::null :
-  case Type::boolean :
-    return true;
-  default :
-    throw std::invalid_argument("Invalid type");
-  }
+  return BOOL(is_eql(a, b));
 }
 
 PTR<Sexp> equal(PTR<List> args, ENV env) {
   if (args->cdr()->nil())
     throw std::invalid_argument("Too few arguments");
   if (!args->cdr()->cdr()->nil())
-    throw std::invalid_argument("Too many arguments (not supporting 3rd arg)");
+    throw std::invalid_argument("Too many arguments");
   PTR<Sexp> a = evaluate(args->car(), env);
   PTR<Sexp> b = evaluate(args->cdr()->car(), env);
-  return BOOL(equal_recu(a, b));
+  return BOOL(is_equal(a, b));
 }
 
 // Logic
+
+PTR<Sexp> and_(PTR<List> args, ENV env) {
+  if (!args)
+    return BOOL(true);
+  while (args->car()->t() && args->cdr()->t()) {}
+  return args->car();
+}
+
+PTR<Sexp> or_(PTR<List> args, ENV env) {
+  if (!args)
+    return BOOL(false);
+  while (args->car()->nil() && args->cdr()->t()) {}
+  return args->car();
+}
+
+PTR<Sexp> not_(PTR<List> args, ENV env) {
+  if (args->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->cdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  return BOOL(args->car()->nil());
+}
 
 // List operations
 

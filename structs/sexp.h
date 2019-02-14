@@ -44,6 +44,8 @@ class Sexp {
   virtual ~Sexp();
   virtual std::string str() const = 0;
   virtual std::string repr() const = 0;
+  virtual bool nil() const;
+  virtual bool t() const;
   virtual Type type() const;
   bool has_type(Type) const;
   const char* strtype();

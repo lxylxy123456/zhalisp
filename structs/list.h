@@ -28,7 +28,6 @@ class List: public Sexp {
   std::string str() const;
   std::string repr() const;
   virtual Type type() const;
-  virtual bool nil() const;
   virtual const PTR<Sexp> car() const;
   virtual const PTR<List> cdr() const;
 
