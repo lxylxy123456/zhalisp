@@ -23,9 +23,13 @@
 #include "environment.h"
 
 #define PTR std::shared_ptr
-#define DPC std::dynamic_pointer_cast
 #define ENV PTR<Envs>
 #define BOOL(X) (X ? (PTR<Sexp>)Bool::lisp_t : (PTR<Sexp>)Nil::lisp_nil)
+
+#define DPC std::dynamic_pointer_cast
+#define DPCN DPC<Number>
+#define DPCS DPC<Symbol>
+#define DPCL DPC<List>
 
 PTR<Sexp> (*find_func(PTR<Symbol> sym))(PTR<List>, ENV);
 
@@ -51,6 +55,9 @@ PTR<Sexp> symbolp(PTR<List>, ENV);
 PTR<Sexp> zerop(PTR<List>, ENV);
 PTR<Sexp> evenp(PTR<List>, ENV);
 PTR<Sexp> oddp(PTR<List>, ENV);
+PTR<Sexp> eq(PTR<List>, ENV);
+PTR<Sexp> eql(PTR<List>, ENV);
+PTR<Sexp> equal(PTR<List>, ENV);
 
 PTR<Sexp> evaluate(PTR<Sexp>, ENV);
 
