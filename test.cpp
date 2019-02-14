@@ -97,7 +97,7 @@ void test(const std::string& file_name) {
         try {
           std::cout << "-> " << qq->car()->str() << std::endl;
           std::cout << "=> " << evaluate(qq->car(), env)->str() << std::endl;
-        } catch (void*) {   // 0/0
+        } catch (...) {   // https://stackoverflow.com/a/22268788/
           error_flag = true;
           std::cout << "=> ERROR" << std::endl;
         }
