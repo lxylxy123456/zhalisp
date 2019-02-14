@@ -27,13 +27,12 @@ id	[A-Za-z0-9\+\-\*\/\_\?\>\<\=\!\.]+
 [ \n]	{ /* skip blanks */ }
 ;.+		{ /* skip comments */ }
 {id}	{
-			if ((yytext[0] == 't' || yytext[0] == 'T') && yytext[1] == '\0') {
+			if ((yytext[0] | 32) == 't' && yytext[1] == '\0') {
 				yylval = Bool::lisp_t;
 				return ID;
 			}
-			if ((yytext[0] == 'n' || yytext[0] == 'N') &&
-				(yytext[1] == 'i' || yytext[1] == 'I') &&
-				(yytext[2] == 'l' || yytext[2] == 'L') && yytext[3] == '\0') {
+			if ((yytext[0] | 32) == 'n' && (yytext[1] | 32) == 'i' &&
+				(yytext[2] | 32) == 'l' && yytext[3] == '\0') {
 				yylval = Nil::lisp_nil;
 				return ID;
 			}
