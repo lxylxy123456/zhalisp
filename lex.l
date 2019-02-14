@@ -25,7 +25,7 @@ id	[A-Za-z0-9\+\-\*\/\_\?\>\<\=\!\.]+
 %%
 
 [ \n\t\r]	{ /* skip blanks */ }
-;.+			{ /* skip comments */ }
+;.*			{ /* skip comments */ }
 {id}		{
 				if ((yytext[0] | 32) == 't' && yytext[1] == '\0') {
 					yylval = Bool::lisp_t.get();
