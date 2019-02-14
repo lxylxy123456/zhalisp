@@ -33,6 +33,7 @@
 
 %token ID
 %token NUM
+%token DOT
 
 %%
 
@@ -48,7 +49,7 @@ sexp :'(' exps ')'			{ $$ = $2; }
 									assert(DCS($2)->get_value() == "C");  }
 	 ;
 exps :sexp exps				{ $$ = NEWLST(PTRS($1), PTRS($2)); }
-	 |sexp '.' sexp			{ $$ = NEWLST(PTRS($1), PTRS($3)); }
+	 |sexp DOT sexp			{ $$ = NEWLST(PTRS($1), PTRS($3)); }
 	 |						{ $$ = Nil::lisp_nil.get(); }
 	 ;
 

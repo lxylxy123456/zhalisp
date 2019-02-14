@@ -20,13 +20,16 @@
 #define NEWTYP(TYPE, ARG) static_cast<std::shared_ptr<TYPE>>(new TYPE(ARG))
 %}
 
-id	[A-Za-z0-9\+\-\*\/\_\?\>\<\=\!]+
+id	[A-Za-z0-9\+\-\*\/\_\?\>\<\=\!\.]+
 
 %%
 
 [ \n\t\r]	{ /* skip blanks */ }
 ;.*			{ /* skip comments */ }
 {id}		{
+				if (yytext[0] == '.' && yytext[1] == '\0') {
+					return DOT;
+				}
 				if ((yytext[0] | 32) == 't' && yytext[1] == '\0') {
 					yylval = Bool::lisp_t.get();
 					return ID;
