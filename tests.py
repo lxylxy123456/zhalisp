@@ -50,8 +50,6 @@ def match(a, b) :
 
 def test(file) :
 	tests = []
-	stdout = []
-	state = 0
 	for ln in open(file).read().split('\n') :
 		if not ln :
 			continue
@@ -61,6 +59,7 @@ def test(file) :
 			tests[-1].append(ln[2:].lstrip())
 		else :
 			tests[-1][-1] += '\n' + ln
+	stdout = []
 	env = build_test_env(stdout)
 	for q, a in tests :
 		if q.strip().upper() == 'CLEAR-ENV' :
