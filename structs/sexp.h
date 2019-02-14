@@ -34,7 +34,7 @@ enum struct Type : int {
   float_,
   complex,
   atom,     // not possible return value for type()
-  bool_,
+  boolean,
   list,
   null
 };

@@ -36,7 +36,7 @@ std::string Bool::repr() const {
 }
 
 Type Bool::type() const {
-  return Type::bool_;
+  return Type::boolean;
 }
 
 PTR<Bool> Bool::lisp_t(new Bool{"T"});

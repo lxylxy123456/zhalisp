@@ -41,9 +41,9 @@ bool Sexp::has_type(Type tid) const {
     0b0000101001001,   // float_
     0b0000110001001,   // complex
     0b0000100000001,   // atom
-    0b0001100000001,   // bool_
+    0b0001100000001,   // boolean
     0b0010000000001,   // list
-    0b0110100000001,   // null
+    0b0111100000001,   // null
   };
   return type_matrix[static_cast<int>(type())] & (1 << static_cast<int>(tid));
 }

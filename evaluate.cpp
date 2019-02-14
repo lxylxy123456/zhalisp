@@ -223,12 +223,35 @@ PTR<Sexp> numberp(PTR<List> args, ENV env) {
 }
 
 PTR<Sexp> typep(PTR<List> args, ENV env) {
-  // 0/0
-  if (args->nil())
+  if (args->cdr()->nil())
     throw std::invalid_argument("Too few arguments");
-  if (!args->cdr()->nil())
-    throw std::invalid_argument("Too many arguments");
-  return BOOL(evaluate(args->car(), env)->has_type(Type::list));
+  if (!args->cdr()->cdr()->nil())
+    throw std::invalid_argument("Too many arguments (not supporting 3rd arg)");
+  PTR<Symbol> type_name = DPC<Symbol>(args->cdr()->car());
+  if (!type_name)
+    throw std::invalid_argument("Invalid argument type");
+  else if (type_name->get_value() == "ATOM")
+    return BOOL(evaluate(args->car(), env)->has_type(Type::atom));
+  else if (type_name->get_value() == "LIST")
+    return BOOL(evaluate(args->car(), env)->has_type(Type::list));
+  else if (type_name->get_value() == "NUMBER")
+    return BOOL(evaluate(args->car(), env)->has_type(Type::number));
+  else if (type_name->get_value() == "INTEGER")
+    return BOOL(evaluate(args->car(), env)->has_type(Type::integer));
+  else if (type_name->get_value() == "RATIONAL")
+    return BOOL(evaluate(args->car(), env)->has_type(Type::rational));
+  else if (type_name->get_value() == "FLOAT")
+    return BOOL(evaluate(args->car(), env)->has_type(Type::float_));
+  else if (type_name->get_value() == "COMPLEX")
+    return BOOL(evaluate(args->car(), env)->has_type(Type::complex));
+  else if (type_name->get_value() == "SYMBOL")
+    return BOOL(evaluate(args->car(), env)->has_type(Type::symbol));
+  else if (type_name->get_value() == "BOOLEAN")
+    return BOOL(evaluate(args->car(), env)->has_type(Type::boolean));
+  else if (type_name->get_value() == "NIL")
+    return BOOL(false);
+  else
+    throw std::invalid_argument("Invalid type specifier or not implemented");
 }
 
 PTR<Sexp> symbolp(PTR<List> args, ENV env) {
@@ -326,7 +349,7 @@ PTR<Sexp> evaluate(PTR<Sexp> arg, ENV env) {
   case Type::rational :
   case Type::float_ :
   case Type::complex :
-  case Type::bool_ :
+  case Type::boolean :
     return arg;
   default :   // sexp, number, atom
     throw std::invalid_argument("Unexpected type");
