@@ -67,6 +67,7 @@ PTR<Sexp> car(PTR<List>, ENV);
 PTR<Sexp> cdr(PTR<List>, ENV);
 PTR<Sexp> cons(PTR<List>, ENV);
 PTR<Sexp> list_(PTR<List>, ENV);
+PTR<Sexp> member(PTR<List>, ENV);
 
 PTR<Sexp> quote(PTR<List>, ENV);
 

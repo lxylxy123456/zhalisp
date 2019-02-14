@@ -64,6 +64,7 @@ std::map<const std::string, PTR<Sexp>(* const)(PTR<List>, ENV)> fmap = {
   {"CDR", cdr},
   {"CONS", cons},
   {"LIST", list_},
+  {"MEMBER", member},
 };
 
 // find_func takes sym and returns function from (PTR<List>, ENV) to PTR<Sexp>
@@ -454,6 +455,22 @@ PTR<Sexp> list_(PTR<List> args, ENV env) {
     next_ins = &(*next_ins)->rw_cdr();
   }
   return ans;
+}
+
+PTR<Sexp> member(PTR<List> args, ENV env) {
+  if (args->cdr()->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->cdr()->cdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  PTR<Sexp> x = evaluate(args->car(), env);
+  PTR<List> l = DPCL(evaluate(args->cdr()->car(), env));
+  while (!l->nil()) {
+    if (is_eql(x, l->car()))
+      return l;
+    else
+      l = l->cdr();
+  }
+  return l;
 }
 
 // High-Order Functions
