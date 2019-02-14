@@ -31,45 +31,8 @@
 #define DPCS DPC<Symbol>
 #define DPCL DPC<List>
 
-PTR<Sexp> (*find_func(PTR<Symbol> sym))(PTR<List>, ENV);
 bool is_eql(PTR<Sexp> a, PTR<Sexp> b);
 bool is_equal(PTR<Sexp> a, PTR<Sexp> b);
-
-PTR<Sexp> plus(PTR<List>, ENV);
-PTR<Sexp> minus(PTR<List>, ENV);
-PTR<Sexp> mul(PTR<List>, ENV);
-PTR<Sexp> div(PTR<List>, ENV);
-PTR<Sexp> setq(PTR<List>, ENV);
-PTR<Sexp> one_plus(PTR<List>, ENV);
-PTR<Sexp> one_minus(PTR<List>, ENV);
-PTR<Sexp> eq_(PTR<List>, ENV);
-PTR<Sexp> lt(PTR<List>, ENV);
-PTR<Sexp> le(PTR<List>, ENV);
-PTR<Sexp> gt(PTR<List>, ENV);
-PTR<Sexp> ge(PTR<List>, ENV);
-PTR<Sexp> sqrt_(PTR<List>, ENV);
-PTR<Sexp> atom(PTR<List>, ENV);
-PTR<Sexp> listp(PTR<List>, ENV);
-PTR<Sexp> null(PTR<List>, ENV);
-PTR<Sexp> numberp(PTR<List>, ENV);
-PTR<Sexp> typep(PTR<List>, ENV);
-PTR<Sexp> symbolp(PTR<List>, ENV);
-PTR<Sexp> zerop(PTR<List>, ENV);
-PTR<Sexp> evenp(PTR<List>, ENV);
-PTR<Sexp> oddp(PTR<List>, ENV);
-PTR<Sexp> eq(PTR<List>, ENV);
-PTR<Sexp> eql(PTR<List>, ENV);
-PTR<Sexp> equal(PTR<List>, ENV);
-PTR<Sexp> and_(PTR<List>, ENV);
-PTR<Sexp> or_(PTR<List>, ENV);
-PTR<Sexp> not_(PTR<List>, ENV);
-PTR<Sexp> car(PTR<List>, ENV);
-PTR<Sexp> cdr(PTR<List>, ENV);
-PTR<Sexp> cons(PTR<List>, ENV);
-PTR<Sexp> list_(PTR<List>, ENV);
-PTR<Sexp> member(PTR<List>, ENV);
-
-PTR<Sexp> quote(PTR<List>, ENV);
 
 PTR<Sexp> evaluate(PTR<Sexp>, ENV);
 

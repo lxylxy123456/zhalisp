@@ -23,51 +23,6 @@
 
 // Helper functions
 
-std::map<const std::string, PTR<Sexp>(* const)(PTR<List>, ENV)> fmap = {
-  {"+", plus},
-  {"-", minus},
-  {"*", mul},
-  {"/", div},
-  {"1+", one_plus},
-  {"1-", one_minus},
-  {"=", eq_},
-  {"<", lt},
-  {"<=", le},
-  {">", gt},
-  {">=", ge},
-  {"SQRT", sqrt_},
-  {"SETQ", setq},
-  {"ATOM", atom},
-  {"LISTP", listp},
-  {"NULL", null},
-  {"NUMBERP", numberp},
-  {"TYPEP", typep},
-  {"SYMBOLP", symbolp},
-  {"ZEROP", zerop},
-  {"EVENP", evenp},
-  {"ODDP", oddp},
-  {"EQ", eq},
-  {"EQL", eql},
-  {"EQUAL", equal},
-  {"QUOTE", quote},
-  {"AND", and_},
-  {"OR", or_},
-  {"NOT", not_},
-  {"CAR", car},
-  {"CDR", cdr},
-  {"CONS", cons},
-  {"LIST", list_},
-  {"MEMBER", member},
-};
-
-// find_func takes sym and returns function from (PTR<List>, ENV) to PTR<Sexp>
-PTR<Sexp> (*find_func(PTR<Symbol> sym))(PTR<List>, ENV) {
-  PTR<Sexp>(*f)(PTR<List>, ENV) = fmap[sym->get_value()];
-  if (!f)
-    throw std::invalid_argument("Function not found");
-  return f;
-}
-
 bool is_eql(PTR<Sexp> a, PTR<Sexp> b) {
   Type ta = a->type();
   if (ta != b->type())
@@ -357,7 +312,14 @@ PTR<Sexp> oddp(PTR<List> args, ENV env) {
 // Binary Predicates
 
 PTR<Sexp> eq(PTR<List> args, ENV env) {
-  return eql(args, env);
+  // Same as eql
+  if (args->cdr()->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->cdr()->cdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  PTR<Sexp> a = evaluate(args->car(), env);
+  PTR<Sexp> b = evaluate(args->cdr()->car(), env);
+  return BOOL(is_eql(a, b));
 }
 
 PTR<Sexp> eql(PTR<List> args, ENV env) {
@@ -505,6 +467,51 @@ PTR<Sexp> setq(PTR<List> args, ENV env) {
 // Special functions
 
 // Evaluate
+
+std::map<const std::string, PTR<Sexp>(* const)(PTR<List>, ENV)> fmap = {
+  {"+", plus},
+  {"-", minus},
+  {"*", mul},
+  {"/", div},
+  {"1+", one_plus},
+  {"1-", one_minus},
+  {"=", eq_},
+  {"<", lt},
+  {"<=", le},
+  {">", gt},
+  {">=", ge},
+  {"SQRT", sqrt_},
+  {"SETQ", setq},
+  {"ATOM", atom},
+  {"LISTP", listp},
+  {"NULL", null},
+  {"NUMBERP", numberp},
+  {"TYPEP", typep},
+  {"SYMBOLP", symbolp},
+  {"ZEROP", zerop},
+  {"EVENP", evenp},
+  {"ODDP", oddp},
+  {"EQ", eq},
+  {"EQL", eql},
+  {"EQUAL", equal},
+  {"QUOTE", quote},
+  {"AND", and_},
+  {"OR", or_},
+  {"NOT", not_},
+  {"CAR", car},
+  {"CDR", cdr},
+  {"CONS", cons},
+  {"LIST", list_},
+  {"MEMBER", member},
+};
+
+// find_func takes sym and returns function from (PTR<List>, ENV) to PTR<Sexp>
+PTR<Sexp> (*find_func(PTR<Symbol> sym))(PTR<List>, ENV) {
+  PTR<Sexp>(*f)(PTR<List>, ENV) = fmap[sym->get_value()];
+  if (!f)
+    throw std::invalid_argument("Function not found");
+  return f;
+}
 
 PTR<Sexp> evaluate(PTR<Sexp> arg, ENV env) {
   switch (arg->type()) {
