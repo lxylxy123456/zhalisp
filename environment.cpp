@@ -46,7 +46,7 @@ void Env::set_fun(PTR<Symbol> s, PTR<Sexp> e) {
   function[s->get_value()] = e;
 }
 
-Envs::Envs(PTR<Env> global): envs(1, global) {}
+Envs::Envs(PTR<Env> global, std::ostream& o): envs(1, global), os(o) {}
 
 PTR<Sexp> Envs::find_var(PTR<Symbol> s) {
   for (auto i = envs.rbegin(); i != envs.rend(); i++)

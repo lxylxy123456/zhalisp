@@ -24,41 +24,41 @@ id	[A-Za-z0-9\+\-\*\/\_\?\>\<\=\!\.]+
 
 %%
 
-[ \n]	{ /* skip blanks */ }
-;.+		{ /* skip comments */ }
-{id}	{
-			if ((yytext[0] | 32) == 't' && yytext[1] == '\0') {
-				yylval = Bool::lisp_t;
-				return ID;
+[ \n\t\r]	{ /* skip blanks */ }
+;.+			{ /* skip comments */ }
+{id}		{
+				if ((yytext[0] | 32) == 't' && yytext[1] == '\0') {
+					yylval = Bool::lisp_t;
+					return ID;
+				}
+				if ((yytext[0] | 32) == 'n' && (yytext[1] | 32) == 'i' &&
+					(yytext[2] | 32) == 'l' && yytext[3] == '\0') {
+					yylval = Nil::lisp_nil;
+					return ID;
+				}
+				try {
+					mpz_class z;
+					z = yytext;
+					yylval = NEWTYP(Integer, z);
+					return NUM;
+				} catch (std::invalid_argument& e) {}
+				try {
+					mpf_class f;
+					f = yytext;
+					yylval = NEWTYP(Float, f);
+					return NUM;
+				} catch (std::invalid_argument& e) {}
+				try {
+					mpq_class q;
+					q = yytext;
+					q.canonicalize();
+					yylval = reduced_rational(q);
+					return NUM;
+				} catch (std::invalid_argument& e) {}
+				yylval = NEWTYP(Symbol, yytext); 
+				return ID; 
 			}
-			if ((yytext[0] | 32) == 'n' && (yytext[1] | 32) == 'i' &&
-				(yytext[2] | 32) == 'l' && yytext[3] == '\0') {
-				yylval = Nil::lisp_nil;
-				return ID;
-			}
-			try {
-				mpz_class z;
-				z = yytext;
-				yylval = NEWTYP(Integer, z);
-				return NUM;
-			} catch (std::invalid_argument& e) {}
-			try {
-				mpf_class f;
-				f = yytext;
-				yylval = NEWTYP(Float, f);
-				return NUM;
-			} catch (std::invalid_argument& e) {}
-			try {
-				mpq_class q;
-				q = yytext;
-				q.canonicalize();
-				yylval = reduced_rational(q);
-				return NUM;
-			} catch (std::invalid_argument& e) {}
-			yylval = NEWTYP(Symbol, yytext); 
-			return ID; 
-		}
-.		{ return yytext[0]; }
+.			{ return yytext[0]; }
 
 %%
 

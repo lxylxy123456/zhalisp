@@ -43,7 +43,7 @@ class Env {
 
 class Envs {
  public:
-  Envs(PTR<Env>);
+  Envs(PTR<Env>, std::ostream&);
   PTR<Sexp> find_var(PTR<Symbol>);
   void set_var(PTR<Symbol>, PTR<Sexp>);
   PTR<Sexp> find_fun(PTR<Symbol>);
@@ -51,7 +51,7 @@ class Envs {
 
  private:
   std::vector<PTR<Env>> envs;
-  // TODO: record environment for print
+  std::ostream& os;
 };
 
 #endif

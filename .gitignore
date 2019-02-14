@@ -1,6 +1,7 @@
 *.o
 a.out
 tmp
+test
 
 lex.yy.c
 y.tab.c

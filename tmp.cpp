@@ -23,7 +23,7 @@
 
 int main(int argc, char* argv[]) {
   for (int i = 1; i < argc; i++) {
-    PTR<Envs> env = PTR<Envs>(new Envs(PTR<Env>(new Env)));
+    PTR<Envs> env = PTR<Envs>(new Envs(PTR<Env>(new Env), std::cout));
     for (std::shared_ptr<List> j = parse(argv[i]); !j->nil(); j = j->cdr()) {
       std::cout << j->car()->str() << std::endl;
       PTR<Sexp> e = evaluate(j->car(), env);
