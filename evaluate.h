@@ -34,6 +34,8 @@
 bool is_eql(PTR<Sexp> a, PTR<Sexp> b);
 bool is_equal(PTR<Sexp> a, PTR<Sexp> b);
 
+PTR<Sexp> (*find_func(PTR<Symbol> sym, ENV env))(PTR<List>, ENV);
+
 PTR<Sexp> evaluate(PTR<Sexp>, ENV);
 
 #endif

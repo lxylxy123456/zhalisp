@@ -21,6 +21,8 @@
 
 #include "sexp.h"
 
+#define PTRNL(X, Y) PTR<List>(new List{X, Y})
+
 class List: public Sexp {
  public:
   List(const PTR<Sexp>&, const PTR<Sexp>&);

@@ -397,14 +397,14 @@ PTR<Sexp> cons(PTR<List> args, ENV env) {
     throw std::invalid_argument("Too many arguments");
   PTR<Sexp> car = evaluate(args->car(), env);
   PTR<Sexp> cdr = evaluate(args->cdr()->car(), env);
-  return PTR<Sexp>(new List{car, cdr});
+  return PTRNL(car, cdr);
 }
 
 PTR<Sexp> list_(PTR<List> args, ENV env) {
   PTR<Sexp> ans = Nil::lisp_nil;
   PTR<Sexp>* next_ins = &ans;
   for (PTR<List> i = args; i && !i->nil(); i = i->cdr()) {
-    *next_ins = PTR<List>(new List{evaluate(i->car(), env), Nil::lisp_nil});
+    *next_ins = PTRNL(evaluate(i->car(), env), Nil::lisp_nil);
     next_ins = &(DPCL(*next_ins))->rw_cdr();
   }
   return ans;
@@ -427,6 +427,37 @@ PTR<Sexp> member(PTR<List> args, ENV env) {
 }
 
 // High-Order Functions
+
+PTR<Sexp> mapcar(PTR<List> args, ENV env) {
+  if (args->cdr()->nil())
+    throw std::invalid_argument("Too few arguments");
+  // TODO: find func correctly. Now the syntax is "(mapcar + '(1 2) '(3 4))"
+  // PTR<Sexp> func = evaluate(args->car(), env);
+  auto func = find_func(DPCS(args->car()), env);
+  std::vector<PTR<List>> arg_list;
+  for (PTR<List> i = args->cdr(); i && !i->nil(); i = i->cdr()) {
+    arg_list.push_back(DPC<List>(evaluate(i->car(), env)));
+  }
+  PTR<Sexp> ans = Nil::lisp_nil;
+  PTR<Sexp>* next_ans = &ans;
+  while (true) {
+    PTR<Sexp> param = Nil::lisp_nil;
+    PTR<Sexp>* next_param = &param;
+    for (auto &i : arg_list) {
+      if (i->nil())
+        return ans;
+      auto next = PTRNL(Symbol::lisp_quote, PTRNL(i->car(), Nil::lisp_nil));
+      *next_param = PTRNL(next, Nil::lisp_nil);
+      next_param = &(DPCL(*next_param))->rw_cdr();
+      i = i->cdr();
+    }
+    auto ans_next = func(DPCL(param), env);
+    *next_ans = PTRNL(ans_next, Nil::lisp_nil);
+    next_ans = &(DPCL(*next_ans))->rw_cdr();
+  }
+}
+
+// TODO: continue implementing from here
 
 // Functions
 
@@ -502,11 +533,13 @@ std::map<const std::string, PTR<Sexp>(* const)(PTR<List>, ENV)> fmap = {
   {"CDR", cdr},
   {"CONS", cons},
   {"LIST", list_},
+  {"MAPCAR", mapcar},
+  
   {"MEMBER", member},
 };
 
 // find_func takes sym and returns function from (PTR<List>, ENV) to PTR<Sexp>
-PTR<Sexp> (*find_func(PTR<Symbol> sym))(PTR<List>, ENV) {
+PTR<Sexp> (*find_func(PTR<Symbol> sym, ENV env))(PTR<List>, ENV) {
   PTR<Sexp>(*f)(PTR<List>, ENV) = fmap[sym->get_value()];
   if (!f)
     throw std::invalid_argument("Function not found");
@@ -523,7 +556,7 @@ PTR<Sexp> evaluate(PTR<Sexp> arg, ENV env) {
     PTR<List> lst = DPC<List>(arg);
     switch (lst->car()->type()) {
     case Type::symbol : {
-      PTR<Sexp> (*f)(PTR<List>, ENV) = find_func(DPCS(lst->car()));
+      PTR<Sexp> (*f)(PTR<List>, ENV) = find_func(DPCS(lst->car()), env);
       return f(lst->cdr(), env);
     }
     case Type::list :
