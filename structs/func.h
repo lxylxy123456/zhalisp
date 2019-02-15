@@ -25,19 +25,41 @@
 
 PTR<Sexp> evaluate(PTR<Sexp> arg, PTR<Envs> env);   // from evaluate.h
 
-class Func : public Sexp {
+class Funcs : public Sexp {
+ public:
+  virtual ~Funcs();
+  virtual std::string str() const = 0;
+  virtual std::string repr() const = 0;
+  virtual Type type() const = 0;
+  virtual PTR<Sexp> call(PTR<List>, PTR<Envs>) = 0;
+};
+
+class Func : public Funcs {
  public:
   Func(std::string, PTR<List>, PTR<List>, PTR<Envs>);
   virtual ~Func();
   virtual std::string str() const;
   virtual std::string repr() const;
   virtual Type type() const;
-  PTR<Sexp> call(PTR<List>, PTR<Envs>);
+  virtual PTR<Sexp> call(PTR<List>, PTR<Envs>);
  private:
   std::string name;
   PTR<List> f_args;
   PTR<List> f_stmt;
   PTR<Envs> f_env;
+};
+
+class CFunc : public Funcs {
+ public:
+  CFunc(std::string, PTR<Sexp>(*)(PTR<List>, PTR<Envs>));
+  virtual ~CFunc();
+  virtual std::string str() const;
+  virtual std::string repr() const;
+  virtual Type type() const;
+  virtual PTR<Sexp> call(PTR<List>, PTR<Envs>);
+ private:
+  std::string name;
+  PTR<Sexp>(*func)(PTR<List>, PTR<Envs>);
 };
 
 #endif

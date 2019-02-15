@@ -20,6 +20,10 @@
 
 #define DPCS std::dynamic_pointer_cast<Symbol>
 
+Funcs::~Funcs() {
+//  std::cout << "~Funcs" << std::endl;
+}
+
 Func::Func(std::string n, PTR<List> a, PTR<List> s, PTR<Envs> env):
             name(n), f_args(a), f_stmt(s), f_env(env) {}
 
@@ -56,5 +60,30 @@ PTR<Sexp> Func::call(PTR<List> args, PTR<Envs> env) {
   for (PTR<List> i = f_stmt; !i->nil(); i = i->cdr())
     ans = evaluate(i->car(), new_envs);
   return ans;
+}
+
+
+CFunc::CFunc(std::string n, PTR<Sexp>(*f)(PTR<List>, PTR<Envs>)):
+              name(n), func(f) {}
+
+CFunc::~CFunc() {
+//  std::cout << "~CFunc" << std::endl;
+}
+
+std::string CFunc::str() const {
+  return "#<FUNCTION " + name + ">";
+  // TODO: LIMIT: similar but not the same as real Lisp
+}
+
+std::string CFunc::repr() const {
+  return "#<FUNCTION " + name + ">";
+}
+
+Type CFunc::type() const {
+  return Type::func;
+}
+
+PTR<Sexp> CFunc::call(PTR<List> args, PTR<Envs> env) {
+  return func(args, env);
 }
 

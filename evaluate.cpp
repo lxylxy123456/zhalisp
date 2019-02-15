@@ -19,7 +19,7 @@
 #include "evaluate.h"
 
 #include <exception>
-#include <map>
+#include <unordered_map>
 
 // Helper functions
 
@@ -433,7 +433,7 @@ PTR<Sexp> mapcar(PTR<List> args, ENV env) {
     throw std::invalid_argument("Too few arguments");
   // TODO: find func correctly. Now the syntax is "(mapcar + '(1 2) '(3 4))"
   // PTR<Sexp> func = evaluate(args->car(), env);
-  auto func = find_func(DPCS(args->car()), env);
+  PTR<Funcs> func = find_func(DPCS(args->car()), env);
   std::vector<PTR<List>> arg_list;
   for (PTR<List> i = args->cdr(); i && !i->nil(); i = i->cdr()) {
     arg_list.push_back(DPC<List>(evaluate(i->car(), env)));
@@ -451,7 +451,7 @@ PTR<Sexp> mapcar(PTR<List> args, ENV env) {
       next_param = &(DPCL(*next_param))->rw_cdr();
       i = i->cdr();
     }
-    auto ans_next = func(DPCL(param), env);
+    PTR<Sexp> ans_next = func->call(DPCL(param), env);
     *next_ans = PTRNL(ans_next, Nil::lisp_nil);
     next_ans = &(DPCL(*next_ans))->rw_cdr();
   }
@@ -524,7 +524,7 @@ PTR<Sexp> setq(PTR<List> args, ENV env) {
 
 // Evaluate
 
-std::map<const std::string, PTR<Sexp>(* const)(PTR<List>, ENV)> fmap = {
+std::unordered_map<std::string, PTR<Sexp>(* const)(PTR<List>, ENV)> fmap = {
   {"+", plus},
   {"-", minus},
   {"*", mul},
@@ -564,12 +564,12 @@ std::map<const std::string, PTR<Sexp>(* const)(PTR<List>, ENV)> fmap = {
   {"QUOTE", quote},
 };
 
-// find_func takes sym and returns function from (PTR<List>, ENV) to PTR<Sexp>
-PTR<Sexp> (*find_func(PTR<Symbol> sym, ENV env))(PTR<List>, ENV) {
-  PTR<Sexp>(*f)(PTR<List>, ENV) = fmap[sym->get_value()];
-  if (!f)
-    throw std::invalid_argument("Function not found");
-  return f;
+PTR<Funcs> find_func(PTR<Symbol> sym, ENV env) {
+  auto found = fmap.find(sym->get_value());
+  if (found != fmap.end())
+    return PTR<Funcs>(new CFunc("0/0", found->second));
+  PTR<Funcs> func = DPC<Funcs>(env->find_fun(sym));
+  return func;
 }
 
 PTR<Sexp> evaluate(PTR<Sexp> arg, ENV env) {
@@ -582,8 +582,8 @@ PTR<Sexp> evaluate(PTR<Sexp> arg, ENV env) {
     PTR<List> lst = DPC<List>(arg);
     switch (lst->car()->type()) {
     case Type::symbol : {
-      PTR<Sexp> (*f)(PTR<List>, ENV) = find_func(DPCS(lst->car()), env);
-      return f(lst->cdr(), env);
+      PTR<Funcs> f = find_func(DPCS(lst->car()), env);
+      return f->call(lst->cdr(), env);
     }
     case Type::list :
       throw std::invalid_argument("To be implemented (lambda)");

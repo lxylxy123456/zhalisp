@@ -68,12 +68,13 @@ PTR<Sexp> Envs::find_fun(PTR<Symbol> s) {
   for (auto i = envs.rbegin(); i != envs.rend(); i++)
     if ((*i)->has_fun(s))
       return (*i)->get_fun(s);
-  throw std::runtime_error("Variable not found");
+  throw std::runtime_error("Function not found");
 }
 
 void Envs::set_fun(PTR<Symbol> s, PTR<Sexp> e) {
   // Always uses the global environment
   envs[0]->set_fun(s, e);
+  // TODO: disallow use name of builtin function
 }
 
 void Envs::add_layer(PTR<Env> e) {
