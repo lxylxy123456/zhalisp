@@ -20,6 +20,8 @@
 
 Env::Env(): scope("global") {}
 
+Env::Env(const std::string& s): scope(s) {}
+
 Env::Env(std::string&& s): scope(s) {}
 
 bool Env::has_var(PTR<Symbol> s) {
@@ -72,5 +74,9 @@ PTR<Sexp> Envs::find_fun(PTR<Symbol> s) {
 void Envs::set_fun(PTR<Symbol> s, PTR<Sexp> e) {
   // Always uses the global environment
   envs[0]->set_fun(s, e);
+}
+
+void Envs::add_layer(PTR<Env> e) {
+  envs.push_back(e);
 }
 

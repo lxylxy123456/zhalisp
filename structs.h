@@ -30,5 +30,7 @@
 #include "structs/bool.h"
 #include "structs/list.h"
 #include "structs/nil.h"
+#include "structs/func.h"
+#include "structs/environment.h"
 
 #endif

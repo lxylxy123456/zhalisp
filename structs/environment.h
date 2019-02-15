@@ -22,11 +22,12 @@
 #include <vector>
 #include <unordered_map>
 
-#include "structs.h"
+#include "symbol.h"
 
 class Env {
  public:
   Env();
+  Env(const std::string& scope);
   Env(std::string&& scope);
   bool has_var(PTR<Symbol>);          // TODO: merge has_ and get_
   PTR<Sexp> get_var(PTR<Symbol>);
@@ -48,6 +49,7 @@ class Envs {
   void set_var(PTR<Symbol>, PTR<Sexp>);
   PTR<Sexp> find_fun(PTR<Symbol>);
   void set_fun(PTR<Symbol>, PTR<Sexp>);
+  void add_layer(PTR<Env>);
 
  private:
   std::vector<PTR<Env>> envs;

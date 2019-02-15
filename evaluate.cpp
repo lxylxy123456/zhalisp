@@ -461,6 +461,31 @@ PTR<Sexp> mapcar(PTR<List> args, ENV env) {
 
 // Functions
 
+// DEFUN
+
+PTR<Sexp> defun(PTR<List> args, ENV env) {
+  if (args->cdr()->nil())
+    throw std::invalid_argument("Too few arguments");
+  PTR<Symbol> f_name = DPCS(args->car());
+  if (!f_name)
+    throw std::invalid_argument("Invalid function name");
+  PTR<List> f_args = DPCL(args->cdr()->car());
+  if (!f_args)
+    throw std::invalid_argument("Invalid argument list");
+  for (PTR<List> i = f_args; !i->nil(); i = i->cdr())
+    if (i->car()->type() != Type::symbol)
+      throw std::invalid_argument("Formal argument not symbol");
+  PTR<List> f_stmt = DPCL(args->cdr()->cdr());
+  PTR<Func> func(new Func(f_name->get_value(), f_args, f_stmt, env));
+  env->set_fun(f_name, func);
+  return f_name;
+}
+
+// LAMBDA
+// APPLY
+// FUNCALL
+// FUNCTION
+
 PTR<Sexp> quote(PTR<List> args, ENV env) {
   if (args->nil())
     throw std::invalid_argument("Too few arguments");
@@ -512,7 +537,6 @@ std::map<const std::string, PTR<Sexp>(* const)(PTR<List>, ENV)> fmap = {
   {">", gt},
   {">=", ge},
   {"SQRT", sqrt_},
-  {"SETQ", setq},
   {"ATOM", atom},
   {"LISTP", listp},
   {"NULL", null},
@@ -525,7 +549,6 @@ std::map<const std::string, PTR<Sexp>(* const)(PTR<List>, ENV)> fmap = {
   {"EQ", eq},
   {"EQL", eql},
   {"EQUAL", equal},
-  {"QUOTE", quote},
   {"AND", and_},
   {"OR", or_},
   {"NOT", not_},
@@ -533,9 +556,12 @@ std::map<const std::string, PTR<Sexp>(* const)(PTR<List>, ENV)> fmap = {
   {"CDR", cdr},
   {"CONS", cons},
   {"LIST", list_},
+  {"MEMBER", member},
   {"MAPCAR", mapcar},
   
-  {"MEMBER", member},
+  {"DEFUN", defun},
+  {"SETQ", setq},
+  {"QUOTE", quote},
 };
 
 // find_func takes sym and returns function from (PTR<List>, ENV) to PTR<Sexp>

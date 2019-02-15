@@ -16,25 +16,28 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#ifndef EVALUATE_H
-#define EVALUATE_H
+#ifndef FUNC_H
+#define FUNC_H
 
-#include "structs.h"
+#include "nil.h"
+#include "symbol.h"
+#include "environment.h"
 
-#define PTR std::shared_ptr
-#define ENV PTR<Envs>
-#define BOOL(X) ((X) ? (PTR<Sexp>)Bool::lisp_t : (PTR<Sexp>)Nil::lisp_nil)
+PTR<Sexp> evaluate(PTR<Sexp> arg, PTR<Envs> env);   // from evaluate.h
 
-#define DPC std::dynamic_pointer_cast
-#define DPCN DPC<Number>
-#define DPCS DPC<Symbol>
-#define DPCL DPC<List>
-
-bool is_eql(PTR<Sexp> a, PTR<Sexp> b);
-bool is_equal(PTR<Sexp> a, PTR<Sexp> b);
-
-PTR<Sexp> (*find_func(PTR<Symbol> sym, ENV env))(PTR<List>, ENV);
-
-PTR<Sexp> evaluate(PTR<Sexp>, ENV);
+class Func : public Sexp {
+ public:
+  Func(std::string, PTR<List>, PTR<List>, PTR<Envs>);
+  virtual ~Func();
+  virtual std::string str() const;
+  virtual std::string repr() const;
+  virtual Type type() const;
+  PTR<Sexp> call(PTR<List>, PTR<Envs>);
+ private:
+  std::string name;
+  PTR<List> f_args;
+  PTR<List> f_stmt;
+  PTR<Envs> f_env;
+};
 
 #endif

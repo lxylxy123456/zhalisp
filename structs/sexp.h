@@ -36,7 +36,8 @@ enum struct Type : int {
   atom,     // not possible return value for type()
   boolean,
   list,
-  null
+  null,
+  func,
 };
 
 class Sexp {

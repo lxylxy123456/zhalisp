@@ -4,7 +4,7 @@ STRUCTS = $(wildcard structs/*.h)
 
 STRUCTS_O = $(STRUCTS:.h=.o)
 
-LIBRARY = $(STRUCTS_O) translate.o evaluate.o environment.o
+LIBRARY = $(STRUCTS_O) translate.o evaluate.o
 
 all: tmp test
 
