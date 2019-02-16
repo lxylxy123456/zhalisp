@@ -20,6 +20,7 @@
 
 #include <exception>
 #include <unordered_map>
+#include <regex>
 
 // Helper functions
 
@@ -397,7 +398,20 @@ PTR<Sexp> cdr(PTR<List> args, ENV env) {
   return DPCL(evaluate(args->car(), env))->r_cdr();
 }
 
-// TODO: caordr
+PTR<Sexp> caordr(std::string name, PTR<List> args, ENV env) {
+  if (args->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->cdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  PTR<Sexp> ans = evaluate(args->car(), env);
+  for (auto i = name.rbegin() + 1; i + 1 != name.rend(); i++) {
+    if (*i == 'A')
+      ans = DPCL(ans)->car();
+    else
+      ans = DPCL(ans)->cdr();
+  }
+  return ans;
+}
 
 PTR<Sexp> cons(PTR<List> args, ENV env) {
   if (args->cdr()->nil())
@@ -729,6 +743,17 @@ PTR<Sexp> cond(PTR<List> args, ENV env) {
   return Nil::lisp_nil;
 }
 
+PTR<Sexp> if_(PTR<List> args, ENV env) {
+  if (args->cdr()->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->cdr()->cdr()->cdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  if (evaluate(args->car(), env)->t())
+    return evaluate(args->cdr()->car(), env);
+  else
+    return evaluate(args->cdr()->cdr()->car(), env);
+}
+
 // Iteration
 
 // I/O
@@ -788,12 +813,18 @@ std::unordered_map<std::string, PTR<CFunc>> fmap = {
   REGISTER_CFUNC("SETQ", setq)
   REGISTER_CFUNC("SET", set)
   REGISTER_CFUNC("COND", cond)
+  REGISTER_CFUNC("IF", if_)
 };
 
 PTR<Funcs> find_func(PTR<Symbol> sym, ENV env) {
-  auto found = fmap.find(sym->get_value());
+  const std::string& fun_name = sym->get_value();
+  auto found = fmap.find(fun_name);
   if (found != fmap.end())
     return found->second;
+  static const std::regex re_caordr("C[AD]{1,4}R");
+  if (std::regex_search(fun_name, re_caordr)) {
+    return PTR<CadrFunc>(new CadrFunc(fun_name, caordr));
+  }
   PTR<Funcs> func = DPC<Funcs>(env->find_fun(sym));
   return func;
 }

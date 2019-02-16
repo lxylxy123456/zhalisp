@@ -86,3 +86,28 @@ PTR<Sexp> CFunc::call(PTR<List> args, PTR<Envs> env) {
   return func(args, env);
 }
 
+CadrFunc::CadrFunc(std::string n,
+                    PTR<Sexp>(*f)(std::string, PTR<List>, PTR<Envs>)) :
+                    name(n), func(f) {}
+
+CadrFunc::~CadrFunc() {
+//  std::cout << "~CFunc" << std::endl;
+}
+
+std::string CadrFunc::str() const {
+  return "#<FUNCTION " + name + ">";
+  // TODO: LIMIT: similar but not the same as real Lisp
+}
+
+std::string CadrFunc::repr() const {
+  return "#<FUNCTION " + name + ">";
+}
+
+Type CadrFunc::type() const {
+  return Type::func;
+}
+
+PTR<Sexp> CadrFunc::call(PTR<List> args, PTR<Envs> env) {
+  return func(name, args, env);
+}
+

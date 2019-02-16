@@ -62,4 +62,17 @@ class CFunc : public Funcs {
   PTR<Sexp>(*func)(PTR<List>, PTR<Envs>);
 };
 
+class CadrFunc : public Funcs {
+ public:
+  CadrFunc(std::string, PTR<Sexp>(*)(std::string, PTR<List>, PTR<Envs>));
+  virtual ~CadrFunc();
+  virtual std::string str() const;
+  virtual std::string repr() const;
+  virtual Type type() const;
+  virtual PTR<Sexp> call(PTR<List>, PTR<Envs>);
+ private:
+  std::string name;
+  PTR<Sexp>(*func)(std::string, PTR<List>, PTR<Envs>);
+};
+
 #endif
