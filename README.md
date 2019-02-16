@@ -5,6 +5,7 @@ DESCRIPTION
 * How to format float output? [https://stackoverflow.com/questions/18832856/](https://stackoverflow.com/questions/18832856/)
 * Remove Dot class and dot type?
 * Remove use of `repr`
+* Memory leak in `test.cpp`
 
 ## References
 * The GNU Multiple Precision Arithmetic Library (GMP)

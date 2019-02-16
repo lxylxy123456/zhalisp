@@ -621,6 +621,66 @@ PTR<Sexp> quote(PTR<List> args, ENV env) {
   return args->car();
 }
 
+PTR<Sexp> eval_(PTR<List> args, ENV env) {
+  if (args->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->cdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  return evaluate(evaluate(args->car(), env), env);
+}
+
+PTR<Sexp> let(PTR<List> args, ENV env) {
+  if (args->nil())
+    throw std::invalid_argument("Too few arguments");
+  PTR<Env> new_env(new Env{"LET"});
+  PTR<Envs> new_envs(new Envs{*env});
+  new_envs->add_layer(new_env);
+  for (PTR<List> i = DPCL(args->car()); i && !i->nil(); i = i->cdr()) {
+    PTR<Symbol> k = DPCS(i->car());
+    PTR<Sexp> v = Nil::lisp_nil;
+    if (!k) {
+      PTR<List> il = DPCL(i->car());
+      if (!il)
+        throw std::invalid_argument("Not a variable name");
+      if (!il->cdr()->cdr()->nil())
+        throw std::invalid_argument("Argument too long");
+      k = DPCS(il->car());
+      v = evaluate(il->cdr()->car(), env);
+    }
+    new_env->set_var(k, v);
+  }
+  PTR<Sexp> ans = Nil::lisp_nil;
+  for (PTR<List> i = args->cdr(); i && !i->nil(); i = i->cdr())
+    ans = evaluate(i->car(), new_envs);
+  return ans;
+}
+
+PTR<Sexp> let_star(PTR<List> args, ENV env) {
+  if (args->nil())
+    throw std::invalid_argument("Too few arguments");
+  PTR<Env> new_env(new Env{"LET"});
+  PTR<Envs> new_envs(new Envs{*env});
+  new_envs->add_layer(new_env);
+  for (PTR<List> i = DPCL(args->car()); i && !i->nil(); i = i->cdr()) {
+    PTR<Symbol> k = DPCS(i->car());
+    PTR<Sexp> v = Nil::lisp_nil;
+    if (!k) {
+      PTR<List> il = DPCL(i->car());
+      if (!il)
+        throw std::invalid_argument("Not a variable name");
+      if (!il->cdr()->cdr()->nil())
+        throw std::invalid_argument("Argument too long");
+      k = DPCS(il->car());
+      v = evaluate(il->cdr()->car(), new_envs);
+    }
+    new_env->set_var(k, v);
+  }
+  PTR<Sexp> ans = Nil::lisp_nil;
+  for (PTR<List> i = args->cdr(); i && !i->nil(); i = i->cdr())
+    ans = evaluate(i->car(), new_envs);
+  return ans;
+}
+
 // Variables
 
 PTR<Sexp> setq(PTR<List> args, ENV env) {
@@ -690,13 +750,15 @@ std::unordered_map<std::string, PTR<CFunc>> fmap = {
   REGISTER_CFUNC("MAPC", mapc)
   REGISTER_CFUNC("MAPLIST", maplist)
   REGISTER_CFUNC("APPEND", append)
-  
   REGISTER_CFUNC("DEFUN", defun)
   REGISTER_CFUNC("LAMBDA", lambda_)
   REGISTER_CFUNC("APPLY", apply)
   REGISTER_CFUNC("FUNCALL", funcall)
   REGISTER_CFUNC("FUNCTION", function)
   REGISTER_CFUNC("QUOTE", quote)
+  REGISTER_CFUNC("EVAL", eval_)
+  REGISTER_CFUNC("LET", let)
+  REGISTER_CFUNC("LET*", let_star)
   REGISTER_CFUNC("SETQ", setq)
 };
 
