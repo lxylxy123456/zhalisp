@@ -495,8 +495,33 @@ PTR<Sexp> lambda_(PTR<List> args, ENV env) {
   return func;
 }
 
-// APPLY
-// FUNCALL
+PTR<Sexp> apply(PTR<List> args, ENV env) {
+  if (args->cdr()->nil())
+    throw std::invalid_argument("Too few arguments");
+  PTR<Funcs> func = DPC<Funcs>(evaluate(args->car(), env));
+  PTR<Sexp> arg = Nil::lisp_nil;
+  PTR<Sexp>* next_arg = &arg;
+  PTR<List> i = args->cdr();
+  for (; !i->cdr()->nil(); i = i->cdr()) {
+    *next_arg = PTRNL(PTRNL(Symbol::lisp_quote, PTRNL(evaluate(i->car(), env),
+                Nil::lisp_nil)), Nil::lisp_nil);
+    next_arg = &(DPCL(*next_arg))->rw_cdr();
+  }
+  PTR<List> last_list = DPCL(evaluate(i->car(), env));
+  for (i = last_list; !i->nil(); i = i->cdr()) {
+    *next_arg = PTRNL(PTRNL(Symbol::lisp_quote, PTRNL(evaluate(i->car(), env),
+                Nil::lisp_nil)), Nil::lisp_nil);
+    next_arg = &(DPCL(*next_arg))->rw_cdr();
+  }
+  return func->call(DPCL(arg), env);
+}
+
+PTR<Sexp> funcall(PTR<List> args, ENV env) {
+  if (args->nil())
+    throw std::invalid_argument("Too few arguments");
+  PTR<Funcs> func = DPC<Funcs>(evaluate(args->car(), env));
+  return func->call(DPCL(args->cdr()), env);
+}
 
 PTR<Sexp> function(PTR<List> args, ENV env) {
   if (args->nil())
@@ -583,9 +608,11 @@ std::unordered_map<std::string, PTR<CFunc>> fmap = {
   
   REGISTER_CFUNC("DEFUN", defun)
   REGISTER_CFUNC("LAMBDA", lambda_)
-  REGISTER_CFUNC("SETQ", setq)
+  REGISTER_CFUNC("APPLY", apply)
+  REGISTER_CFUNC("FUNCALL", funcall)
   REGISTER_CFUNC("FUNCTION", function)
   REGISTER_CFUNC("QUOTE", quote)
+  REGISTER_CFUNC("SETQ", setq)
 };
 
 PTR<Funcs> find_func(PTR<Symbol> sym, ENV env) {
