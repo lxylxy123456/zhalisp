@@ -440,8 +440,6 @@ PTR<Sexp> member(PTR<List> args, ENV env) {
 PTR<Sexp> mapcar(PTR<List> args, ENV env) {
   if (args->cdr()->nil())
     throw std::invalid_argument("Too few arguments");
-  // TODO: find func correctly. Now the syntax is "(mapcar + '(1 2) '(3 4))"
-  // PTR<Sexp> func = evaluate(args->car(), env);
   PTR<Funcs> func = sym_to_func(evaluate(args->car(), env), env);
   if (!func)
     throw std::invalid_argument("Not a function");
@@ -468,7 +466,82 @@ PTR<Sexp> mapcar(PTR<List> args, ENV env) {
   }
 }
 
-// TODO: continue implementing from here
+PTR<Sexp> mapc(PTR<List> args, ENV env) {
+  if (args->cdr()->nil())
+    throw std::invalid_argument("Too few arguments");
+  PTR<Funcs> func = sym_to_func(evaluate(args->car(), env), env);
+  if (!func)
+    throw std::invalid_argument("Not a function");
+  std::vector<PTR<List>> arg_list;
+  for (PTR<List> i = args->cdr(); i && !i->nil(); i = i->cdr()) {
+    arg_list.push_back(DPC<List>(evaluate(i->car(), env)));
+  }
+  while (true) {
+    PTR<Sexp> param = Nil::lisp_nil;
+    PTR<Sexp>* next_param = &param;
+    for (auto &i : arg_list) {
+      if (i->nil())
+        return args->cdr()->car();
+      auto next = PTRNL(Symbol::lisp_quote, PTRNL(i->car(), Nil::lisp_nil));
+      *next_param = PTRNL(next, Nil::lisp_nil);
+      next_param = &(DPCL(*next_param))->rw_cdr();
+      i = i->cdr();
+    }
+    func->call(DPCL(param), env);
+  }
+}
+
+PTR<Sexp> maplist(PTR<List> args, ENV env) {
+  if (args->cdr()->nil())
+    throw std::invalid_argument("Too few arguments");
+  PTR<Funcs> func = sym_to_func(evaluate(args->car(), env), env);
+  if (!func)
+    throw std::invalid_argument("Not a function");
+  std::vector<PTR<List>> arg_list;
+  for (PTR<List> i = args->cdr(); i && !i->nil(); i = i->cdr()) {
+    arg_list.push_back(DPC<List>(evaluate(i->car(), env)));
+  }
+  PTR<Sexp> ans = Nil::lisp_nil;
+  PTR<Sexp>* next_ans = &ans;
+  while (true) {
+    PTR<Sexp> param = Nil::lisp_nil;
+    PTR<Sexp>* next_param = &param;
+    for (auto &i : arg_list) {
+      if (i->nil())
+        return ans;
+      auto next = PTRNL(Symbol::lisp_quote, PTRNL(i, Nil::lisp_nil));
+      *next_param = PTRNL(next, Nil::lisp_nil);
+      next_param = &(DPCL(*next_param))->rw_cdr();
+      i = i->cdr();
+    }
+    PTR<Sexp> ans_next = func->call(DPCL(param), env);
+    *next_ans = PTRNL(ans_next, Nil::lisp_nil);
+    next_ans = &(DPCL(*next_ans))->rw_cdr();
+  }
+}
+
+PTR<Sexp> append(PTR<List> args, ENV env) {
+  PTR<Sexp> ans = Nil::lisp_nil;
+  PTR<Sexp>* next_ans = &ans;
+  for (PTR<List> i = args; i && !i->nil(); i = i->cdr()) {
+    PTR<Sexp> j = evaluate(i->car(), env);
+    while (true) {
+      PTR<List> jj = DPCL(j);
+      if (!jj) {
+        if (i->cdr() && !i->cdr()->nil())
+          throw std::invalid_argument("Dotted list");
+        *next_ans = j;
+        return ans;
+      }
+      if (jj->nil())
+        break;
+      *next_ans = PTRNL(jj->car(), Nil::lisp_nil);
+      next_ans = &(DPCL(*next_ans))->rw_cdr();
+      j = jj->r_cdr();
+    }
+  }
+  return ans;
+}
 
 // Functions
 
@@ -614,6 +687,9 @@ std::unordered_map<std::string, PTR<CFunc>> fmap = {
   REGISTER_CFUNC("LIST", list_)
   REGISTER_CFUNC("MEMBER", member)
   REGISTER_CFUNC("MAPCAR", mapcar)
+  REGISTER_CFUNC("MAPC", mapc)
+  REGISTER_CFUNC("MAPLIST", maplist)
+  REGISTER_CFUNC("APPEND", append)
   
   REGISTER_CFUNC("DEFUN", defun)
   REGISTER_CFUNC("LAMBDA", lambda_)
