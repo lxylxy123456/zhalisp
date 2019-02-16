@@ -62,7 +62,6 @@ PTR<Sexp> Func::call(PTR<List> args, PTR<Envs> env) {
   return ans;
 }
 
-
 CFunc::CFunc(std::string n, PTR<Sexp>(*f)(PTR<List>, PTR<Envs>)):
               name(n), func(f) {}
 

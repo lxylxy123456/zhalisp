@@ -433,7 +433,9 @@ PTR<Sexp> mapcar(PTR<List> args, ENV env) {
     throw std::invalid_argument("Too few arguments");
   // TODO: find func correctly. Now the syntax is "(mapcar + '(1 2) '(3 4))"
   // PTR<Sexp> func = evaluate(args->car(), env);
-  PTR<Funcs> func = find_func(DPCS(args->car()), env);
+  PTR<Funcs> func = DPC<Funcs>(evaluate(args->car(), env));
+  if (!func)
+    throw std::invalid_argument("Not a function");
   std::vector<PTR<List>> arg_list;
   for (PTR<List> i = args->cdr(); i && !i->nil(); i = i->cdr()) {
     arg_list.push_back(DPC<List>(evaluate(i->car(), env)));
@@ -461,8 +463,6 @@ PTR<Sexp> mapcar(PTR<List> args, ENV env) {
 
 // Functions
 
-// DEFUN
-
 PTR<Sexp> defun(PTR<List> args, ENV env) {
   if (args->cdr()->nil())
     throw std::invalid_argument("Too few arguments");
@@ -481,10 +481,30 @@ PTR<Sexp> defun(PTR<List> args, ENV env) {
   return f_name;
 }
 
-// LAMBDA
+PTR<Sexp> lambda_(PTR<List> args, ENV env) {
+  if (args->nil())
+    throw std::invalid_argument("Too few arguments");
+  PTR<List> f_args = DPCL(args->car());
+  if (!f_args)
+    throw std::invalid_argument("Invalid argument list");
+  for (PTR<List> i = f_args; !i->nil(); i = i->cdr())
+    if (i->car()->type() != Type::symbol)
+      throw std::invalid_argument("Formal argument not symbol");
+  PTR<List> f_stmt = DPCL(args->cdr());
+  PTR<Func> func(new Func("LAMBDA", f_args, f_stmt, env));
+  return func;
+}
+
 // APPLY
 // FUNCALL
-// FUNCTION
+
+PTR<Sexp> function(PTR<List> args, ENV env) {
+  if (args->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->cdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  return find_func(DPCS(args->car()), env);
+}
 
 PTR<Sexp> quote(PTR<List> args, ENV env) {
   if (args->nil())
@@ -524,50 +544,54 @@ PTR<Sexp> setq(PTR<List> args, ENV env) {
 
 // Evaluate
 
-std::unordered_map<std::string, PTR<Sexp>(* const)(PTR<List>, ENV)> fmap = {
-  {"+", plus},
-  {"-", minus},
-  {"*", mul},
-  {"/", div},
-  {"1+", one_plus},
-  {"1-", one_minus},
-  {"=", eq_},
-  {"<", lt},
-  {"<=", le},
-  {">", gt},
-  {">=", ge},
-  {"SQRT", sqrt_},
-  {"ATOM", atom},
-  {"LISTP", listp},
-  {"NULL", null},
-  {"NUMBERP", numberp},
-  {"TYPEP", typep},
-  {"SYMBOLP", symbolp},
-  {"ZEROP", zerop},
-  {"EVENP", evenp},
-  {"ODDP", oddp},
-  {"EQ", eq},
-  {"EQL", eql},
-  {"EQUAL", equal},
-  {"AND", and_},
-  {"OR", or_},
-  {"NOT", not_},
-  {"CAR", car},
-  {"CDR", cdr},
-  {"CONS", cons},
-  {"LIST", list_},
-  {"MEMBER", member},
-  {"MAPCAR", mapcar},
+#define REGISTER_CFUNC(K,V) {K, PTR<CFunc>(new CFunc(K, V))},
+
+std::unordered_map<std::string, PTR<CFunc>> fmap = {
+  REGISTER_CFUNC("+", plus)
+  REGISTER_CFUNC("-", minus)
+  REGISTER_CFUNC("*", mul)
+  REGISTER_CFUNC("/", div)
+  REGISTER_CFUNC("1+", one_plus)
+  REGISTER_CFUNC("1-", one_minus)
+  REGISTER_CFUNC("=", eq_)
+  REGISTER_CFUNC("<", lt)
+  REGISTER_CFUNC("<=", le)
+  REGISTER_CFUNC(">", gt)
+  REGISTER_CFUNC(">=", ge)
+  REGISTER_CFUNC("SQRT", sqrt_)
+  REGISTER_CFUNC("ATOM", atom)
+  REGISTER_CFUNC("LISTP", listp)
+  REGISTER_CFUNC("NULL", null)
+  REGISTER_CFUNC("NUMBERP", numberp)
+  REGISTER_CFUNC("TYPEP", typep)
+  REGISTER_CFUNC("SYMBOLP", symbolp)
+  REGISTER_CFUNC("ZEROP", zerop)
+  REGISTER_CFUNC("EVENP", evenp)
+  REGISTER_CFUNC("ODDP", oddp)
+  REGISTER_CFUNC("EQ", eq)
+  REGISTER_CFUNC("EQL", eql)
+  REGISTER_CFUNC("EQUAL", equal)
+  REGISTER_CFUNC("AND", and_)
+  REGISTER_CFUNC("OR", or_)
+  REGISTER_CFUNC("NOT", not_)
+  REGISTER_CFUNC("CAR", car)
+  REGISTER_CFUNC("CDR", cdr)
+  REGISTER_CFUNC("CONS", cons)
+  REGISTER_CFUNC("LIST", list_)
+  REGISTER_CFUNC("MEMBER", member)
+  REGISTER_CFUNC("MAPCAR", mapcar)
   
-  {"DEFUN", defun},
-  {"SETQ", setq},
-  {"QUOTE", quote},
+  REGISTER_CFUNC("DEFUN", defun)
+  REGISTER_CFUNC("LAMBDA", lambda_)
+  REGISTER_CFUNC("SETQ", setq)
+  REGISTER_CFUNC("FUNCTION", function)
+  REGISTER_CFUNC("QUOTE", quote)
 };
 
 PTR<Funcs> find_func(PTR<Symbol> sym, ENV env) {
   auto found = fmap.find(sym->get_value());
   if (found != fmap.end())
-    return PTR<Funcs>(new CFunc("0/0", found->second));
+    return found->second;
   PTR<Funcs> func = DPC<Funcs>(env->find_fun(sym));
   return func;
 }
@@ -585,8 +609,13 @@ PTR<Sexp> evaluate(PTR<Sexp> arg, ENV env) {
       PTR<Funcs> f = find_func(DPCS(lst->car()), env);
       return f->call(lst->cdr(), env);
     }
-    case Type::list :
-      throw std::invalid_argument("To be implemented (lambda)");
+    case Type::list : {
+      PTR<Symbol> caar = DPCS(DPCL(lst->car())->car());
+      if (caar && caar->get_value() == "LAMBDA") {
+        PTR<Funcs> func = DPC<Func>(lambda_(DPCL(lst->car())->cdr(), env));
+        return func->call(lst->cdr(), env);
+      }
+    }
     default :
       throw std::invalid_argument("Not calling a function");
     }
