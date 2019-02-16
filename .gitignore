@@ -5,4 +5,4 @@ test
 
 lex.yy.c
 y.tab.c
-
+vgcore.*
