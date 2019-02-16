@@ -26,7 +26,6 @@ class Symbol: public Sexp {
   Symbol(const char * const s);
   virtual ~Symbol();
   virtual std::string str() const;
-  virtual std::string repr() const;
   virtual Type type() const;
   const std::string& get_value();
   static PTR<Symbol> lisp_quote;

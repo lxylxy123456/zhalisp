@@ -26,7 +26,6 @@ class Nil: public List {
   Nil();
   virtual ~Nil();
   std::string str() const;
-  std::string repr() const;
   virtual bool nil() const;
   virtual bool t() const;
   virtual Type type() const;

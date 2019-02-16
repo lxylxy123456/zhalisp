@@ -52,10 +52,6 @@ std::string Rational::str() const {
   return value.get_str();
 }
 
-std::string Rational::repr() const {
-  return "RATIONAL<" + str() + ">";
-}
-
 Type Rational::type() const {
   return Type::rational;
 }

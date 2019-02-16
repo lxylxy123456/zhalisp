@@ -20,7 +20,6 @@
 #define STRUCTS_H
 
 #include "structs/sexp.h"
-#include "structs/dot.h"
 #include "structs/symbol.h"
 #include "structs/number.h"
 #include "structs/integer.h"

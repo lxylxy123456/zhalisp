@@ -38,10 +38,6 @@ std::string Float::str() const {
   return os.str();
 }
 
-std::string Float::repr() const {
-  return "FLOAT<" + str() + ">";
-}
-
 Type Float::type() const {
   return Type::float_;
 }

@@ -28,10 +28,6 @@ std::string Nil::str() const {
   return "NIL";
 }
 
-std::string Nil::repr() const {
-  return "Nil<()>";
-}
-
 bool Nil::nil() const {
   return true;
 }

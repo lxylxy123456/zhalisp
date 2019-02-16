@@ -46,10 +46,6 @@ std::string Complex::str() const {
   return "#C(" + real->str() + " " + imag->str() + ")";
 }
 
-std::string Complex::repr() const {
-  return "COMPLEX<" + str() + ">";
-}
-
 Type Complex::type() const {
   return Type::complex;
 }

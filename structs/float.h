@@ -29,7 +29,6 @@ class Float: public Number {
   virtual ~Float();
   const mpf_class& get_value() const;
   virtual std::string str() const;
-  virtual std::string repr() const;
   virtual Type type() const;
   virtual PTR<Number> operator+() const;
   virtual PTR<Number> operator-() const;

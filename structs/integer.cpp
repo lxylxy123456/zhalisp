@@ -36,10 +36,6 @@ std::string Integer::str() const {
   return value.get_str();
 }
 
-std::string Integer::repr() const {
-  return "INTEGER<" + str() + ">";
-}
-
 Type Integer::type() const {
   return Type::integer;
 }

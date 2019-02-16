@@ -33,10 +33,6 @@ std::string Symbol::str() const {
   return value;
 }
 
-std::string Symbol::repr() const {
-  return "SYMBOL<" + value + ">";
-}
-
 Type Symbol::type() const {
   return Type::symbol;
 }

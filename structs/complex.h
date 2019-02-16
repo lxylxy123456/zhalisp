@@ -34,7 +34,6 @@ class Complex: public Number {
   const PTR<Number>& get_real() const;
   const PTR<Number>& get_imag() const;
   virtual std::string str() const;
-  virtual std::string repr() const;
   virtual Type type() const;
   virtual PTR<Number> operator+() const;
   virtual PTR<Number> operator-() const;

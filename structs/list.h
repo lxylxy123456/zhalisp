@@ -28,7 +28,6 @@ class List: public Sexp {
   List(const PTR<Sexp>&, const PTR<Sexp>&);
   virtual ~List();
   std::string str() const;
-  std::string repr() const;
   virtual Type type() const;
   virtual const PTR<Sexp> car() const;
   virtual const PTR<List> cdr() const;

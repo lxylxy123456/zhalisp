@@ -29,7 +29,6 @@ class Funcs : public Sexp {
  public:
   virtual ~Funcs();
   virtual std::string str() const = 0;
-  virtual std::string repr() const = 0;
   virtual Type type() const = 0;
   virtual PTR<Sexp> call(PTR<List>, PTR<Envs>) = 0;
 };
@@ -39,7 +38,6 @@ class Func : public Funcs {
   Func(std::string, PTR<List>, PTR<List>, PTR<Envs>);
   virtual ~Func();
   virtual std::string str() const;
-  virtual std::string repr() const;
   virtual Type type() const;
   virtual PTR<Sexp> call(PTR<List>, PTR<Envs>);
  private:
@@ -54,7 +52,6 @@ class CFunc : public Funcs {
   CFunc(std::string, PTR<Sexp>(*)(PTR<List>, PTR<Envs>));
   virtual ~CFunc();
   virtual std::string str() const;
-  virtual std::string repr() const;
   virtual Type type() const;
   virtual PTR<Sexp> call(PTR<List>, PTR<Envs>);
  private:
@@ -67,7 +64,6 @@ class CadrFunc : public Funcs {
   CadrFunc(std::string, PTR<Sexp>(*)(std::string, PTR<List>, PTR<Envs>));
   virtual ~CadrFunc();
   virtual std::string str() const;
-  virtual std::string repr() const;
   virtual Type type() const;
   virtual PTR<Sexp> call(PTR<List>, PTR<Envs>);
  private:

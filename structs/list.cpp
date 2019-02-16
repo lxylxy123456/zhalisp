@@ -41,10 +41,6 @@ std::string List::str() const {
   return ans + ")";
 }
 
-std::string List::repr() const {
-  return "List<" + str() + ">";
-}
-
 Type List::type() const {
   return Type::list;
 }

@@ -26,7 +26,6 @@
 
 enum struct Type : int {
   sexp,     // not possible return value for type()
-  dot,
   symbol,
   number,   // not possible return value for type()
   integer,  // Note: integers are rational
@@ -44,7 +43,6 @@ class Sexp {
  public:
   virtual ~Sexp();
   virtual std::string str() const = 0;
-  virtual std::string repr() const = 0;
   virtual bool nil() const;
   virtual bool t() const;
   virtual Type type() const;

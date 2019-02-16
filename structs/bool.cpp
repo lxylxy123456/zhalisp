@@ -28,10 +28,6 @@ std::string Bool::str() const {
   return "T";
 }
 
-std::string Bool::repr() const {
-  return "Bool<T>";
-}
-
 Type Bool::type() const {
   return Type::boolean;
 }

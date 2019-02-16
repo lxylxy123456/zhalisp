@@ -31,7 +31,6 @@ class Rational: public Number {
   virtual ~Rational();
   const mpq_class& get_value() const;
   virtual std::string str() const;
-  virtual std::string repr() const;
   virtual Type type() const;
   virtual PTR<Number> operator+() const;
   virtual PTR<Number> operator-() const;

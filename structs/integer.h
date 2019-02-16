@@ -27,7 +27,6 @@ class Integer: public Number {
   virtual ~Integer();
   const mpz_class& get_value() const;
   virtual std::string str() const;
-  virtual std::string repr() const;
   virtual Type type() const;
   static PTR<Integer> lisp_0;
   static PTR<Integer> lisp_1;

@@ -41,7 +41,6 @@ bool is_eql(PTR<Sexp> a, PTR<Sexp> b) {
     return a.get() == b.get();
   case Type::symbol :
     return DPCS(a)->get_value() == DPCS(b)->get_value();
-  case Type::dot :
   case Type::null :
   case Type::boolean :
     return true;
@@ -69,7 +68,6 @@ bool is_equal(PTR<Sexp> a, PTR<Sexp> b) {
   }
   case Type::symbol :
     return DPCS(a)->get_value() == DPCS(b)->get_value();
-  case Type::dot :
   case Type::null :
   case Type::boolean :
     return true;
@@ -831,8 +829,6 @@ PTR<Funcs> find_func(PTR<Symbol> sym, ENV env) {
 
 PTR<Sexp> evaluate(PTR<Sexp> arg, ENV env) {
   switch (arg->type()) {
-  case Type::dot :
-    throw std::invalid_argument("Unexpected input value");
   case Type::symbol :
     return env->find_var(DPCS(arg));
   case Type::list : {
