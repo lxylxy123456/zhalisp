@@ -321,18 +321,22 @@ def equal(exps, env) :
 @lisp_builtin('AND')
 def and_(exps, env) :
 	'(and 1 2 3)'
+	v = T
 	for value in exps :
-		if not is_true(evaluate(value, env)) :
-			return to_bool(False)
-	return to_bool(True)
+		v = evaluate(value, env)
+		if not is_true(v) :
+			return v
+	return v
 
 @lisp_builtin('OR')
 def or_(exps, env) :
 	'(or 1 2 3)'
+	v = Nil
 	for value in exps :
-		if is_true(evaluate(value, env)) :
-			return to_bool(True)
-	return to_bool(False)
+		v = evaluate(value, env)
+		if is_true(v) :
+			return v
+	return v
 
 @lisp_builtin('NOT')
 def not_(exps, env) :

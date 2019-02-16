@@ -82,16 +82,16 @@
 => 4
 
 -> (or nil nil 1 (/ 0 0))
-=> T
+=> 1
 
 -> (and 1 1 nil (/ 0 0))
 => NIL
 
 -> (or 1 1 1)
-=> T
+=> 1
 
 -> (and 1 1 1)
-=> T
+=> 1
 
 -> (or nil nil nil)
 => NIL
