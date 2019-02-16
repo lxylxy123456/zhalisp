@@ -77,6 +77,15 @@ bool is_equal(PTR<Sexp> a, PTR<Sexp> b) {
   }
 }
 
+PTR<Funcs> sym_to_func(PTR<Sexp> s, ENV env) {
+  // If symbol, resolve to function; else, cast to function
+  PTR<Symbol> sym = DPC<Symbol>(s);
+  if (sym)
+    return find_func(sym, env);
+  else
+    return DPC<Funcs>(s);
+}
+
 // Arithmetics
 
 PTR<Sexp> plus(PTR<List> args, ENV env) {
@@ -433,7 +442,7 @@ PTR<Sexp> mapcar(PTR<List> args, ENV env) {
     throw std::invalid_argument("Too few arguments");
   // TODO: find func correctly. Now the syntax is "(mapcar + '(1 2) '(3 4))"
   // PTR<Sexp> func = evaluate(args->car(), env);
-  PTR<Funcs> func = DPC<Funcs>(evaluate(args->car(), env));
+  PTR<Funcs> func = sym_to_func(evaluate(args->car(), env), env);
   if (!func)
     throw std::invalid_argument("Not a function");
   std::vector<PTR<List>> arg_list;
@@ -498,7 +507,7 @@ PTR<Sexp> lambda_(PTR<List> args, ENV env) {
 PTR<Sexp> apply(PTR<List> args, ENV env) {
   if (args->cdr()->nil())
     throw std::invalid_argument("Too few arguments");
-  PTR<Funcs> func = DPC<Funcs>(evaluate(args->car(), env));
+  PTR<Funcs> func = sym_to_func(evaluate(args->car(), env), env);
   PTR<Sexp> arg = Nil::lisp_nil;
   PTR<Sexp>* next_arg = &arg;
   PTR<List> i = args->cdr();
@@ -509,7 +518,7 @@ PTR<Sexp> apply(PTR<List> args, ENV env) {
   }
   PTR<List> last_list = DPCL(evaluate(i->car(), env));
   for (i = last_list; !i->nil(); i = i->cdr()) {
-    *next_arg = PTRNL(PTRNL(Symbol::lisp_quote, PTRNL(evaluate(i->car(), env),
+    *next_arg = PTRNL(PTRNL(Symbol::lisp_quote, PTRNL(i->car(),
                 Nil::lisp_nil)), Nil::lisp_nil);
     next_arg = &(DPCL(*next_arg))->rw_cdr();
   }
@@ -519,7 +528,7 @@ PTR<Sexp> apply(PTR<List> args, ENV env) {
 PTR<Sexp> funcall(PTR<List> args, ENV env) {
   if (args->nil())
     throw std::invalid_argument("Too few arguments");
-  PTR<Funcs> func = DPC<Funcs>(evaluate(args->car(), env));
+  PTR<Funcs> func = sym_to_func(evaluate(args->car(), env), env);
   return func->call(DPCL(args->cdr()), env);
 }
 
