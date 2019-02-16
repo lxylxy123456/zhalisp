@@ -629,6 +629,8 @@ PTR<Sexp> eval_(PTR<List> args, ENV env) {
   return evaluate(evaluate(args->car(), env), env);
 }
 
+// Variables
+
 PTR<Sexp> let(PTR<List> args, ENV env) {
   if (args->nil())
     throw std::invalid_argument("Too few arguments");
@@ -681,8 +683,6 @@ PTR<Sexp> let_star(PTR<List> args, ENV env) {
   return ans;
 }
 
-// Variables
-
 PTR<Sexp> setq(PTR<List> args, ENV env) {
   int arg_count = 0;
   for (PTR<List> i = args; !i->nil(); i = i->cdr())
@@ -701,7 +701,33 @@ PTR<Sexp> setq(PTR<List> args, ENV env) {
   return v;
 }
 
+PTR<Sexp> set(PTR<List> args, ENV env) {
+  if (args->cdr()->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->cdr()->cdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  PTR<Symbol> k = DPCS(evaluate(args->car(), env));
+  PTR<Sexp> v = evaluate(args->cdr()->car(), env);
+  env->set_var(k, v);
+  return v;
+}
+
 // Conditions
+
+PTR<Sexp> cond(PTR<List> args, ENV env) {
+  for (PTR<List> i = args; i && !i->nil(); i = i->cdr()) {
+    PTR<List> test = DPCL(i->car());
+    if (!test || test->nil())
+      throw std::invalid_argument("Should pass a list");
+    PTR<Sexp> ans = evaluate(test->car(), env);
+    if (ans->t()) {
+      for (PTR<List> j = test->cdr(); j && !j->nil(); j = j->cdr())
+        ans = evaluate(j->car(), env);
+      return ans;
+    }
+  }
+  return Nil::lisp_nil;
+}
 
 // Iteration
 
@@ -760,6 +786,8 @@ std::unordered_map<std::string, PTR<CFunc>> fmap = {
   REGISTER_CFUNC("LET", let)
   REGISTER_CFUNC("LET*", let_star)
   REGISTER_CFUNC("SETQ", setq)
+  REGISTER_CFUNC("SET", set)
+  REGISTER_CFUNC("COND", cond)
 };
 
 PTR<Funcs> find_func(PTR<Symbol> sym, ENV env) {
