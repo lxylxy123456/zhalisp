@@ -17,6 +17,7 @@
 # 
 
 from fractions import Fraction
+import math
 
 class Atom :
 	def __repr__(self) :
@@ -48,6 +49,18 @@ class Number(Atom) :
 		return Number(-self.value)
 	def __mul__(self, rhs) :
 		return Number(self.value * rhs.value)
+	def sqrt(self) :
+		ans = math.sqrt(self.value)
+		if type(self.value) == int :
+			ansi = int(ans)
+			if ansi ** 2 == self.value :
+				return Number(ansi)
+		elif type(self.value) == Fraction :
+			ansf = Fraction(int(math.sqrt(self.value.numerator)), 
+							int(math.sqrt(self.value.denominator)))
+			if ansf ** 2 == self.value :
+				return Number(ansf)
+		return Number(ans)
 	def __truediv__(self, rhs) :
 		if (self.type() == int and rhs.type() == int) :
 			return Number(Fraction(self.value, rhs.value))

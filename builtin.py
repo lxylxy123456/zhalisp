@@ -22,7 +22,7 @@
 	LIMIT: eq have different behavior than Clisp (currently same as eql)
 '''
 
-import functools, operator, re, math
+import functools, operator, re
 
 from structs import Env, Atom, Number, Symbol, List, Bool, Dot
 from itertools import repeat
@@ -194,7 +194,7 @@ def ge(exps, env) :
 def sqrt(exps, env) :
 	value, = eval_params(exps, env)
 	assert type(value) == Number
-	return Number(math.sqrt(value.value))
+	return value.sqrt()
 
 # Unary Predicates
 
@@ -614,7 +614,7 @@ def if_(exps, env) :
 # Iteration
 
 @lisp_builtin('DO')
-def do(exps, env) :
+def do_(exps, env) :
 	'(do () (t 1)) -> 1'
 	new_env = Env('DO')
 	new_envs = env + [new_env]

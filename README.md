@@ -110,7 +110,7 @@ $
 |`SET`		|`set_`		|`(SET 'X 1)` <br> `X`				|`1` <br> `1`				|						|
 |`COND`		|`cond`		|`(COND (nil 1) (t 2))`				|`2`						| Conditions			|
 |`IF`		|`if_`		|`(IF (> 1 2) 1 2)`					|`2`						| 						|
-|`DO`		|`do`		|`(DO () (T 1))`					|`1`						| Iteration				|
+|`DO`		|`do_`		|`(DO () (T 1))`					|`1`						| Iteration				|
 |`PROG`		|`prog`		|`(PROG ((X 1)) (RETURN X))`		|`1`						| 						|
 |`PRINT`	|`print_`	|`(PRINT 2)`						|`2`						| I/O					|
 

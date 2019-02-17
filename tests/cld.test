@@ -355,7 +355,7 @@
 => HYP
 
 -> (hyp 3 4)
-=> 5.0
+=> 5
 
 -> (defun sum-average (x y) (setq sum (+ x y)) (/ sum 2))
 => SUM-AVERAGE
