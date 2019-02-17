@@ -1,8 +1,8 @@
 # zhalisp - C++ implementation
-This directory is a C++ implementation of zhalisp
+This directory contains a C++ implementation of zhalisp
 
 ## Usage
-* Execute `tmp` s-expressions as arguments will result in evaluation of the s-expressions. 
+* Execute `backend` with no arguments will result in shell mode. Type an s-expression and press Enter. 
 * Execute `tests` with test file names (ends with `.test`) as arguments will perform tests with the test files. 
 
 ## Project Structure
@@ -12,7 +12,7 @@ This directory is a C++ implementation of zhalisp
 * `evaluate.cpp`: backend
 	* `PTR<Sexp> evaluate(PTR<Sexp>, ENV)` evaluates any s-expression
 * `test.cpp`: run test cases
-* `tmp.cpp`: interactive shell, but uses argv
+* `backend.cpp`: interactive shell
 
 ## TODO
 * How to format float output? [https://stackoverflow.com/questions/18832856/](https://stackoverflow.com/questions/18832856/)

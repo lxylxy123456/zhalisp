@@ -59,20 +59,6 @@ void read_tests(Tests& tests, const std::string& file_name) {
   }
 }
 
-std::string strip(const std::string& s) {
-  size_t f = s.find_first_not_of(" \n\r\t");
-  size_t l = s.find_last_not_of(" \n\r\t");
-  if (f != s.npos)
-    return s.substr(f, l - f + 1);
-  assert(l == s.npos);
-  return "";
-}
-
-std::string upper(std::string s) {
-  std::transform(s.begin(), s.end(), s.begin(), toupper);
-  return s;
-}
-
 void test(const std::string& file_name) {
   Tests tests;
   read_tests(tests, file_name);

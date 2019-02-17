@@ -33,6 +33,9 @@
 bool is_eql(PTR<Sexp> a, PTR<Sexp> b);
 bool is_equal(PTR<Sexp> a, PTR<Sexp> b);
 
+std::string strip(const std::string& s);
+std::string upper(std::string s);
+
 bool reserved_func(PTR<Symbol> sym);
 PTR<Funcs> find_func(PTR<Symbol> sym, ENV env);
 

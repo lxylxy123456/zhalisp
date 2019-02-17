@@ -1,5 +1,5 @@
 # zhalisp - Python 3 implementation
-This directory is a Python 3 implementation of zhalisp
+This directory contains a Python 3 implementation of zhalisp
 
 ## Usage
 * Execute `backend.py` with no arguments will result in shell mode. Type an s-expression and press Enter. 

@@ -7,7 +7,7 @@ parsetab.py
 # C++ executable
 *.o
 a.out
-tmp
+backend
 test
 
 # C++ generated C files

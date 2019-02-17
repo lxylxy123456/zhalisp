@@ -6,7 +6,7 @@ STRUCTS_O = $(STRUCTS:.h=.o)
 
 LIBRARY = $(STRUCTS_O) translate.o evaluate.o
 
-all: tmp test
+all: backend test
 
 translate.o: lex.l translate.y
 	lex lex.l
@@ -14,7 +14,7 @@ translate.o: lex.l translate.y
 	$(CXX) $(CXXFLAGS) y.tab.c -g -c -o $@ \
 		-Wno-unused-function #-Wno-class-memaccess
 
-tmp: tmp.cpp $(LIBRARY)
+backend: backend.cpp $(LIBRARY)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 test: test.cpp $(LIBRARY)
@@ -24,5 +24,5 @@ lint: *.h *.cpp structs/*.h structs/*.cpp
 	cpplint $^
 
 clean:
-	rm -f lex.yy.c y.tab.c a.out tmp structs/*.o *.o vgcore.*
+	rm -f lex.yy.c y.tab.c a.out backend structs/*.o *.o vgcore.*
 

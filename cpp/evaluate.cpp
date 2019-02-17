@@ -85,6 +85,20 @@ PTR<Funcs> sym_to_func(PTR<Sexp> s, ENV env) {
     return DPC<Funcs>(s);
 }
 
+std::string strip(const std::string& s) {
+  size_t f = s.find_first_not_of(" \n\r\t");
+  size_t l = s.find_last_not_of(" \n\r\t");
+  if (f != s.npos)
+    return s.substr(f, l - f + 1);
+  assert(l == s.npos);
+  return "";
+}
+
+std::string upper(std::string s) {
+  std::transform(s.begin(), s.end(), s.begin(), toupper);
+  return s;
+}
+
 // Arithmetics
 
 PTR<Sexp> plus(PTR<List> args, ENV env) {
@@ -627,11 +641,12 @@ PTR<Sexp> function(PTR<List> args, ENV env) {
   if (!args->cdr()->nil())
     throw std::invalid_argument("Too many arguments");
   PTR<Symbol> as = DPCS(args->car());
-  if (as)
+  if (as) {
     return find_func(as, env);
-  else
+  } else {
     assert(DPCS(DPCL(args->car())->car())->get_value() == "LAMBDA");
     return evaluate(args->car(), env);
+  }
 }
 
 PTR<Sexp> quote(PTR<List> args, ENV env) {
@@ -798,11 +813,13 @@ PTR<Sexp> do_(PTR<List> args, ENV env) {
   return ans;
 }
 
-class ProgInterrupt {
+class ProgInterrupt: public std::exception {
  public:
+  ProgInterrupt(int t, PTR<Env> e, PTR<Sexp> v): type(t), env(e), value(v) {}
   int type;       // 1: go; 2: return
   PTR<Env> env;
   PTR<Sexp> value;
+  virtual const char* what() const noexcept { return "ProgInterrupt"; }
 };
 
 PTR<Sexp> prog(PTR<List> args, ENV env) {
@@ -898,7 +915,7 @@ PTR<Sexp> setrecursionlimit(PTR<List> args, ENV env) {
 
 // Evaluate
 
-#define REGISTER_CFUNC(K,V) {K, PTR<CFunc>(new CFunc(K, V))},
+#define REGISTER_CFUNC(K, V) {K, PTR<CFunc>(new CFunc(K, V))},
 
 std::unordered_map<std::string, PTR<CFunc>> fmap = {
   REGISTER_CFUNC("+", plus)

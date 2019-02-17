@@ -1,7 +1,7 @@
 # zhalisp
 * A "zha" Clisp interpreter implementation
 	* Zha ([Wiktionary](https://en.wiktionary.org/wiki/%E6%AE%98%E6%B8%A3#Noun)) here means not efficient / limited / bad design. 
-* There are two implementations. Python 3 version in `py` directory, and C++ version in `cpp` directory. 
+* There are two implementations. Python 3 version in [py](https://github.com/lxylxy123456/zhalisp/tree/master/py) directory, and C++ version in [cpp](https://github.com/lxylxy123456/zhalisp/tree/master/cpp) directory. 
 
 ## Implemented Functions
 
