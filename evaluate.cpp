@@ -564,6 +564,8 @@ PTR<Sexp> defun(PTR<List> args, ENV env) {
   PTR<Symbol> f_name = DPCS(args->car());
   if (!f_name)
     throw std::invalid_argument("Invalid function name");
+  if (reserved_func(f_name))
+    throw std::invalid_argument("Reserved function name");
   PTR<List> f_args = DPCL(args->cdr()->car());
   if (!f_args)
     throw std::invalid_argument("Invalid argument list");
@@ -765,6 +767,7 @@ PTR<Sexp> do_(PTR<List> args, ENV env) {
   for (PTR<List> i = DPCL(args->car()); !i->nil(); i = i->cdr()) {
     PTR<List> li = DPCL(i->car());
     if (li) {
+      assert(li->cdr()->cdr()->cdr()->nil());
       PTR<Symbol> name = DPCS(li->car());
       new_env->set_var(name, evaluate(li->cdr()->car(), env));
       if (!li->cdr()->cdr()->nil())
@@ -787,6 +790,81 @@ PTR<Sexp> do_(PTR<List> args, ENV env) {
   for (PTR<List> i = DPCL(args->cdr()->car())->cdr(); !i->nil(); i = i->cdr())
     ans = evaluate(i->car(), new_envs);
   return ans;
+}
+
+class ProgInterrupt {
+ public:
+  int type;       // 1: go; 2: return
+  PTR<Env> env;
+  PTR<Sexp> value;
+};
+
+PTR<Sexp> prog(PTR<List> args, ENV env) {
+  if (args->nil())
+    throw std::invalid_argument("Too few arguments");
+  PTR<Env> new_env(new Env{"PROG"});
+  PTR<Envs> new_envs(new Envs{*env});
+  new_envs->add_layer(new_env);
+  for (PTR<List> i = DPCL(args->car()); !i->nil(); i = i->cdr()) {
+    PTR<List> li = DPCL(i->car());
+    if (li) {
+      assert(li->cdr()->cdr()->nil());
+      new_env->set_var(DPCS(li->car()), evaluate(li->cdr()->car(), env));
+    } else {
+      new_env->set_var(DPCS(i->car()), Nil::lisp_nil);
+    }
+  }
+  std::vector<PTR<Sexp>> sequence;
+  std::vector<std::pair<std::string, size_t>> labels;
+  for (PTR<List> i = args->cdr(); i && !i->nil(); i = i->cdr()) {
+    PTR<List> li = DPCL(i->car());
+    if (li)
+      sequence.push_back(li);
+    else
+      labels.emplace_back(i->car()->str(), sequence.size());
+  }
+  for (size_t cur = 0; cur < sequence.size(); ) {
+    try {
+      evaluate(sequence[cur], new_envs);
+    } catch (ProgInterrupt& e) {
+      if (e.env.get() != new_env.get())
+        throw e;
+      if (e.type == 1) {
+        cur = std::numeric_limits<std::size_t>::max();
+        for (auto i = labels.begin(); i != labels.end(); i++) {
+          if (i->first == e.value->str()) {
+            cur = i->second;
+            break;
+          }
+        }
+        if (cur == std::numeric_limits<std::size_t>::max())
+          throw std::invalid_argument("Label not found");
+        continue;
+      } else if (e.type == 2) {
+        return e.value;
+      } else {
+        throw std::invalid_argument("Invalid interrupt number");
+      }
+    }
+    cur++;
+  }
+  return Nil::lisp_nil;
+}
+
+PTR<Sexp> go(PTR<List> args, ENV env) {
+  if (args->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->cdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  throw ProgInterrupt{1, env->top(), args->car()};
+}
+
+PTR<Sexp> return_(PTR<List> args, ENV env) {
+  if (args->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->cdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  throw ProgInterrupt{2, env->top(), evaluate(args->car(), env)};
 }
 
 // I/O
@@ -848,7 +926,20 @@ std::unordered_map<std::string, PTR<CFunc>> fmap = {
   REGISTER_CFUNC("COND", cond)
   REGISTER_CFUNC("IF", if_)
   REGISTER_CFUNC("DO", do_)
+  REGISTER_CFUNC("PROG", prog)
+  REGISTER_CFUNC("GO", go)
+  REGISTER_CFUNC("RETURN", return_)
 };
+
+bool reserved_func(PTR<Symbol> sym) {
+  const std::string& fun_name = sym->get_value();
+  if (fmap.find(fun_name) != fmap.end())
+    return true;
+  static const std::regex re_caordr("C[AD]{1,4}R");
+  if (std::regex_match(fun_name, re_caordr))
+    return true;
+  return false;
+}
 
 PTR<Funcs> find_func(PTR<Symbol> sym, ENV env) {
   const std::string& fun_name = sym->get_value();
@@ -856,9 +947,8 @@ PTR<Funcs> find_func(PTR<Symbol> sym, ENV env) {
   if (found != fmap.end())
     return found->second;
   static const std::regex re_caordr("C[AD]{1,4}R");
-  if (std::regex_match(fun_name, re_caordr)) {
+  if (std::regex_match(fun_name, re_caordr))
     return PTR<CadrFunc>(new CadrFunc(fun_name, caordr));
-  }
   PTR<Funcs> func = DPC<Funcs>(env->find_fun(sym));
   return func;
 }

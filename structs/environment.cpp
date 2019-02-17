@@ -81,3 +81,7 @@ void Envs::add_layer(PTR<Env> e) {
   envs.push_back(e);
 }
 
+PTR<Env> Envs::top() {
+  return envs[envs.size() - 1];
+}
+

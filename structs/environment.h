@@ -50,6 +50,7 @@ class Envs {
   PTR<Sexp> find_fun(PTR<Symbol>);
   void set_fun(PTR<Symbol>, PTR<Sexp>);
   void add_layer(PTR<Env>);
+  PTR<Env> top();
 
  private:
   std::vector<PTR<Env>> envs;
