@@ -70,14 +70,14 @@ def test(file) :
 		for qq in build_tree(q) :
 			aaa = str(next(aa, None))
 			# when None, will raise error, so user can see qq evaluated
-			if aaa.strip() == 'ERROR' :
+			if aaa.strip() == 'ERROR' or aaa.strip() == 'ERRORC' :
 				error_flag = False
 				try :
 					print('->', qq)
 					print('=>', evaluate(qq, env))
 				except Exception :
 					error_flag = True
-					print('=> ERROR')
+					print('=>', aaa.strip())
 				if not error_flag :
 					raise Exception('Test fails: should error')
 			else :
@@ -94,29 +94,6 @@ def test(file) :
 					print('!>', aaa)
 					raise Exception('Test fails: wrong answer')
 		assert next(aa, None) == None
-		print()
-	if 0 :
-		for qq, aa in zip_longest(build_tree(q), build_tree(a)) :
-			assert qq
-			# when aa is None, will raise error, so user can see qq evaluated
-			aaa = str(aa)
-			if aaa.strip() == 'ERROR' :
-				error_flag = False
-				try :
-					print('->', qq)
-					print('=>', evaluate(qq, env))
-				except Exception :
-					error_flag = True
-					print('=> ERROR')
-				if not error_flag :
-					raise Exception('Test fails: should error')
-			else :
-				print('->', qq)
-				qqq = str(evaluate(qq, env))
-				print('=>', qqq)
-				if qqq != aaa :
-					print('!>', aa)
-					raise Exception('Test fails: wrong answer')
 		print()
 
 if __name__ == '__main__' :

@@ -820,7 +820,7 @@
 => 720
 
 -> (factorial -1)
-=> ERROR
+=> ERRORC
 
 -> (factorial 0.1)
 => ERROR
