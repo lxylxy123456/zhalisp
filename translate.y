@@ -83,6 +83,8 @@ int yyerror(const char *msg) {
 std::shared_ptr<List> parse(std::string s) {
 	yy_scan_string(s.c_str());
 	assert(!yyparse());
+	// https://stackoverflow.com/a/9920524
+	yy_delete_buffer(YY_CURRENT_BUFFER);
 	return PTRL(yyval);
 }
 
