@@ -1,4 +1,4 @@
-/__pycache__/
-/lextab.py
-/parser.out
-/parsetab.py
+__pycache__/
+/py/lextab.py
+/py/parser.out
+/py/parsetab.py
