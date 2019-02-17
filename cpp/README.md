@@ -38,7 +38,7 @@ $
 * `eq` may have different behavior than Clisp (currently same as `eql`)
 * `typep` not implemented fully
 * `prog` may have incorrect behavior (due to `go` and `return` statements)
-* Memory leak
+* Memory leak (reason: reference cycles between Env and Func objects)
 
 ## TODO
 * How to format float output? [https://stackoverflow.com/questions/18832856/](https://stackoverflow.com/questions/18832856/)
