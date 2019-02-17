@@ -51,7 +51,10 @@ $
 ## Insights
 * Major development time: 9.5 days
 	* Greatly referring to the Python 3 implementation
-* Time to run all tests (at git [257f6b3](https://github.com/lxylxy123456/zhalisp/commit/257f6b3abec4969f9c33c5645bd0a825139661b4)): 0.060s (average of 10 tries)
 * Time to compile (at git [257f6b3](https://github.com/lxylxy123456/zhalisp/commit/257f6b3abec4969f9c33c5645bd0a825139661b4)): 11.225 (average of 10 tries)
+* Time to run all tests (at git 257f6b3): 0.060s (average of 10 tries)
+* Memory leak when running all tests (at git 257f6b3)
+	* definitely lost: 1,296 bytes in 9 blocks
+	* indirectly lost: 91,876 bytes in 2,782 blocks
 * About 2800 lines of code
 
