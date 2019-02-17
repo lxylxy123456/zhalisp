@@ -625,7 +625,12 @@ PTR<Sexp> function(PTR<List> args, ENV env) {
     throw std::invalid_argument("Too few arguments");
   if (!args->cdr()->nil())
     throw std::invalid_argument("Too many arguments");
-  return find_func(DPCS(args->car()), env);
+  PTR<Symbol> as = DPCS(args->car());
+  if (as)
+    return find_func(as, env);
+  else
+    assert(DPCS(DPCL(args->car())->car())->get_value() == "LAMBDA");
+    return evaluate(args->car(), env);
 }
 
 PTR<Sexp> quote(PTR<List> args, ENV env) {
