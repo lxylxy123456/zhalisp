@@ -51,6 +51,7 @@ class Envs {
   void set_fun(PTR<Symbol>, PTR<Sexp>);
   void add_layer(PTR<Env>);
   PTR<Env> top();
+  std::ostream& get_os();
 
  private:
   std::vector<PTR<Env>> envs;

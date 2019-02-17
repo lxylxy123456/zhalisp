@@ -85,3 +85,7 @@ PTR<Env> Envs::top() {
   return envs[envs.size() - 1];
 }
 
+std::ostream& Envs::get_os() {
+  return os;
+}
+

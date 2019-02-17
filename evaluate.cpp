@@ -489,12 +489,13 @@ PTR<Sexp> mapc(PTR<List> args, ENV env) {
   for (PTR<List> i = args->cdr(); i && !i->nil(); i = i->cdr()) {
     arg_list.push_back(DPC<List>(evaluate(i->car(), env)));
   }
+  PTR<List> ans = arg_list[0];
   while (true) {
     PTR<Sexp> param = Nil::lisp_nil;
     PTR<Sexp>* next_param = &param;
     for (auto &i : arg_list) {
       if (i->nil())
-        return args->cdr()->car();
+        return ans;
       auto next = PTRNL(Symbol::lisp_quote, PTRNL(i->car(), Nil::lisp_nil));
       *next_param = PTRNL(next, Nil::lisp_nil);
       next_param = &(DPCL(*next_param))->rw_cdr();
@@ -874,7 +875,26 @@ PTR<Sexp> return_(PTR<List> args, ENV env) {
 
 // I/O
 
+PTR<Sexp> print_(PTR<List> args, ENV env) {
+  if (args->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->cdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  PTR<Sexp> evaluated = evaluate(args->car(), env);
+  env->get_os() << evaluated->str() << std::endl;
+  return evaluated;
+}
+
 // Special functions
+
+PTR<Sexp> setrecursionlimit(PTR<List> args, ENV env) {
+  if (args->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->cdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  PTR<Sexp> evaluated = evaluate(args->car(), env);
+  return evaluated;
+}
 
 // Evaluate
 
@@ -934,6 +954,8 @@ std::unordered_map<std::string, PTR<CFunc>> fmap = {
   REGISTER_CFUNC("PROG", prog)
   REGISTER_CFUNC("GO", go)
   REGISTER_CFUNC("RETURN", return_)
+  REGISTER_CFUNC("PRINT", print_)
+  REGISTER_CFUNC("SETRECURSIONLIMIT", setrecursionlimit)
 };
 
 bool reserved_func(PTR<Symbol> sym) {
