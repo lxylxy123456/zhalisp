@@ -54,8 +54,9 @@ $
 * `typep` does not implement fully
 * `prog` may have incorrect behavior (due to `go` and `return` statements)
 * `symbol-function` has difficulties to be implemented
-* Cannot do recursion with too many levels (has `RecursionError`)
-	* The limit can be increased using `SETRECURSIONLIMIT`, but may have Segmentation fault
+* Python cannot do recursion with too many levels (has `RecursionError`)
+	* The limit can be increased using `SETRECURSIONLIMIT`, but may raise Segmentation fault
+	* Calling the function in C++ version have no effects
 
 ## Implemented Functions
 

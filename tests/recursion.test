@@ -2,7 +2,7 @@
 => FACTORIAL
 
 -> (factorial 100)
-=> ERROR
+=> ERRORC	; C++ do not have recursion limit
 
 -> (SETRECURSIONLIMIT 11000)
 => 11000
@@ -19,5 +19,6 @@
 -> (SETRECURSIONLIMIT 10001000)
 => 10001000
 
--> (f 10000)
-=> 
+-> (f 3792)
+=> ERRORC	; critical value at which the C++ program segfaults
+
