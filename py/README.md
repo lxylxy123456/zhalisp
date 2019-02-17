@@ -50,7 +50,7 @@ $
 * Complex numbers currently unsupported
 	* If enabled, complex + fraction will have different behavior than Clisp
 * `eq` have different behavior than Clisp (currently same as `eql`)
-* `typep` does not implement fully
+* `typep` not implemented fully
 * `prog` may have incorrect behavior (due to `go` and `return` statements)
 * `symbol-function` has difficulties to be implemented
 * Python cannot do recursion with too many levels (has `RecursionError`)

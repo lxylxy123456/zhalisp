@@ -74,7 +74,6 @@ PTR<Sexp> Envs::find_fun(PTR<Symbol> s) {
 void Envs::set_fun(PTR<Symbol> s, PTR<Sexp> e) {
   // Always uses the global environment
   envs[0]->set_fun(s, e);
-  // TODO: disallow use name of builtin function
 }
 
 void Envs::add_layer(PTR<Env> e) {

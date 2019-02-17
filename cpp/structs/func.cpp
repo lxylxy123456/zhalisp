@@ -33,7 +33,7 @@ Func::~Func() {
 
 std::string Func::str() const {
   return "#<FUNCTION " + name + ">";
-  // TODO: LIMIT: similar but not the same as real Lisp
+  // LIMIT: similar but not the same as real Lisp
 }
 
 Type Func::type() const {
@@ -67,7 +67,7 @@ CFunc::~CFunc() {
 
 std::string CFunc::str() const {
   return "#<FUNCTION " + name + ">";
-  // TODO: LIMIT: similar but not the same as real Lisp
+  // LIMIT: similar but not the same as real Lisp
 }
 
 Type CFunc::type() const {
@@ -88,7 +88,7 @@ CadrFunc::~CadrFunc() {
 
 std::string CadrFunc::str() const {
   return "#<FUNCTION " + name + ">";
-  // TODO: LIMIT: similar but not the same as real Lisp
+  // LIMIT: similar but not the same as real Lisp
 }
 
 Type CadrFunc::type() const {

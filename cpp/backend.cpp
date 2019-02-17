@@ -39,7 +39,7 @@ void shell() {
       } catch (SyntaxError& e) {
         std::string ln;
         std::getline(std::cin, ln);
-        lns + "\n" + ln;
+        lns += "\n" + ln;
       }
     }
     if (upper(strip(lns)) == "(EXIT)") {

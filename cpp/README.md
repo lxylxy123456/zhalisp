@@ -5,6 +5,26 @@ This directory contains a C++ implementation of zhalisp
 * Execute `backend` with no arguments will result in shell mode. Type an s-expression and press Enter. 
 * Execute `tests` with test file names (ends with `.test`) as arguments will perform tests with the test files. 
 
+### Example
+```
+$ ./backend 
+-> (defun factorial (n) (cond ((zerop n) 1) (t (* n (factorial (1- n))))))
+=> FACTORIAL
+-> (factorial 20)
+=> 2432902008176640000
+-> (defun fib (n)
+    (cond ((or (equal n 1) (equal n 2)) 1) (t (+ (fib (1- n)) (fib (- n 2))))))
+=> FIB
+-> (fib 7)
+=> 13
+-> CLEAR-ENV
+=> CLEAR-ENV
+-> (fib 7)
+Error: Function not found
+-> (exit)
+$ 
+```
+
 ## Project Structure
 * `structs.h`: all structures used, which are included in `structs/`
 * `lex.l`: Lex specification for the grammar
@@ -13,6 +33,12 @@ This directory contains a C++ implementation of zhalisp
 	* `PTR<Sexp> evaluate(PTR<Sexp>, ENV)` evaluates any s-expression
 * `test.cpp`: run test cases
 * `backend.cpp`: interactive shell
+
+## Limitations
+* `eq` may have different behavior than Clisp (currently same as `eql`)
+* `typep` not implemented fully
+* `prog` may have incorrect behavior (due to `go` and `return` statements)
+* Memory leak
 
 ## TODO
 * How to format float output? [https://stackoverflow.com/questions/18832856/](https://stackoverflow.com/questions/18832856/)
