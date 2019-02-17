@@ -1,4 +1,19 @@
+# Python
 __pycache__/
-/py/lextab.py
-/py/parser.out
-/py/parsetab.py
+lextab.py
+parser.out
+parsetab.py
+
+# C++ executable
+*.o
+a.out
+tmp
+test
+
+# C++ generated C files
+lex.yy.c
+y.tab.c
+
+# C++ debug core dump files
+vgcore.*
+
