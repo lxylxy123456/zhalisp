@@ -249,27 +249,28 @@ PTR<Sexp> typep(PTR<List> args, ENV env) {
     throw std::invalid_argument("Too few arguments");
   if (!args->cdr()->cdr()->nil())
     throw std::invalid_argument("Too many arguments (not supporting 3rd arg)");
-  PTR<Symbol> type_name = DPCS(args->cdr()->car());
+  PTR<Sexp> value = evaluate(args->car(), env);
+  PTR<Symbol> type_name = DPCS(evaluate(args->cdr()->car(), env));
   if (!type_name)
     throw std::invalid_argument("Invalid argument type");
   else if (type_name->get_value() == "ATOM")
-    return BOOL(evaluate(args->car(), env)->has_type(Type::atom));
+    return BOOL(value->has_type(Type::atom));
   else if (type_name->get_value() == "LIST")
-    return BOOL(evaluate(args->car(), env)->has_type(Type::list));
+    return BOOL(value->has_type(Type::list));
   else if (type_name->get_value() == "NUMBER")
-    return BOOL(evaluate(args->car(), env)->has_type(Type::number));
+    return BOOL(value->has_type(Type::number));
   else if (type_name->get_value() == "INTEGER")
-    return BOOL(evaluate(args->car(), env)->has_type(Type::integer));
+    return BOOL(value->has_type(Type::integer));
   else if (type_name->get_value() == "RATIONAL")
-    return BOOL(evaluate(args->car(), env)->has_type(Type::rational));
+    return BOOL(value->has_type(Type::rational));
   else if (type_name->get_value() == "FLOAT")
-    return BOOL(evaluate(args->car(), env)->has_type(Type::float_));
+    return BOOL(value->has_type(Type::float_));
   else if (type_name->get_value() == "COMPLEX")
-    return BOOL(evaluate(args->car(), env)->has_type(Type::complex));
+    return BOOL(value->has_type(Type::complex));
   else if (type_name->get_value() == "SYMBOL")
-    return BOOL(evaluate(args->car(), env)->has_type(Type::symbol));
+    return BOOL(value->has_type(Type::symbol));
   else if (type_name->get_value() == "BOOLEAN")
-    return BOOL(evaluate(args->car(), env)->has_type(Type::boolean));
+    return BOOL(value->has_type(Type::boolean));
   else if (type_name->get_value() == "NIL")
     return BOOL(false);
   else
@@ -672,7 +673,7 @@ PTR<Sexp> let(PTR<List> args, ENV env) {
 PTR<Sexp> let_star(PTR<List> args, ENV env) {
   if (args->nil())
     throw std::invalid_argument("Too few arguments");
-  PTR<Env> new_env(new Env{"LET"});
+  PTR<Env> new_env(new Env{"LET*"});
   PTR<Envs> new_envs(new Envs{*env});
   new_envs->add_layer(new_env);
   for (PTR<List> i = DPCL(args->car()); i && !i->nil(); i = i->cdr()) {
@@ -754,6 +755,40 @@ PTR<Sexp> if_(PTR<List> args, ENV env) {
 
 // Iteration
 
+PTR<Sexp> do_(PTR<List> args, ENV env) {
+  if (args->cdr()->nil())
+    throw std::invalid_argument("Too few arguments");
+  PTR<Env> new_env(new Env{"DO"});
+  PTR<Envs> new_envs(new Envs{*env});
+  new_envs->add_layer(new_env);
+  std::vector<std::pair<PTR<Symbol>, PTR<Sexp>>> val_list;
+  for (PTR<List> i = DPCL(args->car()); !i->nil(); i = i->cdr()) {
+    PTR<List> li = DPCL(i->car());
+    if (li) {
+      PTR<Symbol> name = DPCS(li->car());
+      new_env->set_var(name, evaluate(li->cdr()->car(), env));
+      if (!li->cdr()->cdr()->nil())
+        val_list.emplace_back(name, li->cdr()->cdr()->car());
+    } else {
+      new_env->set_var(DPCS(i->car()), Nil::lisp_nil);
+    }
+  }
+  PTR<Sexp> exit_test = DPCL(args->cdr()->car())->car();
+  while (evaluate(exit_test, new_envs)->nil()) {
+    for (PTR<List> i = args->cdr()->cdr(); !i->nil(); i = i->cdr())
+      evaluate(i->car(), new_envs);
+    std::vector<std::pair<PTR<Symbol>, PTR<Sexp>>> new_values;
+    for (auto i = val_list.begin(); i != val_list.end(); i++)
+      new_values.emplace_back(i->first, evaluate(i->second, new_envs));
+    for (auto i = new_values.begin(); i != new_values.end(); i++)
+      new_env->set_var(i->first, i->second);
+  }
+  PTR<Sexp> ans = Nil::lisp_nil;
+  for (PTR<List> i = DPCL(args->cdr()->car())->cdr(); !i->nil(); i = i->cdr())
+    ans = evaluate(i->car(), new_envs);
+  return ans;
+}
+
 // I/O
 
 // Special functions
@@ -812,6 +847,7 @@ std::unordered_map<std::string, PTR<CFunc>> fmap = {
   REGISTER_CFUNC("SET", set)
   REGISTER_CFUNC("COND", cond)
   REGISTER_CFUNC("IF", if_)
+  REGISTER_CFUNC("DO", do_)
 };
 
 PTR<Funcs> find_func(PTR<Symbol> sym, ENV env) {
@@ -820,7 +856,7 @@ PTR<Funcs> find_func(PTR<Symbol> sym, ENV env) {
   if (found != fmap.end())
     return found->second;
   static const std::regex re_caordr("C[AD]{1,4}R");
-  if (std::regex_search(fun_name, re_caordr)) {
+  if (std::regex_match(fun_name, re_caordr)) {
     return PTR<CadrFunc>(new CadrFunc(fun_name, caordr));
   }
   PTR<Funcs> func = DPC<Funcs>(env->find_fun(sym));
