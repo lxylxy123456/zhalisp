@@ -29,7 +29,7 @@ class Env {
   Env();
   Env(const std::string& scope);
   Env(std::string&& scope);
-  bool has_var(PTR<Symbol>);          // TODO: merge has_ and get_
+  bool has_var(PTR<Symbol>);
   PTR<Sexp> get_var(PTR<Symbol>);
   void set_var(PTR<Symbol>, PTR<Sexp>);
   bool has_fun(PTR<Symbol>);

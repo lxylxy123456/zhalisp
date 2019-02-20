@@ -29,7 +29,11 @@ bool Env::has_var(PTR<Symbol> s) {
 }
 
 PTR<Sexp> Env::get_var(PTR<Symbol> s) {
-  return variable[s->get_value()];
+  auto found = variable.find(s->get_value());
+  if (found == variable.end())
+    return nullptr;
+  else
+    return found->second;
 }
 
 void Env::set_var(PTR<Symbol> s, PTR<Sexp> e) {
@@ -41,7 +45,11 @@ bool Env::has_fun(PTR<Symbol> s) {
 }
 
 PTR<Sexp> Env::get_fun(PTR<Symbol> s) {
-  return function[s->get_value()];
+  auto found = function.find(s->get_value());
+  if (found == function.end())
+    return nullptr;
+  else
+    return found->second;
 }
 
 void Env::set_fun(PTR<Symbol> s, PTR<Sexp> e) {
@@ -51,9 +59,11 @@ void Env::set_fun(PTR<Symbol> s, PTR<Sexp> e) {
 Envs::Envs(PTR<Env> global, std::ostream& o): envs(1, global), os(o) {}
 
 PTR<Sexp> Envs::find_var(PTR<Symbol> s) {
-  for (auto i = envs.rbegin(); i != envs.rend(); i++)
-    if ((*i)->has_var(s))
-      return (*i)->get_var(s);
+  for (auto i = envs.rbegin(); i != envs.rend(); i++) {
+    PTR<Sexp>&& found = (*i)->get_var(s);
+    if (found)
+      return found;
+  }
   throw std::runtime_error("Variable not found");
 }
 
@@ -65,9 +75,11 @@ void Envs::set_var(PTR<Symbol> s, PTR<Sexp> e) {
 }
 
 PTR<Sexp> Envs::find_fun(PTR<Symbol> s) {
-  for (auto i = envs.rbegin(); i != envs.rend(); i++)
-    if ((*i)->has_fun(s))
-      return (*i)->get_fun(s);
+  for (auto i = envs.rbegin(); i != envs.rend(); i++) {
+    PTR<Sexp>&& found = (*i)->get_fun(s);
+    if (found)
+      return found;
+  }
   throw std::runtime_error("Function not found");
 }
 
