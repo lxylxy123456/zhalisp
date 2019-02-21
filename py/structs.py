@@ -185,3 +185,7 @@ class Env :
 		assert type(k) == Symbol
 		self.function.__setitem__(k.value, v)
 
+if not 'debug del' :
+	for i in (Atom, Dot, Number, Symbol, Bool, List, Env) :
+		i.__del__ = lambda x: print('del', type(x), id(x), str(x))
+
