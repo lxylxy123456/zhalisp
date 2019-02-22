@@ -97,8 +97,8 @@ class List :
 	def __init__(self, car=None, cdr=None) :
 		'List is nil iff cdr == None; car is meaningful iff cdr != None'
 		assert not (cdr == None and car != None)
-		assert type(car) in (Env, Atom, Number, Symbol, List, Bool, type(None))
-		assert type(cdr) in (Env, Atom, Number, Symbol, List, Bool, type(None))
+		#assert type(car) in (Env, Atom, Number, Symbol, List, Bool, type(None))
+		#assert type(cdr) in (Env, Atom, Number, Symbol, List, Bool, type(None))
 		self.car = car
 		self.cdr = cdr
 	def nil(self) :
@@ -186,6 +186,7 @@ class Env :
 		self.function.__setitem__(k.value, v)
 
 if not 'debug del' :
-	for i in (Atom, Dot, Number, Symbol, Bool, List, Env) :
+	#for i in (Atom, Dot, Number, Symbol, Bool, List, Env) :
+	for i in (Env,) :
 		i.__del__ = lambda x: print('del', type(x), id(x), str(x))
 
