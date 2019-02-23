@@ -190,3 +190,7 @@ PTR<Number> Integer::sqrt_() const {
     return PTRNF(::sqrt(mpf_class(value)));
 }
 
+bool Integer::is_0() const {
+  return value == 0;
+}
+

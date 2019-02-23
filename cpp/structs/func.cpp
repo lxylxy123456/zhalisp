@@ -58,6 +58,31 @@ PTR<Sexp> Func::call(PTR<List> args, PTR<Envs> env) {
   return ans;
 }
 
+EFunc::EFunc(std::string n, PTR<Sexp>(*f)(const std::vector<PTR<Sexp>>&,
+                                          PTR<Envs>)): name(n), func(f) {}
+
+EFunc::~EFunc() {
+//  std::cout << "~EFunc" << std::endl;
+}
+
+std::string EFunc::str() const {
+  return "#<FUNCTION " + name + ">";
+  // LIMIT: similar but not the same as real Lisp
+}
+
+Type EFunc::type() const {
+  return Type::func;
+}
+
+PTR<Sexp> EFunc::call(PTR<List> args, PTR<Envs> env) {
+  // TODO: move following code to evaluate.cpp
+  std::vector<PTR<Sexp>> argv;
+  for (auto i = args; i && !i->nil(); i = i->cdr()) {
+    argv.push_back(evaluate(i->car(), env));
+  }
+  return func(argv, env);
+}
+
 CFunc::CFunc(std::string n, PTR<Sexp>(*f)(PTR<List>, PTR<Envs>)):
               name(n), func(f) {}
 
@@ -79,7 +104,9 @@ PTR<Sexp> CFunc::call(PTR<List> args, PTR<Envs> env) {
 }
 
 CadrFunc::CadrFunc(std::string n,
-                    PTR<Sexp>(*f)(std::string, PTR<List>, PTR<Envs>)) :
+                    PTR<Sexp>(*f)(std::string,
+                                  const std::vector<PTR<Sexp>>&,
+                                  PTR<Envs>)) :
                     name(n), func(f) {}
 
 CadrFunc::~CadrFunc() {
@@ -96,6 +123,11 @@ Type CadrFunc::type() const {
 }
 
 PTR<Sexp> CadrFunc::call(PTR<List> args, PTR<Envs> env) {
-  return func(name, args, env);
+  // TODO: move following code to evaluate.cpp
+  std::vector<PTR<Sexp>> argv;
+  for (auto i = args; i && !i->nil(); i = i->cdr()) {
+    argv.push_back(evaluate(i->car(), env));
+  }
+  return func(name, argv, env);
 }
 

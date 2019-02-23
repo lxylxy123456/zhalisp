@@ -174,3 +174,7 @@ PTR<Number> Complex::sqrt_() const {
   return reduced_complex(c, *c * *(*(*sa2b2 - *real) / *imag));
 }
 
+bool Complex::is_0() const {
+  return real->is_0() && imag->is_0();
+}
+

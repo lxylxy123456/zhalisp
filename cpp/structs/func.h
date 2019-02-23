@@ -47,6 +47,18 @@ class Func : public Funcs {
   PTR<Envs> f_env;
 };
 
+class EFunc : public Funcs {
+ public:
+  EFunc(std::string, PTR<Sexp>(*)(const std::vector<PTR<Sexp>>&, PTR<Envs>));
+  virtual ~EFunc();
+  virtual std::string str() const;
+  virtual Type type() const;
+  virtual PTR<Sexp> call(PTR<List>, PTR<Envs>);
+ private:
+  std::string name;
+  PTR<Sexp>(*func)(const std::vector<PTR<Sexp>>&, PTR<Envs>);
+};
+
 class CFunc : public Funcs {
  public:
   CFunc(std::string, PTR<Sexp>(*)(PTR<List>, PTR<Envs>));
@@ -61,14 +73,15 @@ class CFunc : public Funcs {
 
 class CadrFunc : public Funcs {
  public:
-  CadrFunc(std::string, PTR<Sexp>(*)(std::string, PTR<List>, PTR<Envs>));
+  CadrFunc(std::string, PTR<Sexp>(*)(std::string, const std::vector<PTR<Sexp>>&,
+                                      PTR<Envs>));
   virtual ~CadrFunc();
   virtual std::string str() const;
   virtual Type type() const;
   virtual PTR<Sexp> call(PTR<List>, PTR<Envs>);
  private:
   std::string name;
-  PTR<Sexp>(*func)(std::string, PTR<List>, PTR<Envs>);
+  PTR<Sexp>(*func)(std::string, const std::vector<PTR<Sexp>>&, PTR<Envs>);
 };
 
 #endif

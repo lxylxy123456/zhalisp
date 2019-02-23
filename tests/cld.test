@@ -823,7 +823,7 @@
 => ERRORC
 
 -> (factorial 0.1)
-=> ERROR
+=> ERRORC
 
 -> (defun our-subst (in out struct)
 	(if (atom struct) struct (cons (if (equal out (car struct)) in

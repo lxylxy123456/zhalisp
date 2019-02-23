@@ -200,3 +200,7 @@ PTR<Number> Rational::sqrt_() const {
     return PTRNF(::sqrt(mpf_class(value)));
 }
 
+bool Rational::is_0() const {
+  return false;
+}
+

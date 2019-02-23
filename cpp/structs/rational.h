@@ -44,6 +44,7 @@ class Rational: public Number {
   virtual bool operator>(const Number&) const;
   virtual bool operator>=(const Number&) const;
   virtual PTR<Number> sqrt_() const;
+  virtual bool is_0() const;
   friend Integer;
   friend Float;
   friend Complex;

@@ -182,3 +182,7 @@ PTR<Number> Float::sqrt_() const {
   return PTRNF(::sqrt(value));
 }
 
+bool Float::is_0() const {
+  return value == 0.0;
+}
+
