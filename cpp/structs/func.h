@@ -35,14 +35,14 @@ class Funcs : public Sexp {
 
 class Func : public Funcs {
  public:
-  Func(std::string, PTR<List>, PTR<List>, PTR<Envs>);
+  Func(std::string, std::vector<PTR<Symbol>>, PTR<List>, PTR<Envs>);
   virtual ~Func();
   virtual std::string str() const;
   virtual Type type() const;
   virtual PTR<Sexp> call(PTR<List>, PTR<Envs>);
  private:
   std::string name;
-  PTR<List> f_args;
+  std::vector<PTR<Symbol>> f_args;
   PTR<List> f_stmt;
   PTR<Envs> f_env;
 };

@@ -24,6 +24,8 @@
 
 // Conversion
 
+// TODO: remove use of DPC? (without check)
+
 PTR<Number> FDPCN(PTR<Sexp> p) {
   PTR<Number>&& ans = DPC<Number>(p);
   if (!ans)
@@ -113,6 +115,7 @@ PTR<Funcs> sym_to_func(PTR<Sexp> s, ENV env) {
     return find_func(sym, env);
   else
     return DPC<Funcs>(s);
+  // TODO: build in error when function not found
 }
 
 std::string strip(const std::string& s) {
@@ -371,7 +374,7 @@ PTR<Sexp> member(const std::vector<PTR<Sexp>>& args, ENV env) {
     if (is_eql(x, l->car()))
       return l;
     else
-      l = l->cdr(); // TODO: can cause segfault (check all List::cdr calls)
+      l = l->cdr();   // TODO: can cause segfault (check all List::cdr calls)
   }
   return l;
 }
@@ -462,7 +465,7 @@ PTR<Sexp> append(const std::vector<PTR<Sexp>>& args, ENV env) {
   for (auto& i : args) {
     PTR<Sexp> j = i;
     while (true) {
-      if(!(*next_ans)->nil())
+      if (!(*next_ans)->nil())
         throw std::invalid_argument("Dotted list");
       if (j->has_type(Type::atom)) {
         *next_ans = j;
@@ -489,12 +492,10 @@ PTR<Sexp> defun(PTR<List> args, ENV env) {
     throw std::invalid_argument("Invalid function name");
   if (reserved_func(f_name))
     throw std::invalid_argument("Reserved function name");
-  PTR<List> f_args = DPCL(args->cdr()->car());
-  if (!f_args)
-    throw std::invalid_argument("Invalid argument list");
-  for (PTR<List> i = f_args; !i->nil(); i = i->cdr())
-    if (i->car()->type() != Type::symbol)
-      throw std::invalid_argument("Formal argument not symbol");
+  std::vector<PTR<Symbol>> f_args;
+  for (PTR<List> i = FDPCL(args->cdr()->car()); !i->nil();
+        i = FDPCL(i->r_cdr()))
+    f_args.push_back(FDPCS(i->car()));
   PTR<List> f_stmt = DPCL(args->cdr()->cdr());
   PTR<Func> func(new Func(f_name->get_value(), f_args, f_stmt, env));
   env->set_fun(f_name, func);
@@ -504,47 +505,52 @@ PTR<Sexp> defun(PTR<List> args, ENV env) {
 PTR<Sexp> lambda_(PTR<List> args, ENV env) {
   if (args->nil())
     throw std::invalid_argument("Too few arguments");
-  PTR<List> f_args = DPCL(args->car());
-  if (!f_args)
-    throw std::invalid_argument("Invalid argument list");
-  for (PTR<List> i = f_args; !i->nil(); i = i->cdr())
-    if (i->car()->type() != Type::symbol)
-      throw std::invalid_argument("Formal argument not symbol");
+  std::vector<PTR<Symbol>> f_args;
+  for (PTR<List> i = FDPCL(args->car()); !i->nil(); i = FDPCL(i->r_cdr()))
+    f_args.push_back(FDPCS(i->car()));
   PTR<List> f_stmt = DPCL(args->cdr());
   PTR<Func> func(new Func("LAMBDA", f_args, f_stmt, env));
   return func;
 }
 
-PTR<Sexp> apply(PTR<List> args, ENV env) {
-  if (args->cdr()->nil())
-    throw std::invalid_argument("Too few arguments");
-  PTR<Funcs> func = sym_to_func(evaluate(args->car(), env), env);
+PTR<Sexp> apply(const std::vector<PTR<Sexp>>& args, ENV env) {
+  ARGS_SIZE_LB(2)
+  PTR<Funcs> func = sym_to_func(args[0], env);
   if (!func)
     throw std::invalid_argument("Not a function");
+  // TODO: do not rebuild argument List; use std::vector
   PTR<Sexp> arg = Nil::lisp_nil;
   PTR<Sexp>* next_arg = &arg;
-  PTR<List> i = args->cdr();
-  for (; !i->cdr()->nil(); i = i->cdr()) {
-    *next_arg = PTRNL(PTRNL(Symbol::lisp_quote, PTRNL(evaluate(i->car(), env),
-                Nil::lisp_nil)), Nil::lisp_nil);
+  auto i = args.begin();
+  for (i++; i + 1 != args.end(); i++) {
+    *next_arg = PTRNL(PTRNL(Symbol::lisp_quote, PTRNL(*i, Nil::lisp_nil)),
+                      Nil::lisp_nil);
     next_arg = &(DPCL(*next_arg))->rw_cdr();
   }
-  PTR<List> last_list = DPCL(evaluate(i->car(), env));
-  for (i = last_list; !i->nil(); i = i->cdr()) {
-    *next_arg = PTRNL(PTRNL(Symbol::lisp_quote, PTRNL(i->car(),
+  PTR<List> last_list = FDPCL(*i);
+  for (PTR<List> j = last_list; !j->nil(); j = j->cdr()) {
+    *next_arg = PTRNL(PTRNL(Symbol::lisp_quote, PTRNL(j->car(),
                 Nil::lisp_nil)), Nil::lisp_nil);
     next_arg = &(DPCL(*next_arg))->rw_cdr();
   }
   return func->call(DPCL(arg), env);
 }
 
-PTR<Sexp> funcall(PTR<List> args, ENV env) {
-  if (args->nil())
-    throw std::invalid_argument("Too few arguments");
-  PTR<Funcs> func = sym_to_func(evaluate(args->car(), env), env);
+PTR<Sexp> funcall(const std::vector<PTR<Sexp>>& args, ENV env) {
+  ARGS_SIZE_LB(1)
+  PTR<Funcs> func = sym_to_func(args[0], env);
   if (!func)
     throw std::invalid_argument("Not a function");
-  return func->call(DPCL(args->cdr()), env);
+  // TODO: do not rebuild argument List; use std::vector
+  PTR<Sexp> arg = Nil::lisp_nil;
+  PTR<Sexp>* next_arg = &arg;
+  auto i = args.begin();
+  for (i++; i != args.end(); i++) {
+    *next_arg = PTRNL(PTRNL(Symbol::lisp_quote, PTRNL(*i, Nil::lisp_nil)),
+                      Nil::lisp_nil);
+    next_arg = &(DPCL(*next_arg))->rw_cdr();
+  }
+  return func->call(DPCL(arg), env);
 }
 
 PTR<Sexp> function(PTR<List> args, ENV env) {
@@ -569,12 +575,9 @@ PTR<Sexp> quote(PTR<List> args, ENV env) {
   return args->car();
 }
 
-PTR<Sexp> eval_(PTR<List> args, ENV env) {
-  if (args->nil())
-    throw std::invalid_argument("Too few arguments");
-  if (!args->cdr()->nil())
-    throw std::invalid_argument("Too many arguments");
-  return evaluate(evaluate(args->car(), env), env);
+PTR<Sexp> eval_(const std::vector<PTR<Sexp>>& args, ENV env) {
+  ARGS_SIZE_EQ(1)
+  return evaluate(args[0], env);
 }
 
 // Variables
@@ -649,15 +652,10 @@ PTR<Sexp> setq(PTR<List> args, ENV env) {
   return v;
 }
 
-PTR<Sexp> set(PTR<List> args, ENV env) {
-  if (args->cdr()->nil())
-    throw std::invalid_argument("Too few arguments");
-  if (!args->cdr()->cdr()->nil())
-    throw std::invalid_argument("Too many arguments");
-  PTR<Symbol> k = DPCS(evaluate(args->car(), env));
-  PTR<Sexp> v = evaluate(args->cdr()->car(), env);
-  env->set_var(k, v);
-  return v;
+PTR<Sexp> set(const std::vector<PTR<Sexp>>& args, ENV env) {
+  ARGS_SIZE_EQ(2)
+  env->set_var(FDPCS(args[0]), args[1]);
+  return args[1];
 }
 
 // Conditions
@@ -804,25 +802,17 @@ PTR<Sexp> return_(PTR<List> args, ENV env) {
 
 // I/O
 
-PTR<Sexp> print_(PTR<List> args, ENV env) {
-  if (args->nil())
-    throw std::invalid_argument("Too few arguments");
-  if (!args->cdr()->nil())
-    throw std::invalid_argument("Too many arguments");
-  PTR<Sexp> evaluated = evaluate(args->car(), env);
-  env->get_os() << evaluated->str() << std::endl;
-  return evaluated;
+PTR<Sexp> print_(const std::vector<PTR<Sexp>>& args, ENV env) {
+  ARGS_SIZE_EQ(1)
+  env->get_os() << args[0]->str() << std::endl;
+  return args[0];
 }
 
 // Special functions
 
-PTR<Sexp> setrecursionlimit(PTR<List> args, ENV env) {
-  if (args->nil())
-    throw std::invalid_argument("Too few arguments");
-  if (!args->cdr()->nil())
-    throw std::invalid_argument("Too many arguments");
-  PTR<Sexp> evaluated = evaluate(args->car(), env);
-  return evaluated;
+PTR<Sexp> setrecursionlimit(const std::vector<PTR<Sexp>>& args, ENV env) {
+  ARGS_SIZE_EQ(1)
+  return args[0];
 }
 
 // Evaluate
@@ -864,33 +854,32 @@ std::unordered_map<std::string, PTR<EFunc>> efmap = {
   REGISTER_EFUNC("MAPC", mapc)
   REGISTER_EFUNC("MAPLIST", maplist)
   REGISTER_EFUNC("APPEND", append)
+  REGISTER_EFUNC("APPLY", apply)
+  REGISTER_EFUNC("FUNCALL", funcall)
+  REGISTER_EFUNC("EVAL", eval_)
+  REGISTER_EFUNC("SET", set)
+  REGISTER_EFUNC("PRINT", print_)
+  REGISTER_EFUNC("SETRECURSIONLIMIT", setrecursionlimit)
 };
 
 #define REGISTER_CFUNC(K, V) {K, PTR<CFunc>(new CFunc(K, V))},
 
 std::unordered_map<std::string, PTR<CFunc>> fmap = {
+  REGISTER_CFUNC("AND", and_)
+  REGISTER_CFUNC("OR", or_)
   REGISTER_CFUNC("DEFUN", defun)
   REGISTER_CFUNC("LAMBDA", lambda_)
-  REGISTER_CFUNC("APPLY", apply)
-  REGISTER_CFUNC("FUNCALL", funcall)
   REGISTER_CFUNC("FUNCTION", function)
   REGISTER_CFUNC("QUOTE", quote)
-  REGISTER_CFUNC("EVAL", eval_)
   REGISTER_CFUNC("LET", let)
   REGISTER_CFUNC("LET*", let_star)
   REGISTER_CFUNC("SETQ", setq)
-  REGISTER_CFUNC("SET", set)
   REGISTER_CFUNC("COND", cond)
   REGISTER_CFUNC("IF", if_)
   REGISTER_CFUNC("DO", do_)
   REGISTER_CFUNC("PROG", prog)
   REGISTER_CFUNC("GO", go)
   REGISTER_CFUNC("RETURN", return_)
-  REGISTER_CFUNC("PRINT", print_)
-  REGISTER_CFUNC("SETRECURSIONLIMIT", setrecursionlimit)
-
-  REGISTER_CFUNC("AND", and_)
-  REGISTER_CFUNC("OR", or_)
 };
 
 bool reserved_func(PTR<Symbol> sym) {

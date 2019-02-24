@@ -24,8 +24,8 @@ Funcs::~Funcs() {
 //  std::cout << "~Funcs" << std::endl;
 }
 
-Func::Func(std::string n, PTR<List> a, PTR<List> s, PTR<Envs> env):
-            name(n), f_args(a), f_stmt(s), f_env(env) {}
+Func::Func(std::string n, std::vector<PTR<Symbol>> a, PTR<List> s,
+            PTR<Envs> env): name(n), f_args(a), f_stmt(s), f_env(env) {}
 
 Func::~Func() {
 //  std::cout << "~Func" << std::endl;
@@ -41,17 +41,22 @@ Type Func::type() const {
 }
 
 PTR<Sexp> Func::call(PTR<List> args, PTR<Envs> env) {
+  // TODO: move following code to evaluate.cpp
+  std::vector<PTR<Sexp>> argv;
+  for (auto i = args; i && !i->nil(); i = i->cdr()) {
+    if (argv.size() >= f_args.size())
+      throw std::invalid_argument("Too many actual arguments");
+    argv.push_back(evaluate(i->car(), env));
+  }
+
   PTR<Env> new_env(new Env{name});
   PTR<Envs> new_envs(new Envs{*f_env});
   new_envs->add_layer(new_env);
-  for (PTR<List> i = f_args; !i->nil(); i = i->cdr()) {
-    if (args->nil())
-      throw std::invalid_argument("Not enough actual arguments");
-    new_env->set_var(DPCS(i->car()), evaluate(args->car(), env));
-    args = args->cdr();
-  }
-  if (!args->nil())
-    throw std::invalid_argument("Too many actual arguments");
+  if (argv.size() < f_args.size())
+    throw std::invalid_argument("Not enough actual arguments");
+  auto j = f_args.begin();
+  for (auto i = argv.begin(); i != argv.end(); i++, j++)
+    new_env->set_var(*j, *i);
   PTR<Sexp> ans = Nil::lisp_nil;
   for (PTR<List> i = f_stmt; !i->nil(); i = i->cdr())
     ans = evaluate(i->car(), new_envs);
@@ -77,9 +82,8 @@ Type EFunc::type() const {
 PTR<Sexp> EFunc::call(PTR<List> args, PTR<Envs> env) {
   // TODO: move following code to evaluate.cpp
   std::vector<PTR<Sexp>> argv;
-  for (auto i = args; i && !i->nil(); i = i->cdr()) {
+  for (auto i = args; i && !i->nil(); i = i->cdr())
     argv.push_back(evaluate(i->car(), env));
-  }
   return func(argv, env);
 }
 
@@ -125,9 +129,8 @@ Type CadrFunc::type() const {
 PTR<Sexp> CadrFunc::call(PTR<List> args, PTR<Envs> env) {
   // TODO: move following code to evaluate.cpp
   std::vector<PTR<Sexp>> argv;
-  for (auto i = args; i && !i->nil(); i = i->cdr()) {
+  for (auto i = args; i && !i->nil(); i = i->cdr())
     argv.push_back(evaluate(i->car(), env));
-  }
   return func(name, argv, env);
 }
 
