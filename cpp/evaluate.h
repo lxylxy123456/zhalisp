@@ -28,7 +28,7 @@
 #define DPC std::dynamic_pointer_cast
 #define DPCN DPC<Number>
 #define DPCS DPC<Symbol>
-#define DPCL DPC<List>
+#define DPCFuncs DPC<Funcs>
 
 bool is_eql(PTR<Sexp> a, PTR<Sexp> b);
 bool is_equal(PTR<Sexp> a, PTR<Sexp> b);

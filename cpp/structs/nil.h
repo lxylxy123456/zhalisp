@@ -31,6 +31,7 @@ class Nil: public List {
   virtual Type type() const;
   virtual const PTR<Sexp> car() const;
   virtual const PTR<List> cdr() const;
+  virtual const PTR<List> fcdr() const;
   virtual const PTR<Sexp> r_cdr() const;
   virtual PTR<Sexp>& rw_cdr();          // disabled
   static PTR<Nil> lisp_nil;

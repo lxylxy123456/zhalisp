@@ -43,8 +43,13 @@ Type List::type() const { return Type::list; }
 
 const PTR<Sexp> List::car() const { return l_car; }
 
-const PTR<List> List::cdr() const {
-  return std::dynamic_pointer_cast<List>(l_cdr);
+const PTR<List> List::cdr() const { return DPCL(l_cdr); }
+
+const PTR<List> List::fcdr() const {
+  PTR<List>&& ans = DPCL(l_cdr);
+  if (!ans)
+    throw std::invalid_argument("Dotted list");
+  return ans;
 }
 
 const PTR<Sexp> List::r_cdr() const { return l_cdr; }

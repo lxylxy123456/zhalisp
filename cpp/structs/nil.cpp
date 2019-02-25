@@ -34,6 +34,8 @@ const PTR<Sexp> Nil::car() const { return lisp_nil; }
 
 const PTR<List> Nil::cdr() const { return lisp_nil; }
 
+const PTR<List> Nil::fcdr() const { return lisp_nil; }
+
 const PTR<Sexp> Nil::r_cdr() const { return lisp_nil; }
 
 PTR<Sexp>& Nil::rw_cdr() {

@@ -22,6 +22,8 @@
 #include "sexp.h"
 
 #define PTRNL(X, Y) PTR<List>(new List{X, Y})
+#define DPC std::dynamic_pointer_cast
+#define DPCL DPC<List>
 
 class List: public Sexp {
  public:
@@ -31,6 +33,7 @@ class List: public Sexp {
   virtual Type type() const;
   virtual const PTR<Sexp> car() const;
   virtual const PTR<List> cdr() const;
+  virtual const PTR<List> fcdr() const;
   virtual const PTR<Sexp> r_cdr() const;
   virtual PTR<Sexp>& rw_cdr();          // used for building list online, danger
 

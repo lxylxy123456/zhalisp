@@ -24,8 +24,6 @@
 
 // Conversion
 
-// TODO: remove use of DPC? (without check)
-
 PTR<Number> FDPCN(PTR<Sexp> p) {
   PTR<Number>&& ans = DPC<Number>(p);
   if (!ans)
@@ -51,6 +49,13 @@ PTR<List> FDPCL(PTR<Sexp> p) {
   PTR<List>&& ans = DPC<List>(p);
   if (!ans)
     throw std::invalid_argument("Not an list");
+  return ans;
+}
+
+PTR<Funcs> FDPCFuncs(PTR<Sexp> p) {
+  PTR<Funcs>&& ans = DPC<Funcs>(p);
+  if (!ans)
+    throw std::invalid_argument("Not a function");
   return ans;
 }
 
@@ -110,11 +115,11 @@ bool is_equal(PTR<Sexp> a, PTR<Sexp> b) {
 
 PTR<Funcs> sym_to_func(PTR<Sexp> s, ENV env) {
   // If symbol, resolve to function; else, cast to function
-  PTR<Symbol> sym = DPC<Symbol>(s);
+  PTR<Symbol> sym = DPCS(s);
   if (sym)
     return find_func(sym, env);
   else
-    return DPC<Funcs>(s);
+    return FDPCFuncs(s);
   // TODO: build in error when function not found
 }
 
@@ -371,8 +376,7 @@ PTR<Sexp> member(const std::vector<PTR<Sexp>>& args, ENV env) {
   while (!l->nil()) {
     if (is_eql(x, l->car()))
       return l;
-    else
-      l = l->cdr();   // TODO: can cause segfault (check all List::cdr calls)
+    l = l->fcdr();
   }
   return l;
 }
@@ -392,6 +396,8 @@ PTR<Sexp> mapcar(const std::vector<PTR<Sexp>>& args, ENV env) {
   while (true) {
     std::vector<PTR<Sexp>> param;
     for (auto &i : arg_list) {
+      if (!i)
+        throw std::invalid_argument("Dotted list");
       if (i->nil())
         return ans;
       param.push_back(i->car());
@@ -414,6 +420,8 @@ PTR<Sexp> mapc(const std::vector<PTR<Sexp>>& args, ENV env) {
   while (true) {
     std::vector<PTR<Sexp>> param;
     for (auto &i : arg_list) {
+      if (!i)
+        throw std::invalid_argument("Dotted list");
       if (i->nil())
         return args[1];
       param.push_back(i->car());
@@ -436,6 +444,8 @@ PTR<Sexp> maplist(const std::vector<PTR<Sexp>>& args, ENV env) {
   while (true) {
     std::vector<PTR<Sexp>> param;
     for (auto &i : arg_list) {
+      if (!i)
+        throw std::invalid_argument("Dotted list");
       if (i->nil())
         return ans;
       param.push_back(i);
@@ -473,18 +483,16 @@ PTR<Sexp> append(const std::vector<PTR<Sexp>>& args, ENV env) {
 // Functions
 
 PTR<Sexp> defun(PTR<List> args, ENV env) {
-  if (args->cdr()->nil())
+  if (args->fcdr()->nil())
     throw std::invalid_argument("Too few arguments");
-  PTR<Symbol> f_name = DPCS(args->car());
-  if (!f_name)
-    throw std::invalid_argument("Invalid function name");
+  PTR<Symbol> f_name = FDPCS(args->car());
   if (reserved_func(f_name))
     throw std::invalid_argument("Reserved function name");
   std::vector<PTR<Symbol>> f_args;
-  for (PTR<List> i = FDPCL(args->cdr()->car()); !i->nil();
+  for (PTR<List> i = FDPCL(args->fcdr()->car()); !i->nil();
         i = FDPCL(i->r_cdr()))
     f_args.push_back(FDPCS(i->car()));
-  PTR<List> f_stmt = DPCL(args->cdr()->cdr());
+  PTR<List> f_stmt = args->fcdr()->fcdr();
   PTR<Func> func(new Func(f_name->get_value(), f_args, f_stmt, env));
   env->set_fun(f_name, func);
   return f_name;
@@ -496,7 +504,7 @@ PTR<Sexp> lambda_(PTR<List> args, ENV env) {
   std::vector<PTR<Symbol>> f_args;
   for (PTR<List> i = FDPCL(args->car()); !i->nil(); i = FDPCL(i->r_cdr()))
     f_args.push_back(FDPCS(i->car()));
-  PTR<List> f_stmt = DPCL(args->cdr());
+  PTR<List> f_stmt = args->fcdr();
   PTR<Func> func(new Func("LAMBDA", f_args, f_stmt, env));
   return func;
 }
@@ -511,7 +519,7 @@ PTR<Sexp> apply(const std::vector<PTR<Sexp>>& args, ENV env) {
   for (i++; i + 1 != args.end(); i++)
     arg.push_back(*i);
   PTR<List> last_list = FDPCL(*i);
-  for (PTR<List> j = last_list; !j->nil(); j = j->cdr())
+  for (PTR<List> j = last_list; !j->nil(); j = j->fcdr())
     arg.push_back(j->car());
   return func->call(arg, env);
 }
@@ -531,21 +539,22 @@ PTR<Sexp> funcall(const std::vector<PTR<Sexp>>& args, ENV env) {
 PTR<Sexp> function(PTR<List> args, ENV env) {
   if (args->nil())
     throw std::invalid_argument("Too few arguments");
-  if (!args->cdr()->nil())
+  if (!args->fcdr()->nil())
     throw std::invalid_argument("Too many arguments");
   PTR<Symbol> as = DPCS(args->car());
   if (as) {
     return find_func(as, env);
   } else {
-    assert(DPCS(DPCL(args->car())->car())->get_value() == "LAMBDA");
-    return evaluate(args->car(), env);
+    PTR<List> lst = FDPCL(args->car());
+    assert(FDPCS(lst->car())->get_value() == "LAMBDA");
+    return lambda_(lst->fcdr(), env);
   }
 }
 
 PTR<Sexp> quote(PTR<List> args, ENV env) {
   if (args->nil())
     throw std::invalid_argument("Too few arguments");
-  if (!args->cdr()->nil())
+  if (!args->fcdr()->nil())
     throw std::invalid_argument("Too many arguments");
   return args->car();
 }
@@ -567,13 +576,11 @@ PTR<Sexp> let(PTR<List> args, ENV env) {
     PTR<Symbol> k = DPCS(i->car());
     PTR<Sexp> v = Nil::lisp_nil;
     if (!k) {
-      PTR<List> il = DPCL(i->car());
-      if (!il)
-        throw std::invalid_argument("Not a variable name");
-      if (!il->cdr()->cdr()->nil())
+      PTR<List> il = FDPCL(i->car());
+      if (!il->fcdr()->fcdr()->nil())
         throw std::invalid_argument("Argument too long");
-      k = DPCS(il->car());
-      v = evaluate(il->cdr()->car(), env);
+      k = FDPCS(il->car());
+      v = evaluate(il->fcdr()->car(), env);
     }
     new_env->set_var(k, v);
   }
@@ -593,13 +600,11 @@ PTR<Sexp> let_star(PTR<List> args, ENV env) {
     PTR<Symbol> k = DPCS(i->car());
     PTR<Sexp> v = Nil::lisp_nil;
     if (!k) {
-      PTR<List> il = DPCL(i->car());
-      if (!il)
-        throw std::invalid_argument("Not a variable name");
-      if (!il->cdr()->cdr()->nil())
+      PTR<List> il = FDPCL(i->car());
+      if (!il->fcdr()->fcdr()->nil())
         throw std::invalid_argument("Argument too long");
-      k = DPCS(il->car());
-      v = evaluate(il->cdr()->car(), new_envs);
+      k = FDPCS(il->car());
+      v = evaluate(il->fcdr()->car(), new_envs);
     }
     new_env->set_var(k, v);
   }
@@ -611,15 +616,13 @@ PTR<Sexp> let_star(PTR<List> args, ENV env) {
 
 PTR<Sexp> setq(PTR<List> args, ENV env) {
   int arg_count = 0;
-  for (PTR<List> i = args; !i->nil(); i = i->cdr())
+  for (PTR<List> i = args; !i->nil(); i = i->fcdr())
     arg_count++;
   if (arg_count % 2)
     throw std::invalid_argument("Odd number of arguments");
   PTR<Sexp> v = Nil::lisp_nil;
   for (PTR<List> i = args; !i->nil(); i = i->cdr()) {
-    PTR<Symbol> k = DPCS(i->car());
-    if (!k)
-      throw std::invalid_argument("Not symbol");
+    PTR<Symbol> k = FDPCS(i->car());
     i = i->cdr();
     v = evaluate(i->car(), env);
     env->set_var(k, v);
@@ -637,8 +640,8 @@ PTR<Sexp> set(const std::vector<PTR<Sexp>>& args, ENV env) {
 
 PTR<Sexp> cond(PTR<List> args, ENV env) {
   for (PTR<List> i = args; i && !i->nil(); i = i->cdr()) {
-    PTR<List> test = DPCL(i->car());
-    if (!test || test->nil())
+    PTR<List> test = FDPCL(i->car());
+    if (test->nil())
       throw std::invalid_argument("Should pass a list");
     PTR<Sexp> ans = evaluate(test->car(), env);
     if (ans->t()) {
@@ -651,40 +654,40 @@ PTR<Sexp> cond(PTR<List> args, ENV env) {
 }
 
 PTR<Sexp> if_(PTR<List> args, ENV env) {
-  if (args->cdr()->nil())
+  if (args->fcdr()->nil())
     throw std::invalid_argument("Too few arguments");
-  if (!args->cdr()->cdr()->cdr()->nil())
+  if (!args->fcdr()->fcdr()->fcdr()->nil())
     throw std::invalid_argument("Too many arguments");
   if (evaluate(args->car(), env)->t())
-    return evaluate(args->cdr()->car(), env);
+    return evaluate(args->fcdr()->car(), env);
   else
-    return evaluate(args->cdr()->cdr()->car(), env);
+    return evaluate(args->fcdr()->fcdr()->car(), env);
 }
 
 // Iteration
 
 PTR<Sexp> do_(PTR<List> args, ENV env) {
-  if (args->cdr()->nil())
+  if (args->fcdr()->nil())
     throw std::invalid_argument("Too few arguments");
   PTR<Env> new_env(new Env{"DO"});
   PTR<Envs> new_envs(new Envs{*env});
   new_envs->add_layer(new_env);
   std::vector<std::pair<PTR<Symbol>, PTR<Sexp>>> val_list;
-  for (PTR<List> i = DPCL(args->car()); !i->nil(); i = i->cdr()) {
+  for (PTR<List> i = DPCL(args->car()); !i->nil(); i = i->fcdr()) {
     PTR<List> li = DPCL(i->car());
     if (li) {
-      assert(li->cdr()->cdr()->cdr()->nil());
-      PTR<Symbol> name = DPCS(li->car());
-      new_env->set_var(name, evaluate(li->cdr()->car(), env));
-      if (!li->cdr()->cdr()->nil())
-        val_list.emplace_back(name, li->cdr()->cdr()->car());
+      assert(li->fcdr()->fcdr()->fcdr()->nil());
+      PTR<Symbol> name = FDPCS(li->car());
+      new_env->set_var(name, evaluate(li->fcdr()->car(), env));
+      if (!li->fcdr()->fcdr()->nil())
+        val_list.emplace_back(name, li->fcdr()->fcdr()->car());
     } else {
-      new_env->set_var(DPCS(i->car()), Nil::lisp_nil);
+      new_env->set_var(FDPCS(i->car()), Nil::lisp_nil);
     }
   }
-  PTR<Sexp> exit_test = DPCL(args->cdr()->car())->car();
+  PTR<Sexp> exit_test = FDPCL(args->fcdr()->car())->car();
   while (evaluate(exit_test, new_envs)->nil()) {
-    for (PTR<List> i = args->cdr()->cdr(); !i->nil(); i = i->cdr())
+    for (PTR<List> i = args->fcdr()->fcdr(); !i->nil(); i = i->fcdr())
       evaluate(i->car(), new_envs);
     std::vector<std::pair<PTR<Symbol>, PTR<Sexp>>> new_values;
     for (auto i = val_list.begin(); i != val_list.end(); i++)
@@ -693,7 +696,8 @@ PTR<Sexp> do_(PTR<List> args, ENV env) {
       new_env->set_var(i->first, i->second);
   }
   PTR<Sexp> ans = Nil::lisp_nil;
-  for (PTR<List> i = DPCL(args->cdr()->car())->cdr(); !i->nil(); i = i->cdr())
+  for (PTR<List> i = FDPCL(args->fcdr()->car())->fcdr(); !i->nil();
+        i = i->fcdr())
     ans = evaluate(i->car(), new_envs);
   return ans;
 }
@@ -713,13 +717,13 @@ PTR<Sexp> prog(PTR<List> args, ENV env) {
   PTR<Env> new_env(new Env{"PROG"});
   PTR<Envs> new_envs(new Envs{*env});
   new_envs->add_layer(new_env);
-  for (PTR<List> i = DPCL(args->car()); !i->nil(); i = i->cdr()) {
+  for (PTR<List> i = DPCL(args->car()); !i->nil(); i = i->fcdr()) {
     PTR<List> li = DPCL(i->car());
     if (li) {
-      assert(li->cdr()->cdr()->nil());
-      new_env->set_var(DPCS(li->car()), evaluate(li->cdr()->car(), env));
+      assert(li->fcdr()->fcdr()->nil());
+      new_env->set_var(FDPCS(li->car()), evaluate(li->fcdr()->car(), env));
     } else {
-      new_env->set_var(DPCS(i->car()), Nil::lisp_nil);
+      new_env->set_var(FDPCS(i->car()), Nil::lisp_nil);
     }
   }
   std::vector<PTR<Sexp>> sequence;
@@ -762,7 +766,7 @@ PTR<Sexp> prog(PTR<List> args, ENV env) {
 PTR<Sexp> go(PTR<List> args, ENV env) {
   if (args->nil())
     throw std::invalid_argument("Too few arguments");
-  if (!args->cdr()->nil())
+  if (!args->fcdr()->nil())
     throw std::invalid_argument("Too many arguments");
   throw ProgInterrupt{1, env->top(), args->car()};
 }
@@ -770,7 +774,7 @@ PTR<Sexp> go(PTR<List> args, ENV env) {
 PTR<Sexp> return_(PTR<List> args, ENV env) {
   if (args->nil())
     throw std::invalid_argument("Too few arguments");
-  if (!args->cdr()->nil())
+  if (!args->fcdr()->nil())
     throw std::invalid_argument("Too many arguments");
   throw ProgInterrupt{2, env->top(), evaluate(args->car(), env)};
 }
@@ -794,7 +798,7 @@ PTR<Sexp> setrecursionlimit(const std::vector<PTR<Sexp>>& args, ENV env) {
 
 #define REGISTER_EFUNC(K, ...) {K, PTR<EFunc>(new EFunc(K, __VA_ARGS__))},
 
-std::unordered_map<std::string, PTR<EFunc>> efmap = {
+std::unordered_map<std::string, PTR<EFunc>> fmap = {
   REGISTER_EFUNC("+", plus)
   REGISTER_EFUNC("-", minus, 1)
   REGISTER_EFUNC("*", mul)
@@ -839,7 +843,7 @@ std::unordered_map<std::string, PTR<EFunc>> efmap = {
 
 #define CFUNC_TYPE(N) PTR<Sexp>(*N)(PTR<List>, PTR<Envs>)
 
-std::unordered_map<std::string, CFUNC_TYPE()> fmap = {
+std::unordered_map<std::string, CFUNC_TYPE()> special_funcs = {
   {"AND", and_},
   {"OR", or_},
   {"DEFUN", defun},
@@ -859,9 +863,9 @@ std::unordered_map<std::string, CFUNC_TYPE()> fmap = {
 
 bool reserved_func(PTR<Symbol> sym) {
   const std::string& fun_name = sym->get_value();
-  if (fmap.find(fun_name) != fmap.end())
+  if (special_funcs.find(fun_name) != special_funcs.end())
     return true;
-  if (efmap.find(fun_name) != efmap.end())
+  if (fmap.find(fun_name) != fmap.end())
     return true;
   static const std::regex re_caordr("C[AD]{1,4}R");
   if (std::regex_match(fun_name, re_caordr))
@@ -870,8 +874,8 @@ bool reserved_func(PTR<Symbol> sym) {
 }
 
 CFUNC_TYPE(find_special_func(PTR<Symbol> sym)) {
-  auto found = fmap.find(sym->get_value());
-  if (found == fmap.end())
+  auto found = special_funcs.find(sym->get_value());
+  if (found == special_funcs.end())
     return nullptr;
   else
     return found->second;
@@ -879,13 +883,13 @@ CFUNC_TYPE(find_special_func(PTR<Symbol> sym)) {
 
 PTR<Funcs> find_func(PTR<Symbol> sym, ENV env) {
   const std::string& fun_name = sym->get_value();
-  auto found = efmap.find(fun_name);
-  if (found != efmap.end())
+  auto found = fmap.find(fun_name);
+  if (found != fmap.end())
     return found->second;
   static const std::regex re_caordr("C[AD]{1,4}R");
   if (std::regex_match(fun_name, re_caordr))
     return PTR<CadrFunc>(new CadrFunc(fun_name, caordr));
-  PTR<Funcs> func = DPC<Funcs>(env->find_fun(sym));
+  PTR<Funcs> func = DPCFuncs(env->find_fun(sym));
   return func;
 }
 
@@ -894,21 +898,22 @@ PTR<Sexp> evaluate(PTR<Sexp> arg, ENV env) {
   case Type::symbol :
     return env->find_var(DPCS(arg));
   case Type::list : {
-    PTR<List> lst = DPC<List>(arg);
+    PTR<List> lst = DPCL(arg);
     PTR<Funcs> f;
     switch (lst->car()->type()) {
     case Type::symbol : {
       PTR<Symbol> func_name = DPCS(lst->car());
       auto sf = find_special_func(func_name);
       if (sf)
-        return sf(lst->cdr(), env);
-      f = find_func(DPCS(lst->car()), env);
+        return sf(lst->fcdr(), env);
+      f = find_func(func_name, env);
       break;
     }
     case Type::list : {
-      PTR<Symbol> caar = DPCS(DPCL(lst->car())->car());
-      if (caar && caar->get_value() == "LAMBDA") {
-        f = DPC<Func>(lambda_(DPCL(lst->car())->cdr(), env));
+      PTR<List> l_exp = DPCL(lst->car());
+      PTR<Symbol> caar = FDPCS(l_exp->car());
+      if (caar->get_value() == "LAMBDA") {
+        f = DPCFuncs(lambda_(l_exp->fcdr(), env));
         break;
       }
     }
