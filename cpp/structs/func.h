@@ -36,6 +36,7 @@ class Funcs : public Sexp {
   virtual ~Funcs();
   virtual std::string str() const = 0;
   virtual Type type() const = 0;
+  virtual const std::string& get_name() const = 0;
   virtual size_t get_lb() const = 0;
   virtual size_t get_ub() const = 0;
   virtual PTR<Sexp> call(std::vector<PTR<Sexp>>, PTR<Envs>) = 0;
@@ -47,6 +48,7 @@ class Func : public Funcs {
   virtual ~Func();
   virtual std::string str() const;
   virtual Type type() const;
+  virtual const std::string& get_name() const;
   virtual size_t get_lb() const;
   virtual size_t get_ub() const;
   virtual PTR<Sexp> call(std::vector<PTR<Sexp>>, PTR<Envs>);
@@ -65,6 +67,7 @@ class EFunc : public Funcs {
   virtual ~EFunc();
   virtual std::string str() const;
   virtual Type type() const;
+  virtual const std::string& get_name() const;
   virtual size_t get_lb() const;
   virtual size_t get_ub() const;
   virtual PTR<Sexp> call(std::vector<PTR<Sexp>>, PTR<Envs>);
@@ -80,6 +83,7 @@ class CadrFunc : public Funcs {
   virtual ~CadrFunc();
   virtual std::string str() const;
   virtual Type type() const;
+  virtual const std::string& get_name() const;
   virtual size_t get_lb() const;
   virtual size_t get_ub() const;
   virtual PTR<Sexp> call(std::vector<PTR<Sexp>>, PTR<Envs>);

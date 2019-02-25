@@ -22,6 +22,8 @@
 #include <unordered_map>
 #include <regex>
 
+#define TAIL_RECU
+
 // Conversion
 
 PTR<Number> FDPCN(PTR<Sexp> p) {
@@ -120,7 +122,6 @@ PTR<Funcs> sym_to_func(PTR<Sexp> s, ENV env) {
     return find_func(sym, env);
   else
     return FDPCFuncs(s);
-  // TODO: build in error when function not found
 }
 
 std::string strip(const std::string& s) {
@@ -140,6 +141,21 @@ std::string upper(std::string s) {
 #define ARGS_SIZE_LB(X) assert(args.size() >= X);
 #define ARGS_SIZE_UB(X) assert(args.size() <= X);
 #define ARGS_SIZE_EQ(X) ARGS_SIZE_LB(X) ARGS_SIZE_UB(X)
+
+// Tail Recursion
+
+class TRInfo {
+ public:
+  TRInfo() : args(nullptr), sexp(nullptr), env(nullptr) {}
+  TRInfo(PTR<Sexp> s) : args(nullptr), sexp(s), env(nullptr) {}
+  TRInfo(PTR<Sexp> s, ENV e) : args(nullptr), sexp(s), env(e) {}
+  TRInfo(PTR<Funcs> s, std::vector<PTR<Sexp>>* a, ENV e) :
+      args(a), sexp(s), env(e) {}
+
+  PTR<std::vector<PTR<Sexp>>> args;   // when eval, NULL; else, parameters
+  PTR<Sexp> sexp;                     // when eval, list; else, func
+  ENV env;                            // environment; when NULL, no eval / call
+};
 
 // Arithmetics
 
@@ -524,6 +540,23 @@ PTR<Sexp> apply(const std::vector<PTR<Sexp>>& args, ENV env) {
   return func->call(arg, env);
 }
 
+#ifdef TAIL_RECU
+TRInfo apply_recu(const std::vector<PTR<Sexp>>& args, ENV env) {
+  ARGS_SIZE_LB(2)
+  PTR<Funcs> func = sym_to_func(args[0], env);
+  if (!func)
+    throw std::invalid_argument("Not a function");
+  std::vector<PTR<Sexp>>* arg = new std::vector<PTR<Sexp>>();
+  auto i = args.begin();
+  for (i++; i + 1 != args.end(); i++)
+    arg->push_back(*i);
+  PTR<List> last_list = FDPCL(*i);
+  for (PTR<List> j = last_list; !j->nil(); j = j->fcdr())
+    arg->push_back(j->car());
+  return TRInfo(func, arg, env);
+}
+#endif
+
 PTR<Sexp> funcall(const std::vector<PTR<Sexp>>& args, ENV env) {
   ARGS_SIZE_LB(1)
   PTR<Funcs> func = sym_to_func(args[0], env);
@@ -535,6 +568,20 @@ PTR<Sexp> funcall(const std::vector<PTR<Sexp>>& args, ENV env) {
     arg.push_back(*i);
   return func->call(arg, env);
 }
+
+#ifdef TAIL_RECU
+TRInfo funcall_recu(const std::vector<PTR<Sexp>>& args, ENV env) {
+  ARGS_SIZE_LB(1)
+  PTR<Funcs> func = sym_to_func(args[0], env);
+  if (!func)
+    throw std::invalid_argument("Not a function");
+  std::vector<PTR<Sexp>>* arg = new std::vector<PTR<Sexp>>();
+  auto i = args.begin();
+  for (i++; i != args.end(); i++)
+    arg->push_back(*i);
+  return TRInfo(func, arg, env);
+}
+#endif
 
 PTR<Sexp> function(PTR<List> args, ENV env) {
   if (args->nil())
@@ -653,6 +700,26 @@ PTR<Sexp> cond(PTR<List> args, ENV env) {
   return Nil::lisp_nil;
 }
 
+#ifdef TAIL_RECU
+TRInfo cond_recu(PTR<List> args, ENV env) {
+  for (PTR<List> i = args; i && !i->nil(); i = i->cdr()) {
+    PTR<List> test = FDPCL(i->car());
+    if (test->nil())
+      throw std::invalid_argument("Should pass a list");
+    PTR<Sexp> ans = evaluate(test->car(), env);
+    if (ans->t()) {
+      PTR<List> j = test->cdr();
+      if (!j || j->nil())
+        return TRInfo(ans);
+      for (; j->cdr() && !j->cdr()->nil(); j = j->cdr())
+        evaluate(j->car(), env);
+      return TRInfo(j->car(), env);
+    }
+  }
+  return TRInfo(Nil::lisp_nil);
+}
+#endif
+
 PTR<Sexp> if_(PTR<List> args, ENV env) {
   if (args->fcdr()->nil())
     throw std::invalid_argument("Too few arguments");
@@ -663,6 +730,19 @@ PTR<Sexp> if_(PTR<List> args, ENV env) {
   else
     return evaluate(args->fcdr()->fcdr()->car(), env);
 }
+
+#ifdef TAIL_RECU
+TRInfo if__recu(PTR<List> args, ENV env) {
+  if (args->fcdr()->nil())
+    throw std::invalid_argument("Too few arguments");
+  if (!args->fcdr()->fcdr()->fcdr()->nil())
+    throw std::invalid_argument("Too many arguments");
+  if (evaluate(args->car(), env)->t())
+    return TRInfo(args->fcdr()->car(), env);
+  else
+    return TRInfo(args->fcdr()->fcdr()->car(), env);
+}
+#endif
 
 // Iteration
 
@@ -894,6 +974,10 @@ PTR<Funcs> find_func(PTR<Symbol> sym, ENV env) {
 }
 
 PTR<Sexp> evaluate(PTR<Sexp> arg, ENV env) {
+#ifdef TAIL_RECU
+  TRInfo trinfo;
+start_eval:
+#endif
   switch (arg->type()) {
   case Type::symbol :
     return env->find_var(DPCS(arg));
@@ -904,8 +988,18 @@ PTR<Sexp> evaluate(PTR<Sexp> arg, ENV env) {
     case Type::symbol : {
       PTR<Symbol> func_name = DPCS(lst->car());
       auto sf = find_special_func(func_name);
-      if (sf)
+      if (sf) {
+#ifdef TAIL_RECU
+        if (func_name->get_value() == "IF") {
+          trinfo = if__recu(lst->fcdr(), env);
+          goto proc_trinfo;
+        } else if (func_name->get_value() == "COND") {
+          trinfo = cond_recu(lst->fcdr(), env);
+          goto proc_trinfo;
+        }
+#endif
         return sf(lst->fcdr(), env);
+      }
       f = find_func(func_name, env);
       break;
     }
@@ -926,6 +1020,15 @@ PTR<Sexp> evaluate(PTR<Sexp> arg, ENV env) {
         throw std::invalid_argument("Too many arguments");
       param.push_back(evaluate(i->car(), env));
     }
+#ifdef TAIL_RECU
+    if (f->get_name() == "APPLY") {
+      trinfo = apply_recu(param, env);
+      goto proc_trinfo;
+    } else if (f->get_name() == "FUNCALL") {
+      trinfo = funcall_recu(param, env);
+      goto proc_trinfo;
+    }
+#endif
     return f->call(param, env);
   }
   case Type::null :
@@ -938,5 +1041,25 @@ PTR<Sexp> evaluate(PTR<Sexp> arg, ENV env) {
   default :   // sexp, number, atom
     throw std::invalid_argument("Unexpected type");
   }
+#ifdef TAIL_RECU
+proc_trinfo:
+  if (!trinfo.env) {
+    return trinfo.sexp;
+  } else if (!trinfo.args) {
+    arg = trinfo.sexp;
+    env = trinfo.env;
+    goto start_eval;
+  } else {
+    PTR<Funcs> f = DPCFuncs(trinfo.sexp);
+    if (f->get_name() == "APPLY") {
+      trinfo = apply_recu(*trinfo.args, trinfo.env);
+      goto proc_trinfo;
+    } else if (f->get_name() == "FUNCALL") {
+      trinfo = funcall_recu(*trinfo.args, trinfo.env);
+      goto proc_trinfo;
+    }
+    return f->call(*trinfo.args, trinfo.env);
+  }
+#endif
 }
 

@@ -32,6 +32,8 @@ std::string Func::str() const {
   // LIMIT: similar but not the same as real Lisp
 }
 
+const std::string& Func::get_name() const { return name; }
+
 Type Func::type() const { return Type::func; }
 
 size_t Func::get_lb() const { return f_args.size(); }
@@ -70,6 +72,8 @@ std::string EFunc::str() const {
   // LIMIT: similar but not the same as real Lisp
 }
 
+const std::string& EFunc::get_name() const { return name; }
+
 Type EFunc::type() const { return Type::func; }
 
 size_t EFunc::get_lb() const { return lower_bound; }
@@ -92,6 +96,8 @@ std::string CadrFunc::str() const {
   return "#<FUNCTION " + name + ">";
   // LIMIT: similar but not the same as real Lisp
 }
+
+const std::string& CadrFunc::get_name() const { return name; }
 
 Type CadrFunc::type() const { return Type::func; }
 
