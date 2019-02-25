@@ -40,22 +40,24 @@ Type Func::type() const {
   return Type::func;
 }
 
-PTR<Sexp> Func::call(PTR<List> args, PTR<Envs> env) {
-  // TODO: move following code to evaluate.cpp
-  std::vector<PTR<Sexp>> argv;
-  for (auto i = args; i && !i->nil(); i = i->cdr()) {
-    if (argv.size() >= f_args.size())
-      throw std::invalid_argument("Too many actual arguments");
-    argv.push_back(evaluate(i->car(), env));
-  }
+size_t Func::get_lb() const {
+  return f_args.size();
+}
 
+size_t Func::get_ub() const {
+  return f_args.size();
+}
+
+PTR<Sexp> Func::call(std::vector<PTR<Sexp>> args, PTR<Envs> env) {
   PTR<Env> new_env(new Env{name});
   PTR<Envs> new_envs(new Envs{*f_env});
   new_envs->add_layer(new_env);
-  if (argv.size() < f_args.size())
+  if (args.size() > f_args.size())
+    throw std::invalid_argument("Too many actual arguments");
+  if (args.size() < f_args.size())
     throw std::invalid_argument("Not enough actual arguments");
   auto j = f_args.begin();
-  for (auto i = argv.begin(); i != argv.end(); i++, j++)
+  for (auto i = args.begin(); i != args.end(); i++, j++)
     new_env->set_var(*j, *i);
   PTR<Sexp> ans = Nil::lisp_nil;
   for (PTR<List> i = f_stmt; !i->nil(); i = i->cdr())
@@ -63,8 +65,13 @@ PTR<Sexp> Func::call(PTR<List> args, PTR<Envs> env) {
   return ans;
 }
 
-EFunc::EFunc(std::string n, PTR<Sexp>(*f)(const std::vector<PTR<Sexp>>&,
-                                          PTR<Envs>)): name(n), func(f) {}
+EFunc::EFunc(std::string n, EFUNC_TYPE(f)) : EFunc(n, f, 0) {}
+
+EFunc::EFunc(std::string n, EFUNC_TYPE(f), size_t lb) :
+    EFunc(n, f, lb, std::numeric_limits<std::size_t>::max()) {}
+
+EFunc::EFunc(std::string n, EFUNC_TYPE(f), size_t lb, size_t hb) :
+    name(n), func(f), lower_bound(lb), upper_bound(hb) {}
 
 EFunc::~EFunc() {
 //  std::cout << "~EFunc" << std::endl;
@@ -79,39 +86,19 @@ Type EFunc::type() const {
   return Type::func;
 }
 
-PTR<Sexp> EFunc::call(PTR<List> args, PTR<Envs> env) {
-  // TODO: move following code to evaluate.cpp
-  std::vector<PTR<Sexp>> argv;
-  for (auto i = args; i && !i->nil(); i = i->cdr())
-    argv.push_back(evaluate(i->car(), env));
-  return func(argv, env);
+size_t EFunc::get_lb() const {
+  return lower_bound;
 }
 
-CFunc::CFunc(std::string n, PTR<Sexp>(*f)(PTR<List>, PTR<Envs>)):
-              name(n), func(f) {}
-
-CFunc::~CFunc() {
-//  std::cout << "~CFunc" << std::endl;
+size_t EFunc::get_ub() const {
+  return upper_bound;
 }
 
-std::string CFunc::str() const {
-  return "#<FUNCTION " + name + ">";
-  // LIMIT: similar but not the same as real Lisp
-}
-
-Type CFunc::type() const {
-  return Type::func;
-}
-
-PTR<Sexp> CFunc::call(PTR<List> args, PTR<Envs> env) {
+PTR<Sexp> EFunc::call(std::vector<PTR<Sexp>> args, PTR<Envs> env) {
   return func(args, env);
 }
 
-CadrFunc::CadrFunc(std::string n,
-                    PTR<Sexp>(*f)(std::string,
-                                  const std::vector<PTR<Sexp>>&,
-                                  PTR<Envs>)) :
-                    name(n), func(f) {}
+CadrFunc::CadrFunc(std::string n, CADRFUNC_TYPE(f)) : name(n), func(f) {}
 
 CadrFunc::~CadrFunc() {
 //  std::cout << "~CFunc" << std::endl;
@@ -126,11 +113,15 @@ Type CadrFunc::type() const {
   return Type::func;
 }
 
-PTR<Sexp> CadrFunc::call(PTR<List> args, PTR<Envs> env) {
-  // TODO: move following code to evaluate.cpp
-  std::vector<PTR<Sexp>> argv;
-  for (auto i = args; i && !i->nil(); i = i->cdr())
-    argv.push_back(evaluate(i->car(), env));
-  return func(name, argv, env);
+size_t CadrFunc::get_lb() const {
+  return 1;
+}
+
+size_t CadrFunc::get_ub() const {
+  return 1;
+}
+
+PTR<Sexp> CadrFunc::call(std::vector<PTR<Sexp>> args, PTR<Envs> env) {
+  return func(name, args, env);
 }
 

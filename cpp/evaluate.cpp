@@ -132,10 +132,8 @@ std::string upper(std::string s) {
   return s;
 }
 
-#define ARGS_SIZE_LB(X) \
-  if (args.size() < X) throw std::invalid_argument("Too few arguments");
-#define ARGS_SIZE_UB(X) \
-  if (args.size() > X) throw std::invalid_argument("Too many arguments");
+#define ARGS_SIZE_LB(X) assert(args.size() >= X);
+#define ARGS_SIZE_UB(X) assert(args.size() <= X);
 #define ARGS_SIZE_EQ(X) ARGS_SIZE_LB(X) ARGS_SIZE_UB(X)
 
 // Arithmetics
@@ -392,18 +390,14 @@ PTR<Sexp> mapcar(const std::vector<PTR<Sexp>>& args, ENV env) {
   PTR<Sexp> ans = Nil::lisp_nil;
   PTR<Sexp>* next_ans = &ans;
   while (true) {
-    PTR<Sexp> param = Nil::lisp_nil;
-    PTR<Sexp>* next_param = &param;
+    std::vector<PTR<Sexp>> param;
     for (auto &i : arg_list) {
       if (i->nil())
         return ans;
-      auto next = PTRNL(Symbol::lisp_quote, PTRNL(i->car(), Nil::lisp_nil));
-      // TODO: remove quote
-      *next_param = PTRNL(next, Nil::lisp_nil);
-      next_param = &(DPCL(*next_param))->rw_cdr();
+      param.push_back(i->car());
       i = i->cdr();
     }
-    PTR<Sexp> ans_next = func->call(DPCL(param), env);
+    PTR<Sexp> ans_next = func->call(param, env);
     *next_ans = PTRNL(ans_next, Nil::lisp_nil);
     next_ans = &(DPCL(*next_ans))->rw_cdr();
   }
@@ -418,17 +412,14 @@ PTR<Sexp> mapc(const std::vector<PTR<Sexp>>& args, ENV env) {
   for (auto i = args.begin() + 1; i != args.end(); i++)
     arg_list.push_back(FDPCL(*i));
   while (true) {
-    PTR<Sexp> param = Nil::lisp_nil;
-    PTR<Sexp>* next_param = &param;
+    std::vector<PTR<Sexp>> param;
     for (auto &i : arg_list) {
       if (i->nil())
         return args[1];
-      auto next = PTRNL(Symbol::lisp_quote, PTRNL(i->car(), Nil::lisp_nil));
-      *next_param = PTRNL(next, Nil::lisp_nil);
-      next_param = &(DPCL(*next_param))->rw_cdr();
+      param.push_back(i->car());
       i = i->cdr();
     }
-    func->call(DPCL(param), env);
+    func->call(param, env);
   }
 }
 
@@ -443,17 +434,14 @@ PTR<Sexp> maplist(const std::vector<PTR<Sexp>>& args, ENV env) {
   PTR<Sexp> ans = Nil::lisp_nil;
   PTR<Sexp>* next_ans = &ans;
   while (true) {
-    PTR<Sexp> param = Nil::lisp_nil;
-    PTR<Sexp>* next_param = &param;
+    std::vector<PTR<Sexp>> param;
     for (auto &i : arg_list) {
       if (i->nil())
         return ans;
-      auto next = PTRNL(Symbol::lisp_quote, PTRNL(i, Nil::lisp_nil));
-      *next_param = PTRNL(next, Nil::lisp_nil);
-      next_param = &(DPCL(*next_param))->rw_cdr();
+      param.push_back(i);
       i = i->cdr();
     }
-    PTR<Sexp> ans_next = func->call(DPCL(param), env);
+    PTR<Sexp> ans_next = func->call(param, env);
     *next_ans = PTRNL(ans_next, Nil::lisp_nil);
     next_ans = &(DPCL(*next_ans))->rw_cdr();
   }
@@ -518,22 +506,14 @@ PTR<Sexp> apply(const std::vector<PTR<Sexp>>& args, ENV env) {
   PTR<Funcs> func = sym_to_func(args[0], env);
   if (!func)
     throw std::invalid_argument("Not a function");
-  // TODO: do not rebuild argument List; use std::vector
-  PTR<Sexp> arg = Nil::lisp_nil;
-  PTR<Sexp>* next_arg = &arg;
+  std::vector<PTR<Sexp>> arg;
   auto i = args.begin();
-  for (i++; i + 1 != args.end(); i++) {
-    *next_arg = PTRNL(PTRNL(Symbol::lisp_quote, PTRNL(*i, Nil::lisp_nil)),
-                      Nil::lisp_nil);
-    next_arg = &(DPCL(*next_arg))->rw_cdr();
-  }
+  for (i++; i + 1 != args.end(); i++)
+    arg.push_back(*i);
   PTR<List> last_list = FDPCL(*i);
-  for (PTR<List> j = last_list; !j->nil(); j = j->cdr()) {
-    *next_arg = PTRNL(PTRNL(Symbol::lisp_quote, PTRNL(j->car(),
-                Nil::lisp_nil)), Nil::lisp_nil);
-    next_arg = &(DPCL(*next_arg))->rw_cdr();
-  }
-  return func->call(DPCL(arg), env);
+  for (PTR<List> j = last_list; !j->nil(); j = j->cdr())
+    arg.push_back(j->car());
+  return func->call(arg, env);
 }
 
 PTR<Sexp> funcall(const std::vector<PTR<Sexp>>& args, ENV env) {
@@ -541,16 +521,11 @@ PTR<Sexp> funcall(const std::vector<PTR<Sexp>>& args, ENV env) {
   PTR<Funcs> func = sym_to_func(args[0], env);
   if (!func)
     throw std::invalid_argument("Not a function");
-  // TODO: do not rebuild argument List; use std::vector
-  PTR<Sexp> arg = Nil::lisp_nil;
-  PTR<Sexp>* next_arg = &arg;
+  std::vector<PTR<Sexp>> arg;
   auto i = args.begin();
-  for (i++; i != args.end(); i++) {
-    *next_arg = PTRNL(PTRNL(Symbol::lisp_quote, PTRNL(*i, Nil::lisp_nil)),
-                      Nil::lisp_nil);
-    next_arg = &(DPCL(*next_arg))->rw_cdr();
-  }
-  return func->call(DPCL(arg), env);
+  for (i++; i != args.end(); i++)
+    arg.push_back(*i);
+  return func->call(arg, env);
 }
 
 PTR<Sexp> function(PTR<List> args, ENV env) {
@@ -817,69 +792,69 @@ PTR<Sexp> setrecursionlimit(const std::vector<PTR<Sexp>>& args, ENV env) {
 
 // Evaluate
 
-#define REGISTER_EFUNC(K, V) {K, PTR<EFunc>(new EFunc(K, V))},
+#define REGISTER_EFUNC(K, ...) {K, PTR<EFunc>(new EFunc(K, __VA_ARGS__))},
 
 std::unordered_map<std::string, PTR<EFunc>> efmap = {
   REGISTER_EFUNC("+", plus)
-  REGISTER_EFUNC("-", minus)
+  REGISTER_EFUNC("-", minus, 1)
   REGISTER_EFUNC("*", mul)
-  REGISTER_EFUNC("/", div)
-  REGISTER_EFUNC("1+", one_plus)
-  REGISTER_EFUNC("1-", one_minus)
-  REGISTER_EFUNC("=", eq_)
-  REGISTER_EFUNC("<", lt)
-  REGISTER_EFUNC("<=", le)
-  REGISTER_EFUNC(">", gt)
-  REGISTER_EFUNC(">=", ge)
-  REGISTER_EFUNC("SQRT", sqrt_)
-  REGISTER_EFUNC("ATOM", atom)
-  REGISTER_EFUNC("LISTP", listp)
-  REGISTER_EFUNC("NULL", null)
-  REGISTER_EFUNC("NUMBERP", numberp)
-  REGISTER_EFUNC("TYPEP", typep)
-  REGISTER_EFUNC("SYMBOLP", symbolp)
-  REGISTER_EFUNC("ZEROP", zerop)
-  REGISTER_EFUNC("EVENP", evenp)
-  REGISTER_EFUNC("ODDP", oddp)
-  REGISTER_EFUNC("EQ", eq)
-  REGISTER_EFUNC("EQL", eql)
-  REGISTER_EFUNC("EQUAL", equal)
-  REGISTER_EFUNC("NOT", not_)
-  REGISTER_EFUNC("CAR", car)
-  REGISTER_EFUNC("CDR", cdr)
-  REGISTER_EFUNC("CONS", cons)
+  REGISTER_EFUNC("/", div, 1)
+  REGISTER_EFUNC("1+", one_plus, 1, 1)
+  REGISTER_EFUNC("1-", one_minus, 1, 1)
+  REGISTER_EFUNC("=", eq_, 2, 2)
+  REGISTER_EFUNC("<", lt, 2, 2)
+  REGISTER_EFUNC("<=", le, 2, 2)
+  REGISTER_EFUNC(">", gt, 2, 2)
+  REGISTER_EFUNC(">=", ge, 2, 2)
+  REGISTER_EFUNC("SQRT", sqrt_, 1, 1)
+  REGISTER_EFUNC("ATOM", atom, 1, 1)
+  REGISTER_EFUNC("LISTP", listp, 1, 1)
+  REGISTER_EFUNC("NULL", null, 1, 1)
+  REGISTER_EFUNC("NUMBERP", numberp, 1, 1)
+  REGISTER_EFUNC("TYPEP", typep, 2, 2)
+  REGISTER_EFUNC("SYMBOLP", symbolp, 1, 1)
+  REGISTER_EFUNC("ZEROP", zerop, 1, 1)
+  REGISTER_EFUNC("EVENP", evenp, 1, 1)
+  REGISTER_EFUNC("ODDP", oddp, 1, 1)
+  REGISTER_EFUNC("EQ", eq, 2, 2)
+  REGISTER_EFUNC("EQL", eql, 2, 2)
+  REGISTER_EFUNC("EQUAL", equal, 2, 2)
+  REGISTER_EFUNC("NOT", not_, 1, 1)
+  REGISTER_EFUNC("CAR", car, 1, 1)
+  REGISTER_EFUNC("CDR", cdr, 1, 1)
+  REGISTER_EFUNC("CONS", cons, 2, 2)
   REGISTER_EFUNC("LIST", list_)
-  REGISTER_EFUNC("MEMBER", member)
-  REGISTER_EFUNC("MAPCAR", mapcar)
-  REGISTER_EFUNC("MAPC", mapc)
-  REGISTER_EFUNC("MAPLIST", maplist)
+  REGISTER_EFUNC("MEMBER", member, 2, 2)
+  REGISTER_EFUNC("MAPCAR", mapcar, 2)
+  REGISTER_EFUNC("MAPC", mapc, 2)
+  REGISTER_EFUNC("MAPLIST", maplist, 2)
   REGISTER_EFUNC("APPEND", append)
-  REGISTER_EFUNC("APPLY", apply)
-  REGISTER_EFUNC("FUNCALL", funcall)
-  REGISTER_EFUNC("EVAL", eval_)
-  REGISTER_EFUNC("SET", set)
-  REGISTER_EFUNC("PRINT", print_)
-  REGISTER_EFUNC("SETRECURSIONLIMIT", setrecursionlimit)
+  REGISTER_EFUNC("APPLY", apply, 2)
+  REGISTER_EFUNC("FUNCALL", funcall, 1)
+  REGISTER_EFUNC("EVAL", eval_, 1, 1)
+  REGISTER_EFUNC("SET", set, 2, 2)
+  REGISTER_EFUNC("PRINT", print_, 1, 1)
+  REGISTER_EFUNC("SETRECURSIONLIMIT", setrecursionlimit, 1, 1)
 };
 
-#define REGISTER_CFUNC(K, V) {K, PTR<CFunc>(new CFunc(K, V))},
+#define CFUNC_TYPE(N) PTR<Sexp>(*N)(PTR<List>, PTR<Envs>)
 
-std::unordered_map<std::string, PTR<CFunc>> fmap = {
-  REGISTER_CFUNC("AND", and_)
-  REGISTER_CFUNC("OR", or_)
-  REGISTER_CFUNC("DEFUN", defun)
-  REGISTER_CFUNC("LAMBDA", lambda_)
-  REGISTER_CFUNC("FUNCTION", function)
-  REGISTER_CFUNC("QUOTE", quote)
-  REGISTER_CFUNC("LET", let)
-  REGISTER_CFUNC("LET*", let_star)
-  REGISTER_CFUNC("SETQ", setq)
-  REGISTER_CFUNC("COND", cond)
-  REGISTER_CFUNC("IF", if_)
-  REGISTER_CFUNC("DO", do_)
-  REGISTER_CFUNC("PROG", prog)
-  REGISTER_CFUNC("GO", go)
-  REGISTER_CFUNC("RETURN", return_)
+std::unordered_map<std::string, CFUNC_TYPE()> fmap = {
+  {"AND", and_},
+  {"OR", or_},
+  {"DEFUN", defun},
+  {"LAMBDA", lambda_},
+  {"FUNCTION", function},
+  {"QUOTE", quote},
+  {"LET", let},
+  {"LET*", let_star},
+  {"SETQ", setq},
+  {"COND", cond},
+  {"IF", if_},
+  {"DO", do_},
+  {"PROG", prog},
+  {"GO", go},
+  {"RETURN", return_},
 };
 
 bool reserved_func(PTR<Symbol> sym) {
@@ -894,14 +869,19 @@ bool reserved_func(PTR<Symbol> sym) {
   return false;
 }
 
+CFUNC_TYPE(find_special_func(PTR<Symbol> sym)) {
+  auto found = fmap.find(sym->get_value());
+  if (found == fmap.end())
+    return nullptr;
+  else
+    return found->second;
+}
+
 PTR<Funcs> find_func(PTR<Symbol> sym, ENV env) {
   const std::string& fun_name = sym->get_value();
-  auto found = fmap.find(fun_name);
-  if (found != fmap.end())
+  auto found = efmap.find(fun_name);
+  if (found != efmap.end())
     return found->second;
-  auto efound = efmap.find(fun_name);
-  if (efound != efmap.end())
-    return efound->second;
   static const std::regex re_caordr("C[AD]{1,4}R");
   if (std::regex_match(fun_name, re_caordr))
     return PTR<CadrFunc>(new CadrFunc(fun_name, caordr));
@@ -915,21 +895,35 @@ PTR<Sexp> evaluate(PTR<Sexp> arg, ENV env) {
     return env->find_var(DPCS(arg));
   case Type::list : {
     PTR<List> lst = DPC<List>(arg);
+    PTR<Funcs> f;
     switch (lst->car()->type()) {
     case Type::symbol : {
-      PTR<Funcs> f = find_func(DPCS(lst->car()), env);
-      return f->call(lst->cdr(), env);
+      PTR<Symbol> func_name = DPCS(lst->car());
+      auto sf = find_special_func(func_name);
+      if (sf)
+        return sf(lst->cdr(), env);
+      f = find_func(DPCS(lst->car()), env);
+      break;
     }
     case Type::list : {
       PTR<Symbol> caar = DPCS(DPCL(lst->car())->car());
       if (caar && caar->get_value() == "LAMBDA") {
-        PTR<Funcs> func = DPC<Func>(lambda_(DPCL(lst->car())->cdr(), env));
-        return func->call(lst->cdr(), env);
+        f = DPC<Func>(lambda_(DPCL(lst->car())->cdr(), env));
+        break;
       }
     }
     default :
       throw std::invalid_argument("Not calling a function");
     }
+    std::vector<PTR<Sexp>> param;
+    for (auto i = lst->cdr(); i && !i->nil(); i = i->cdr()) {
+      if (param.size() >= f->get_ub())
+        throw std::invalid_argument("Too many arguments");
+      param.push_back(evaluate(i->car(), env));
+    }
+    if (param.size() < f->get_lb())
+      throw std::invalid_argument("Too few arguments");
+    return f->call(param, env);
   }
   case Type::null :
   case Type::integer :

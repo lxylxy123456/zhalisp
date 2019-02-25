@@ -19,9 +19,15 @@
 #ifndef FUNC_H
 #define FUNC_H
 
+#include <limits>
+
 #include "nil.h"
 #include "symbol.h"
 #include "environment.h"
+
+#define EFUNC_TYPE(N) PTR<Sexp>(*N)(const std::vector<PTR<Sexp>>&, PTR<Envs>)
+#define CADRFUNC_TYPE(N) PTR<Sexp>(*N)(std::string, \
+                          const std::vector<PTR<Sexp>>&, PTR<Envs>)
 
 PTR<Sexp> evaluate(PTR<Sexp> arg, PTR<Envs> env);   // from evaluate.h
 
@@ -30,7 +36,9 @@ class Funcs : public Sexp {
   virtual ~Funcs();
   virtual std::string str() const = 0;
   virtual Type type() const = 0;
-  virtual PTR<Sexp> call(PTR<List>, PTR<Envs>) = 0;
+  virtual size_t get_lb() const = 0;
+  virtual size_t get_ub() const = 0;
+  virtual PTR<Sexp> call(std::vector<PTR<Sexp>>, PTR<Envs>) = 0;
 };
 
 class Func : public Funcs {
@@ -39,49 +47,45 @@ class Func : public Funcs {
   virtual ~Func();
   virtual std::string str() const;
   virtual Type type() const;
-  virtual PTR<Sexp> call(PTR<List>, PTR<Envs>);
+  virtual size_t get_lb() const;
+  virtual size_t get_ub() const;
+  virtual PTR<Sexp> call(std::vector<PTR<Sexp>>, PTR<Envs>);
  private:
-  std::string name;
-  std::vector<PTR<Symbol>> f_args;
-  PTR<List> f_stmt;
-  PTR<Envs> f_env;
+  const std::string name;
+  const std::vector<PTR<Symbol>> f_args;
+  const PTR<List> f_stmt;
+  const PTR<Envs> f_env;
 };
 
 class EFunc : public Funcs {
  public:
-  EFunc(std::string, PTR<Sexp>(*)(const std::vector<PTR<Sexp>>&, PTR<Envs>));
+  EFunc(std::string, EFUNC_TYPE());
+  EFunc(std::string, EFUNC_TYPE(), size_t);
+  EFunc(std::string, EFUNC_TYPE(), size_t, size_t);
   virtual ~EFunc();
   virtual std::string str() const;
   virtual Type type() const;
-  virtual PTR<Sexp> call(PTR<List>, PTR<Envs>);
+  virtual size_t get_lb() const;
+  virtual size_t get_ub() const;
+  virtual PTR<Sexp> call(std::vector<PTR<Sexp>>, PTR<Envs>);
  private:
-  std::string name;
-  PTR<Sexp>(*func)(const std::vector<PTR<Sexp>>&, PTR<Envs>);
-};
-
-class CFunc : public Funcs {
- public:
-  CFunc(std::string, PTR<Sexp>(*)(PTR<List>, PTR<Envs>));
-  virtual ~CFunc();
-  virtual std::string str() const;
-  virtual Type type() const;
-  virtual PTR<Sexp> call(PTR<List>, PTR<Envs>);
- private:
-  std::string name;
-  PTR<Sexp>(*func)(PTR<List>, PTR<Envs>);
+  const std::string name;
+  EFUNC_TYPE(const func);
+  const size_t lower_bound, upper_bound;
 };
 
 class CadrFunc : public Funcs {
  public:
-  CadrFunc(std::string, PTR<Sexp>(*)(std::string, const std::vector<PTR<Sexp>>&,
-                                      PTR<Envs>));
+  CadrFunc(std::string, CADRFUNC_TYPE());
   virtual ~CadrFunc();
   virtual std::string str() const;
   virtual Type type() const;
-  virtual PTR<Sexp> call(PTR<List>, PTR<Envs>);
+  virtual size_t get_lb() const;
+  virtual size_t get_ub() const;
+  virtual PTR<Sexp> call(std::vector<PTR<Sexp>>, PTR<Envs>);
  private:
-  std::string name;
-  PTR<Sexp>(*func)(std::string, const std::vector<PTR<Sexp>>&, PTR<Envs>);
+  const std::string name;
+  CADRFUNC_TYPE(const func);
 };
 
 #endif
