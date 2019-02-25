@@ -24,13 +24,9 @@
 
 Float::Float(const mpf_class& f): value(f) {}
 
-Float::~Float() {
-//  std::cout << "~Float" << std::endl;
-}
+Float::~Float() { /* std::cout << "~Float" << std::endl; */ }
 
-const mpf_class& Float::get_value() const {
-  return value;
-}
+const mpf_class& Float::get_value() const { return value; }
 
 std::string Float::str() const {
   std::ostringstream os;
@@ -38,17 +34,11 @@ std::string Float::str() const {
   return os.str();
 }
 
-Type Float::type() const {
-  return Type::float_;
-}
+Type Float::type() const { return Type::float_; }
 
-PTR<Number> Float::operator+() const {
-  return PTRNF(+value);
-}
+PTR<Number> Float::operator+() const { return PTRNF(+value); }
 
-PTR<Number> Float::operator-() const {
-  return PTRNF(-value);
-}
+PTR<Number> Float::operator-() const { return PTRNF(-value); }
 
 PTR<Number> Float::operator+(const Number& rhs) const {
   switch (rhs.type()) {
@@ -178,11 +168,7 @@ bool Float::operator>=(const Number& rhs) const {
   }
 }
 
-PTR<Number> Float::sqrt_() const {
-  return PTRNF(::sqrt(value));
-}
+PTR<Number> Float::sqrt_() const { return PTRNF(::sqrt(value)); }
 
-bool Float::is_0() const {
-  return value == 0.0;
-}
+bool Float::is_0() const { return value == 0.0; }
 

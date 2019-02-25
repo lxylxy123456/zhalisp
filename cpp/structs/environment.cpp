@@ -36,9 +36,7 @@ PTR<Sexp> Env::get_var(PTR<Symbol> s) {
     return found->second;
 }
 
-void Env::set_var(PTR<Symbol> s, PTR<Sexp> e) {
-  variable[s->get_value()] = e;
-}
+void Env::set_var(PTR<Symbol> s, PTR<Sexp> e) { variable[s->get_value()] = e; }
 
 bool Env::has_fun(PTR<Symbol> s) {
   return function.find(s->get_value()) != variable.end();
@@ -52,9 +50,7 @@ PTR<Sexp> Env::get_fun(PTR<Symbol> s) {
     return found->second;
 }
 
-void Env::set_fun(PTR<Symbol> s, PTR<Sexp> e) {
-  function[s->get_value()] = e;
-}
+void Env::set_fun(PTR<Symbol> s, PTR<Sexp> e) { function[s->get_value()] = e; }
 
 Envs::Envs(PTR<Env> global, std::ostream& o): envs(1, global), os(o) {}
 
@@ -88,15 +84,9 @@ void Envs::set_fun(PTR<Symbol> s, PTR<Sexp> e) {
   envs[0]->set_fun(s, e);
 }
 
-void Envs::add_layer(PTR<Env> e) {
-  envs.push_back(e);
-}
+void Envs::add_layer(PTR<Env> e) { envs.push_back(e); }
 
-PTR<Env> Envs::top() {
-  return envs[envs.size() - 1];
-}
+PTR<Env> Envs::top() { return envs[envs.size() - 1]; }
 
-std::ostream& Envs::get_os() {
-  return os;
-}
+std::ostream& Envs::get_os() { return os; }
 

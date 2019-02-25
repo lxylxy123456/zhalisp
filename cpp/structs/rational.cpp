@@ -36,33 +36,19 @@ PTR<Number> reduced_rational(const mpq_class& q) {
     return PTRNR(q);
 }
 
-Rational::Rational(const mpq_class& q): value(q) {
-  value.canonicalize();
-}
+Rational::Rational(const mpq_class& q): value(q) { value.canonicalize(); }
 
-Rational::~Rational() {
-//  std::cout << "~Rational" << std::endl;
-}
+Rational::~Rational() { /* std::cout << "~Rational" << std::endl; */ }
 
-const mpq_class& Rational::get_value() const {
-  return value;
-}
+const mpq_class& Rational::get_value() const { return value; }
 
-std::string Rational::str() const {
-  return value.get_str();
-}
+std::string Rational::str() const { return value.get_str(); }
 
-Type Rational::type() const {
-  return Type::rational;
-}
+Type Rational::type() const { return Type::rational; }
 
-PTR<Number> Rational::operator+() const {
-  return PTRNR(+value);
-}
+PTR<Number> Rational::operator+() const { return PTRNR(+value); }
 
-PTR<Number> Rational::operator-() const {
-  return PTRNR(-value);
-}
+PTR<Number> Rational::operator-() const { return PTRNR(-value); }
 
 PTR<Number> Rational::operator+(const Number& rhs) const {
   switch (rhs.type()) {
@@ -200,7 +186,5 @@ PTR<Number> Rational::sqrt_() const {
     return PTRNF(::sqrt(mpf_class(value)));
 }
 
-bool Rational::is_0() const {
-  return false;
-}
+bool Rational::is_0() const { return false; }
 

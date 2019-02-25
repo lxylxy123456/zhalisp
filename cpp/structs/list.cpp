@@ -20,9 +20,7 @@
 
 List::List(const PTR<Sexp>& a, const PTR<Sexp>& d): l_car(a), l_cdr(d) {}
 
-List::~List() {
-//  std::cout << "~List" << std::endl;
-}
+List::~List() { /* std::cout << "~List" << std::endl; */ }
 
 std::string List::str() const {
   std::string ans = "(" + car()->str();
@@ -41,23 +39,15 @@ std::string List::str() const {
   return ans + ")";
 }
 
-Type List::type() const {
-  return Type::list;
-}
+Type List::type() const { return Type::list; }
 
-const PTR<Sexp> List::car() const {
-  return l_car;
-}
+const PTR<Sexp> List::car() const { return l_car; }
 
 const PTR<List> List::cdr() const {
   return std::dynamic_pointer_cast<List>(l_cdr);
 }
 
-const PTR<Sexp> List::r_cdr() const {
-  return l_cdr;
-}
+const PTR<Sexp> List::r_cdr() const { return l_cdr; }
 
-PTR<Sexp>& List::rw_cdr() {
-  return l_cdr;
-}
+PTR<Sexp>& List::rw_cdr() { return l_cdr; }
 

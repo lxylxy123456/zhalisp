@@ -18,21 +18,13 @@
 
 #include "sexp.h"
 
-Sexp::~Sexp() {
-//  std::cout << "~Sexp" << std::endl;
-}
+Sexp::~Sexp() { /* std::cout << "~Sexp" << std::endl; */ }
 
-bool Sexp::nil() const {
-  return false;
-}
+bool Sexp::nil() const { return false; }
 
-bool Sexp::t() const {
-  return true;
-}
+bool Sexp::t() const { return true; }
 
-Type Sexp::type() const {
-  return Type::sexp;
-}
+Type Sexp::type() const { return Type::sexp; }
 
 bool Sexp::has_type(Type tid) const {
   static const int type_matrix[] = {

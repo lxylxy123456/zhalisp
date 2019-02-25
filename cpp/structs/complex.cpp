@@ -38,33 +38,21 @@ PTR<Number> reduced_complex(PTR<Number> re, PTR<Number> im) {
 
 Complex::Complex(const PTR<Number>&r, const PTR<Number>&i): real(r), imag(i) {}
 
-Complex::~Complex() {
-//  std::cout << "~Complex" << std::endl;
-}
+Complex::~Complex() { /* std::cout << "~Complex" << std::endl; */ }
 
 std::string Complex::str() const {
   return "#C(" + real->str() + " " + imag->str() + ")";
 }
 
-Type Complex::type() const {
-  return Type::complex;
-}
+Type Complex::type() const { return Type::complex; }
 
-const PTR<Number>& Complex::get_real() const {
-  return real;
-}
+const PTR<Number>& Complex::get_real() const { return real; }
 
-const PTR<Number>& Complex::get_imag() const {
-  return imag;
-}
+const PTR<Number>& Complex::get_imag() const { return imag; }
 
-PTR<Number> Complex::operator+() const {
-  return PTRNC(+*real, +*imag);
-}
+PTR<Number> Complex::operator+() const { return PTRNC(+*real, +*imag); }
 
-PTR<Number> Complex::operator-() const {
-  return PTRNC(-*real, -*imag);
-}
+PTR<Number> Complex::operator-() const { return PTRNC(-*real, -*imag); }
 
 PTR<Number> Complex::operator+(const Number& rhs) const {
   switch (rhs.type()) {
@@ -174,7 +162,5 @@ PTR<Number> Complex::sqrt_() const {
   return reduced_complex(c, *c * *(*(*sa2b2 - *real) / *imag));
 }
 
-bool Complex::is_0() const {
-  return real->is_0() && imag->is_0();
-}
+bool Complex::is_0() const { return real->is_0() && imag->is_0(); }
 

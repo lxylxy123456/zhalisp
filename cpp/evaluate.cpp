@@ -921,8 +921,6 @@ PTR<Sexp> evaluate(PTR<Sexp> arg, ENV env) {
         throw std::invalid_argument("Too many arguments");
       param.push_back(evaluate(i->car(), env));
     }
-    if (param.size() < f->get_lb())
-      throw std::invalid_argument("Too few arguments");
     return f->call(param, env);
   }
   case Type::null :

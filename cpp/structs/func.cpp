@@ -20,42 +20,32 @@
 
 #define DPCS std::dynamic_pointer_cast<Symbol>
 
-Funcs::~Funcs() {
-//  std::cout << "~Funcs" << std::endl;
-}
+Funcs::~Funcs() { /* std::cout << "~Funcs" << std::endl; */ }
 
 Func::Func(std::string n, std::vector<PTR<Symbol>> a, PTR<List> s,
             PTR<Envs> env): name(n), f_args(a), f_stmt(s), f_env(env) {}
 
-Func::~Func() {
-//  std::cout << "~Func" << std::endl;
-}
+Func::~Func() { /* std::cout << "~Func" << std::endl; */ }
 
 std::string Func::str() const {
   return "#<FUNCTION " + name + ">";
   // LIMIT: similar but not the same as real Lisp
 }
 
-Type Func::type() const {
-  return Type::func;
-}
+Type Func::type() const { return Type::func; }
 
-size_t Func::get_lb() const {
-  return f_args.size();
-}
+size_t Func::get_lb() const { return f_args.size(); }
 
-size_t Func::get_ub() const {
-  return f_args.size();
-}
+size_t Func::get_ub() const { return f_args.size(); }
 
 PTR<Sexp> Func::call(std::vector<PTR<Sexp>> args, PTR<Envs> env) {
+  if (args.size() < f_args.size())
+    throw std::invalid_argument("Too few arguments");
+  if (args.size() > f_args.size())
+    throw std::invalid_argument("Too many arguments");
   PTR<Env> new_env(new Env{name});
   PTR<Envs> new_envs(new Envs{*f_env});
   new_envs->add_layer(new_env);
-  if (args.size() > f_args.size())
-    throw std::invalid_argument("Too many actual arguments");
-  if (args.size() < f_args.size())
-    throw std::invalid_argument("Not enough actual arguments");
   auto j = f_args.begin();
   for (auto i = args.begin(); i != args.end(); i++, j++)
     new_env->set_var(*j, *i);
@@ -73,55 +63,47 @@ EFunc::EFunc(std::string n, EFUNC_TYPE(f), size_t lb) :
 EFunc::EFunc(std::string n, EFUNC_TYPE(f), size_t lb, size_t hb) :
     name(n), func(f), lower_bound(lb), upper_bound(hb) {}
 
-EFunc::~EFunc() {
-//  std::cout << "~EFunc" << std::endl;
-}
+EFunc::~EFunc() { /* std::cout << "~EFunc" << std::endl; */ }
 
 std::string EFunc::str() const {
   return "#<FUNCTION " + name + ">";
   // LIMIT: similar but not the same as real Lisp
 }
 
-Type EFunc::type() const {
-  return Type::func;
-}
+Type EFunc::type() const { return Type::func; }
 
-size_t EFunc::get_lb() const {
-  return lower_bound;
-}
+size_t EFunc::get_lb() const { return lower_bound; }
 
-size_t EFunc::get_ub() const {
-  return upper_bound;
-}
+size_t EFunc::get_ub() const { return upper_bound; }
 
 PTR<Sexp> EFunc::call(std::vector<PTR<Sexp>> args, PTR<Envs> env) {
+  if (args.size() < lower_bound)
+    throw std::invalid_argument("Too few arguments");
+  if (args.size() > upper_bound)
+    throw std::invalid_argument("Too many arguments");
   return func(args, env);
 }
 
 CadrFunc::CadrFunc(std::string n, CADRFUNC_TYPE(f)) : name(n), func(f) {}
 
-CadrFunc::~CadrFunc() {
-//  std::cout << "~CFunc" << std::endl;
-}
+CadrFunc::~CadrFunc() { /* std::cout << "~CFunc" << std::endl; */ }
 
 std::string CadrFunc::str() const {
   return "#<FUNCTION " + name + ">";
   // LIMIT: similar but not the same as real Lisp
 }
 
-Type CadrFunc::type() const {
-  return Type::func;
-}
+Type CadrFunc::type() const { return Type::func; }
 
-size_t CadrFunc::get_lb() const {
-  return 1;
-}
+size_t CadrFunc::get_lb() const { return 1; }
 
-size_t CadrFunc::get_ub() const {
-  return 1;
-}
+size_t CadrFunc::get_ub() const { return 1; }
 
 PTR<Sexp> CadrFunc::call(std::vector<PTR<Sexp>> args, PTR<Envs> env) {
+  if (args.size() < 1)
+    throw std::invalid_argument("Too few arguments");
+  if (args.size() > 1)
+    throw std::invalid_argument("Too many arguments");
   return func(name, args, env);
 }
 

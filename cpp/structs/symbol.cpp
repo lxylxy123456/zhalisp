@@ -25,21 +25,13 @@ Symbol::Symbol(const char * const s): value(s) {
   std::transform(value.begin(), value.end(), value.begin(), toupper);
 }
 
-Symbol::~Symbol() {
-//  std::cout << "~Symbol" << std::endl;
-}
+Symbol::~Symbol() { /* std::cout << "~Symbol" << std::endl; */ }
 
-std::string Symbol::str() const {
-  return value;
-}
+std::string Symbol::str() const { return value; }
 
-Type Symbol::type() const {
-  return Type::symbol;
-}
+Type Symbol::type() const { return Type::symbol; }
 
-const std::string& Symbol::get_value() {
-  return value;
-}
+const std::string& Symbol::get_value() { return value; }
 
 PTR<Symbol> Symbol::lisp_quote(new Symbol("QUOTE"));
 PTR<Symbol> Symbol::lisp_function(new Symbol("FUNCTION"));

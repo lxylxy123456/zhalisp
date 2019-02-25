@@ -18,11 +18,7 @@
 
 #include "number.h"
 
-Number::~Number() {
-//  std::cout << "~Number" << std::endl;
-}
+Number::~Number() { /* std::cout << "~Number" << std::endl; */ }
 
-Type Number::type() const {
-  return Type::number;
-}
+Type Number::type() const { return Type::number; }
 

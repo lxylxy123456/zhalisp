@@ -20,17 +20,11 @@
 
 Bool::Bool() {}
 
-Bool::~Bool() {
-//  std::cout << "~Bool" << std::endl;
-}
+Bool::~Bool() { /* std::cout << "~Bool" << std::endl; */ }
 
-std::string Bool::str() const {
-  return "T";
-}
+std::string Bool::str() const { return "T"; }
 
-Type Bool::type() const {
-  return Type::boolean;
-}
+Type Bool::type() const { return Type::boolean; }
 
 PTR<Bool> Bool::lisp_t(new Bool{});
 

@@ -24,21 +24,13 @@
 
 Integer::Integer(const mpz_class& z): value(z) {}
 
-Integer::~Integer() {
-//  std::cout << "~Integer" << std::endl;
-}
+Integer::~Integer() { /* std::cout << "~Integer" << std::endl; */ }
 
-const mpz_class& Integer::get_value() const {
-  return value;
-}
+const mpz_class& Integer::get_value() const { return value; }
 
-std::string Integer::str() const {
-  return value.get_str();
-}
+std::string Integer::str() const { return value.get_str(); }
 
-Type Integer::type() const {
-  return Type::integer;
-}
+Type Integer::type() const { return Type::integer; }
 
 PTR<Integer> Integer::lisp_0(new Integer{0});
 
@@ -46,13 +38,9 @@ PTR<Integer> Integer::lisp_1(new Integer{1});
 
 PTR<Integer> Integer::lisp_2(new Integer{2});
 
-PTR<Number> Integer::operator+() const {
-  return PTRNI(+value);
-}
+PTR<Number> Integer::operator+() const { return PTRNI(+value); }
 
-PTR<Number> Integer::operator-() const {
-  return PTRNI(-value);
-}
+PTR<Number> Integer::operator-() const { return PTRNI(-value); }
 
 PTR<Number> Integer::operator+(const Number& rhs) const {
   switch (rhs.type()) {
@@ -190,7 +178,5 @@ PTR<Number> Integer::sqrt_() const {
     return PTRNF(::sqrt(mpf_class(value)));
 }
 
-bool Integer::is_0() const {
-  return value == 0;
-}
+bool Integer::is_0() const { return value == 0; }
 

@@ -20,37 +20,21 @@
 
 Nil::Nil(): List(nullptr, nullptr) {}
 
-Nil::~Nil() {
-//  std::cout << "~Nil" << std::endl;
-}
+Nil::~Nil() { /* std::cout << "~Nil" << std::endl; */ }
 
-std::string Nil::str() const {
-  return "NIL";
-}
+std::string Nil::str() const { return "NIL"; }
 
-bool Nil::nil() const {
-  return true;
-}
+bool Nil::nil() const { return true; }
 
-bool Nil::t() const {
-  return false;
-}
+bool Nil::t() const { return false; }
 
-Type Nil::type() const {
-  return Type::null;
-}
+Type Nil::type() const { return Type::null; }
 
-const PTR<Sexp> Nil::car() const {
-  return lisp_nil;
-}
+const PTR<Sexp> Nil::car() const { return lisp_nil; }
 
-const PTR<List> Nil::cdr() const {
-  return lisp_nil;
-}
+const PTR<List> Nil::cdr() const { return lisp_nil; }
 
-const PTR<Sexp> Nil::r_cdr() const {
-  return lisp_nil;
-}
+const PTR<Sexp> Nil::r_cdr() const { return lisp_nil; }
 
 PTR<Sexp>& Nil::rw_cdr() {
   throw std::invalid_argument("Cannot modify cdr of NIL");
