@@ -1,24 +1,39 @@
--> (defun factorial-recu-1 (x cur) (cond
+-> (defun factorial-recu (x cur) (cond
 	((zerop x) cur)
-	(t (factorial-recu-1 (1- x) (* cur x)))))
-=> FACTORIAL-RECU-1
+	(t (factorial-recu (1- x) (* cur x)))))
+=> FACTORIAL-RECU
 
--> (defun factorial-1 (x) (factorial-recu-1 x 1))
-=> FACTORIAL-1
+-> (defun factorial (x) (factorial-recu x 1))
+=> FACTORIAL
 
--> (defun factorial-recu-2 (x cur)
-	(if (zerop x) cur (factorial-recu-2 (1- x) (* cur x))))
-=> FACTORIAL-RECU-2
-
--> (defun factorial-2 (x) (factorial-recu-1 x 1))
+-> (defun factorial-2 (x cur)
+	(if (zerop x) cur (factorial-2 (1- x) (* cur x))))
 => FACTORIAL-2
 
--> (factorial-1 10)
+-> (defun factorial-3 (x cur)
+	(cond ((zerop x) cur)
+	(t (funcall 'factorial-3 (1- x) (* cur x)))))
+=> FACTORIAL-3
+
+-> (defun factorial-4 (x cur)
+	(cond ((zerop x) cur)
+	(t (apply 'factorial-4 (list (1- x) (* cur x))))))
+=> FACTORIAL-4
+
+-> (defun factorial-5 (x cur)
+	(let* () (cond ((zerop x) cur)
+	(t (let () (eval (list 'factorial-5 (1- x) (* cur x))))))))
+=> FACTORIAL-5
+
+-> (factorial 10)
 => 3628800
 
--> (factorial-2 19)
-=> 121645100408832000
-
--> ((lambda (x) (= (factorial-1 x) (factorial-2 x))) 100000)
+-> ((lambda (x) (=
+	(factorial x)
+	(factorial-2 x 1)
+	(factorial-3 x 1)
+	(factorial-4 x 1)
+	(factorial-5 x 1)
+	)) 10000)
 => T
 

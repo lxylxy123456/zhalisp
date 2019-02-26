@@ -191,8 +191,12 @@ PTR<Sexp> one_minus(const std::vector<PTR<Sexp>>& args, ENV env) {
 }
 
 PTR<Sexp> eq_(const std::vector<PTR<Sexp>>& args, ENV env) {
-  ARGS_SIZE_EQ(2)
-  return BOOL((*FDPCN(args[0])) == (*FDPCN(args[1])));
+  ARGS_SIZE_LB(1)
+  PTR<Number> n = FDPCN(args[0]);
+  for (auto i = args.begin() + 1; i != args.end(); i++)
+    if (!((*n) == (*FDPCN(*i))))
+      return BOOL(false);
+  return BOOL(true);
 }
 
 PTR<Sexp> lt(const std::vector<PTR<Sexp>>& args, ENV env) {
@@ -600,6 +604,15 @@ PTR<Sexp> eval_(const std::vector<PTR<Sexp>>& args, ENV env) {
   return evaluate(args[0], env);
 }
 
+#ifdef TAIL_RECU
+TRInfo eval__recu(const std::vector<PTR<Sexp>>& args, ENV env) {
+  ARGS_SIZE_EQ(1)
+  return TRInfo(args[0], env);
+}
+#else
+TRInfo(*eval__recu)(const std::vector<PTR<Sexp>>& args, ENV env) = nullptr;
+#endif
+
 // Variables
 
 PTR<Sexp> let(PTR<List> args, ENV env) {
@@ -626,6 +639,34 @@ PTR<Sexp> let(PTR<List> args, ENV env) {
   return ans;
 }
 
+#ifdef TAIL_RECU
+TRInfo let_recu(PTR<List> args, ENV env) {
+  if (args->nil())
+    throw std::invalid_argument("Too few arguments");
+  PTR<Env> new_env(new Env{"LET"});
+  PTR<Envs> new_envs(new Envs{*env});
+  new_envs->add_layer(new_env);
+  for (PTR<List> i = DPCL(args->car()); i && !i->nil(); i = i->cdr()) {
+    PTR<Symbol> k = DPCS(i->car());
+    PTR<Sexp> v = Nil::lisp_nil;
+    if (!k) {
+      PTR<List> il = FDPCL(i->car());
+      if (!il->fcdr()->fcdr()->nil())
+        throw std::invalid_argument("Argument too long");
+      k = FDPCS(il->car());
+      v = evaluate(il->fcdr()->car(), env);
+    }
+    new_env->set_var(k, v);
+  }
+  if (!args->cdr() || args->cdr()->nil())
+    return TRInfo(Nil::lisp_nil);
+  PTR<List> i = args->cdr();
+  for (; i->cdr() && !i->cdr()->nil(); i = i->cdr())
+    evaluate(i->car(), new_envs);
+  return TRInfo(i->car(), new_envs);
+}
+#endif
+
 PTR<Sexp> let_star(PTR<List> args, ENV env) {
   if (args->nil())
     throw std::invalid_argument("Too few arguments");
@@ -649,6 +690,34 @@ PTR<Sexp> let_star(PTR<List> args, ENV env) {
     ans = evaluate(i->car(), new_envs);
   return ans;
 }
+
+#ifdef TAIL_RECU
+TRInfo let_star_recu(PTR<List> args, ENV env) {
+  if (args->nil())
+    throw std::invalid_argument("Too few arguments");
+  PTR<Env> new_env(new Env{"LET*"});
+  PTR<Envs> new_envs(new Envs{*env});
+  new_envs->add_layer(new_env);
+  for (PTR<List> i = DPCL(args->car()); i && !i->nil(); i = i->cdr()) {
+    PTR<Symbol> k = DPCS(i->car());
+    PTR<Sexp> v = Nil::lisp_nil;
+    if (!k) {
+      PTR<List> il = FDPCL(i->car());
+      if (!il->fcdr()->fcdr()->nil())
+        throw std::invalid_argument("Argument too long");
+      k = FDPCS(il->car());
+      v = evaluate(il->fcdr()->car(), new_envs);
+    }
+    new_env->set_var(k, v);
+  }
+  if (!args->cdr() || args->cdr()->nil())
+    return TRInfo(Nil::lisp_nil);
+  PTR<List> i = args->cdr();
+  for (; i->cdr() && !i->cdr()->nil(); i = i->cdr())
+    evaluate(i->car(), new_envs);
+  return TRInfo(i->car(), new_envs);
+}
+#endif
 
 PTR<Sexp> setq(PTR<List> args, ENV env) {
   int arg_count = 0;
@@ -874,7 +943,7 @@ std::unordered_map<std::string, PTR<EFunc>> fmap = {
   REGISTER_EFUNC("/", div, nullptr, 1)
   REGISTER_EFUNC("1+", one_plus, nullptr, 1, 1)
   REGISTER_EFUNC("1-", one_minus, nullptr, 1, 1)
-  REGISTER_EFUNC("=", eq_, nullptr, 2, 2)
+  REGISTER_EFUNC("=", eq_, nullptr, 1)
   REGISTER_EFUNC("<", lt, nullptr, 2, 2)
   REGISTER_EFUNC("<=", le, nullptr, 2, 2)
   REGISTER_EFUNC(">", gt, nullptr, 2, 2)
@@ -904,7 +973,7 @@ std::unordered_map<std::string, PTR<EFunc>> fmap = {
   REGISTER_EFUNC("APPEND", append, nullptr)
   REGISTER_EFUNC("APPLY", apply, apply_recu, 2)
   REGISTER_EFUNC("FUNCALL", funcall, funcall_recu, 1)
-  REGISTER_EFUNC("EVAL", eval_, nullptr, 1, 1)
+  REGISTER_EFUNC("EVAL", eval_, eval__recu, 1, 1)
   REGISTER_EFUNC("SET", set, nullptr, 2, 2)
   REGISTER_EFUNC("PRINT", print_, nullptr, 1, 1)
   REGISTER_EFUNC("SETRECURSIONLIMIT", setrecursionlimit, nullptr, 1, 1)
@@ -929,6 +998,17 @@ std::unordered_map<std::string, CFUNC_TYPE()> special_funcs = {
   {"GO", go},
   {"RETURN", return_},
 };
+
+#ifdef TAIL_RECU
+#define CFUNCTRO_TYPE(N) TRInfo(*N)(PTR<List>, PTR<Envs>)
+
+std::unordered_map<std::string, CFUNCTRO_TYPE()> special_funcs_tro = {
+  {"LET", let_recu},
+  {"LET*", let_star_recu},
+  {"COND", cond_recu},
+  {"IF", if__recu},
+};
+#endif
 
 bool reserved_func(PTR<Symbol> sym) {
   const std::string& fun_name = sym->get_value();
@@ -979,11 +1059,9 @@ start_eval:
       auto sf = find_special_func(func_name);
       if (sf) {
 #ifdef TAIL_RECU
-        if (func_name->get_value() == "IF") {
-          trinfo = if__recu(lst->fcdr(), env);
-          goto proc_trinfo;
-        } else if (func_name->get_value() == "COND") {
-          trinfo = cond_recu(lst->fcdr(), env);
+        auto found_tro = special_funcs_tro.find(func_name->get_value());
+        if (found_tro != special_funcs_tro.end()) {
+          trinfo = found_tro->second(lst->fcdr(), env);
           goto proc_trinfo;
         }
 #endif
