@@ -26,10 +26,13 @@
 #include "environment.h"
 
 #define EFUNC_TYPE(N) PTR<Sexp>(*N)(const std::vector<PTR<Sexp>>&, PTR<Envs>)
+#define EFUNC_TRO_TYPE(N) TRInfo(*N)(const std::vector<PTR<Sexp>>&, PTR<Envs>)
 #define CADRFUNC_TYPE(N) PTR<Sexp>(*N)(std::string, \
                           const std::vector<PTR<Sexp>>&, PTR<Envs>)
 
 PTR<Sexp> evaluate(PTR<Sexp> arg, PTR<Envs> env);   // from evaluate.h
+
+class TRInfo;
 
 class Funcs : public Sexp {
  public:
@@ -40,6 +43,8 @@ class Funcs : public Sexp {
   virtual size_t get_lb() const = 0;
   virtual size_t get_ub() const = 0;
   virtual PTR<Sexp> call(std::vector<PTR<Sexp>>, PTR<Envs>) = 0;
+  virtual bool has_tro() const = 0;
+  virtual TRInfo call_tro(std::vector<PTR<Sexp>>, PTR<Envs>) const = 0;
 };
 
 class Func : public Funcs {
@@ -52,6 +57,8 @@ class Func : public Funcs {
   virtual size_t get_lb() const;
   virtual size_t get_ub() const;
   virtual PTR<Sexp> call(std::vector<PTR<Sexp>>, PTR<Envs>);
+  virtual bool has_tro() const;
+  virtual TRInfo call_tro(std::vector<PTR<Sexp>>, PTR<Envs>) const;
  private:
   const std::string name;
   const std::vector<PTR<Symbol>> f_args;
@@ -61,9 +68,9 @@ class Func : public Funcs {
 
 class EFunc : public Funcs {
  public:
-  EFunc(std::string, EFUNC_TYPE());
-  EFunc(std::string, EFUNC_TYPE(), size_t);
-  EFunc(std::string, EFUNC_TYPE(), size_t, size_t);
+  EFunc(std::string, EFUNC_TYPE(), EFUNC_TRO_TYPE());
+  EFunc(std::string, EFUNC_TYPE(), EFUNC_TRO_TYPE(), size_t);
+  EFunc(std::string, EFUNC_TYPE(), EFUNC_TRO_TYPE(), size_t, size_t);
   virtual ~EFunc();
   virtual std::string str() const;
   virtual Type type() const;
@@ -71,9 +78,12 @@ class EFunc : public Funcs {
   virtual size_t get_lb() const;
   virtual size_t get_ub() const;
   virtual PTR<Sexp> call(std::vector<PTR<Sexp>>, PTR<Envs>);
+  virtual bool has_tro() const;
+  virtual TRInfo call_tro(std::vector<PTR<Sexp>>, PTR<Envs>) const;
  private:
   const std::string name;
   EFUNC_TYPE(const func);
+  EFUNC_TRO_TYPE(const tro_func);
   const size_t lower_bound, upper_bound;
 };
 
@@ -87,9 +97,24 @@ class CadrFunc : public Funcs {
   virtual size_t get_lb() const;
   virtual size_t get_ub() const;
   virtual PTR<Sexp> call(std::vector<PTR<Sexp>>, PTR<Envs>);
+  virtual bool has_tro() const;
+  virtual TRInfo call_tro(std::vector<PTR<Sexp>>, PTR<Envs>) const;
  private:
   const std::string name;
   CADRFUNC_TYPE(const func);
+};
+
+class TRInfo {
+ public:
+  TRInfo() : args(nullptr), sexp(nullptr), env(nullptr) {}
+  TRInfo(PTR<Sexp> s) : args(nullptr), sexp(s), env(nullptr) {}
+  TRInfo(PTR<Sexp> s, PTR<Envs> e) : args(nullptr), sexp(s), env(e) {}
+  TRInfo(PTR<Funcs> s, std::vector<PTR<Sexp>>* a, PTR<Envs> e) :
+      args(a), sexp(s), env(e) {}
+
+  PTR<std::vector<PTR<Sexp>>> args;   // when eval, NULL; else, parameters
+  PTR<Sexp> sexp;                     // when eval, list; else, func
+  PTR<Envs> env;                      // environment; when NULL, no eval / call
 };
 
 #endif

@@ -142,21 +142,6 @@ std::string upper(std::string s) {
 #define ARGS_SIZE_UB(X) assert(args.size() <= X);
 #define ARGS_SIZE_EQ(X) ARGS_SIZE_LB(X) ARGS_SIZE_UB(X)
 
-// Tail Recursion
-
-class TRInfo {
- public:
-  TRInfo() : args(nullptr), sexp(nullptr), env(nullptr) {}
-  TRInfo(PTR<Sexp> s) : args(nullptr), sexp(s), env(nullptr) {}
-  TRInfo(PTR<Sexp> s, ENV e) : args(nullptr), sexp(s), env(e) {}
-  TRInfo(PTR<Funcs> s, std::vector<PTR<Sexp>>* a, ENV e) :
-      args(a), sexp(s), env(e) {}
-
-  PTR<std::vector<PTR<Sexp>>> args;   // when eval, NULL; else, parameters
-  PTR<Sexp> sexp;                     // when eval, list; else, func
-  ENV env;                            // environment; when NULL, no eval / call
-};
-
 // Arithmetics
 
 PTR<Sexp> plus(const std::vector<PTR<Sexp>>& args, ENV env) {
@@ -555,6 +540,8 @@ TRInfo apply_recu(const std::vector<PTR<Sexp>>& args, ENV env) {
     arg->push_back(j->car());
   return TRInfo(func, arg, env);
 }
+#else
+TRInfo(*apply_recu)(const std::vector<PTR<Sexp>>& args, ENV env) = nullptr;
 #endif
 
 PTR<Sexp> funcall(const std::vector<PTR<Sexp>>& args, ENV env) {
@@ -581,6 +568,8 @@ TRInfo funcall_recu(const std::vector<PTR<Sexp>>& args, ENV env) {
     arg->push_back(*i);
   return TRInfo(func, arg, env);
 }
+#else
+TRInfo(*funcall_recu)(const std::vector<PTR<Sexp>>& args, ENV env) = nullptr;
 #endif
 
 PTR<Sexp> function(PTR<List> args, ENV env) {
@@ -879,46 +868,46 @@ PTR<Sexp> setrecursionlimit(const std::vector<PTR<Sexp>>& args, ENV env) {
 #define REGISTER_EFUNC(K, ...) {K, PTR<EFunc>(new EFunc(K, __VA_ARGS__))},
 
 std::unordered_map<std::string, PTR<EFunc>> fmap = {
-  REGISTER_EFUNC("+", plus)
-  REGISTER_EFUNC("-", minus, 1)
-  REGISTER_EFUNC("*", mul)
-  REGISTER_EFUNC("/", div, 1)
-  REGISTER_EFUNC("1+", one_plus, 1, 1)
-  REGISTER_EFUNC("1-", one_minus, 1, 1)
-  REGISTER_EFUNC("=", eq_, 2, 2)
-  REGISTER_EFUNC("<", lt, 2, 2)
-  REGISTER_EFUNC("<=", le, 2, 2)
-  REGISTER_EFUNC(">", gt, 2, 2)
-  REGISTER_EFUNC(">=", ge, 2, 2)
-  REGISTER_EFUNC("SQRT", sqrt_, 1, 1)
-  REGISTER_EFUNC("ATOM", atom, 1, 1)
-  REGISTER_EFUNC("LISTP", listp, 1, 1)
-  REGISTER_EFUNC("NULL", null, 1, 1)
-  REGISTER_EFUNC("NUMBERP", numberp, 1, 1)
-  REGISTER_EFUNC("TYPEP", typep, 2, 2)
-  REGISTER_EFUNC("SYMBOLP", symbolp, 1, 1)
-  REGISTER_EFUNC("ZEROP", zerop, 1, 1)
-  REGISTER_EFUNC("EVENP", evenp, 1, 1)
-  REGISTER_EFUNC("ODDP", oddp, 1, 1)
-  REGISTER_EFUNC("EQ", eq, 2, 2)
-  REGISTER_EFUNC("EQL", eql, 2, 2)
-  REGISTER_EFUNC("EQUAL", equal, 2, 2)
-  REGISTER_EFUNC("NOT", not_, 1, 1)
-  REGISTER_EFUNC("CAR", car, 1, 1)
-  REGISTER_EFUNC("CDR", cdr, 1, 1)
-  REGISTER_EFUNC("CONS", cons, 2, 2)
-  REGISTER_EFUNC("LIST", list_)
-  REGISTER_EFUNC("MEMBER", member, 2, 2)
-  REGISTER_EFUNC("MAPCAR", mapcar, 2)
-  REGISTER_EFUNC("MAPC", mapc, 2)
-  REGISTER_EFUNC("MAPLIST", maplist, 2)
-  REGISTER_EFUNC("APPEND", append)
-  REGISTER_EFUNC("APPLY", apply, 2)
-  REGISTER_EFUNC("FUNCALL", funcall, 1)
-  REGISTER_EFUNC("EVAL", eval_, 1, 1)
-  REGISTER_EFUNC("SET", set, 2, 2)
-  REGISTER_EFUNC("PRINT", print_, 1, 1)
-  REGISTER_EFUNC("SETRECURSIONLIMIT", setrecursionlimit, 1, 1)
+  REGISTER_EFUNC("+", plus, nullptr)
+  REGISTER_EFUNC("-", minus, nullptr, 1)
+  REGISTER_EFUNC("*", mul, nullptr)
+  REGISTER_EFUNC("/", div, nullptr, 1)
+  REGISTER_EFUNC("1+", one_plus, nullptr, 1, 1)
+  REGISTER_EFUNC("1-", one_minus, nullptr, 1, 1)
+  REGISTER_EFUNC("=", eq_, nullptr, 2, 2)
+  REGISTER_EFUNC("<", lt, nullptr, 2, 2)
+  REGISTER_EFUNC("<=", le, nullptr, 2, 2)
+  REGISTER_EFUNC(">", gt, nullptr, 2, 2)
+  REGISTER_EFUNC(">=", ge, nullptr, 2, 2)
+  REGISTER_EFUNC("SQRT", sqrt_, nullptr, 1, 1)
+  REGISTER_EFUNC("ATOM", atom, nullptr, 1, 1)
+  REGISTER_EFUNC("LISTP", listp, nullptr, 1, 1)
+  REGISTER_EFUNC("NULL", null, nullptr, 1, 1)
+  REGISTER_EFUNC("NUMBERP", numberp, nullptr, 1, 1)
+  REGISTER_EFUNC("TYPEP", typep, nullptr, 2, 2)
+  REGISTER_EFUNC("SYMBOLP", symbolp, nullptr, 1, 1)
+  REGISTER_EFUNC("ZEROP", zerop, nullptr, 1, 1)
+  REGISTER_EFUNC("EVENP", evenp, nullptr, 1, 1)
+  REGISTER_EFUNC("ODDP", oddp, nullptr, 1, 1)
+  REGISTER_EFUNC("EQ", eq, nullptr, 2, 2)
+  REGISTER_EFUNC("EQL", eql, nullptr, 2, 2)
+  REGISTER_EFUNC("EQUAL", equal, nullptr, 2, 2)
+  REGISTER_EFUNC("NOT", not_, nullptr, 1, 1)
+  REGISTER_EFUNC("CAR", car, nullptr, 1, 1)
+  REGISTER_EFUNC("CDR", cdr, nullptr, 1, 1)
+  REGISTER_EFUNC("CONS", cons, nullptr, 2, 2)
+  REGISTER_EFUNC("LIST", list_, nullptr)
+  REGISTER_EFUNC("MEMBER", member, nullptr, 2, 2)
+  REGISTER_EFUNC("MAPCAR", mapcar, nullptr, 2)
+  REGISTER_EFUNC("MAPC", mapc, nullptr, 2)
+  REGISTER_EFUNC("MAPLIST", maplist, nullptr, 2)
+  REGISTER_EFUNC("APPEND", append, nullptr)
+  REGISTER_EFUNC("APPLY", apply, apply_recu, 2)
+  REGISTER_EFUNC("FUNCALL", funcall, funcall_recu, 1)
+  REGISTER_EFUNC("EVAL", eval_, nullptr, 1, 1)
+  REGISTER_EFUNC("SET", set, nullptr, 2, 2)
+  REGISTER_EFUNC("PRINT", print_, nullptr, 1, 1)
+  REGISTER_EFUNC("SETRECURSIONLIMIT", setrecursionlimit, nullptr, 1, 1)
 };
 
 #define CFUNC_TYPE(N) PTR<Sexp>(*N)(PTR<List>, PTR<Envs>)
@@ -1021,11 +1010,8 @@ start_eval:
       param.push_back(evaluate(i->car(), env));
     }
 #ifdef TAIL_RECU
-    if (f->get_name() == "APPLY") {
-      trinfo = apply_recu(param, env);
-      goto proc_trinfo;
-    } else if (f->get_name() == "FUNCALL") {
-      trinfo = funcall_recu(param, env);
+    if (f->has_tro()) {
+      trinfo = f->call_tro(param, env);
       goto proc_trinfo;
     }
 #endif
@@ -1051,11 +1037,8 @@ proc_trinfo:
     goto start_eval;
   } else {
     PTR<Funcs> f = DPCFuncs(trinfo.sexp);
-    if (f->get_name() == "APPLY") {
-      trinfo = apply_recu(*trinfo.args, trinfo.env);
-      goto proc_trinfo;
-    } else if (f->get_name() == "FUNCALL") {
-      trinfo = funcall_recu(*trinfo.args, trinfo.env);
+    if (f->has_tro()) {
+      trinfo = f->call_tro(*trinfo.args, trinfo.env);
       goto proc_trinfo;
     }
     return f->call(*trinfo.args, trinfo.env);

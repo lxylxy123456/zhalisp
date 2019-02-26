@@ -16,6 +16,8 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
+#include <cassert>
+
 #include "func.h"
 
 #define DPCS std::dynamic_pointer_cast<Symbol>
@@ -41,10 +43,8 @@ size_t Func::get_lb() const { return f_args.size(); }
 size_t Func::get_ub() const { return f_args.size(); }
 
 PTR<Sexp> Func::call(std::vector<PTR<Sexp>> args, PTR<Envs> env) {
-  if (args.size() < f_args.size())
-    throw std::invalid_argument("Too few arguments");
-  if (args.size() > f_args.size())
-    throw std::invalid_argument("Too many arguments");
+  assert(args.size() >= f_args.size());
+  assert(args.size() <= f_args.size());
   PTR<Env> new_env(new Env{name});
   PTR<Envs> new_envs(new Envs{*f_env});
   new_envs->add_layer(new_env);
@@ -52,18 +52,39 @@ PTR<Sexp> Func::call(std::vector<PTR<Sexp>> args, PTR<Envs> env) {
   for (auto i = args.begin(); i != args.end(); i++, j++)
     new_env->set_var(*j, *i);
   PTR<Sexp> ans = Nil::lisp_nil;
-  for (PTR<List> i = f_stmt; !i->nil(); i = i->cdr())
+  for (PTR<List> i = f_stmt; !i->nil(); i = i->fcdr())
     ans = evaluate(i->car(), new_envs);
   return ans;
 }
 
-EFunc::EFunc(std::string n, EFUNC_TYPE(f)) : EFunc(n, f, 0) {}
+bool Func::has_tro() const { return true; }
 
-EFunc::EFunc(std::string n, EFUNC_TYPE(f), size_t lb) :
-    EFunc(n, f, lb, std::numeric_limits<std::size_t>::max()) {}
+TRInfo Func::call_tro(std::vector<PTR<Sexp>> args, PTR<Envs> env) const {
+  assert(args.size() >= f_args.size());
+  assert(args.size() <= f_args.size());
+  PTR<Env> new_env(new Env{name});
+  PTR<Envs> new_envs(new Envs{*f_env});
+  new_envs->add_layer(new_env);
+  auto j = f_args.begin();
+  for (auto i = args.begin(); i != args.end(); i++, j++)
+    new_env->set_var(*j, *i);
+  if (f_stmt->nil())
+    return TRInfo(Nil::lisp_nil);
+  PTR<List> i = f_stmt;
+  for (; !i->fcdr()->nil(); i = i->cdr())
+    evaluate(i->car(), new_envs);
+  return TRInfo(i->car(), new_envs);
+}
 
-EFunc::EFunc(std::string n, EFUNC_TYPE(f), size_t lb, size_t hb) :
-    name(n), func(f), lower_bound(lb), upper_bound(hb) {}
+EFunc::EFunc(std::string n, EFUNC_TYPE(f), EFUNC_TRO_TYPE(t)) :
+    EFunc(n, f, t, 0) {}
+
+EFunc::EFunc(std::string n, EFUNC_TYPE(f), EFUNC_TRO_TYPE(t), size_t lb) :
+    EFunc(n, f, t, lb, std::numeric_limits<std::size_t>::max()) {}
+
+EFunc::EFunc(std::string n, EFUNC_TYPE(f), EFUNC_TRO_TYPE(t), size_t lb,
+    size_t hb) :
+    name(n), func(f), tro_func(t), lower_bound(lb), upper_bound(hb) {}
 
 EFunc::~EFunc() { /* std::cout << "~EFunc" << std::endl; */ }
 
@@ -86,6 +107,12 @@ PTR<Sexp> EFunc::call(std::vector<PTR<Sexp>> args, PTR<Envs> env) {
   if (args.size() > upper_bound)
     throw std::invalid_argument("Too many arguments");
   return func(args, env);
+}
+
+bool EFunc::has_tro() const { return tro_func; }
+
+TRInfo EFunc::call_tro(std::vector<PTR<Sexp>> args, PTR<Envs> env) const {
+  return tro_func(args, env);
 }
 
 CadrFunc::CadrFunc(std::string n, CADRFUNC_TYPE(f)) : name(n), func(f) {}
@@ -111,5 +138,11 @@ PTR<Sexp> CadrFunc::call(std::vector<PTR<Sexp>> args, PTR<Envs> env) {
   if (args.size() > 1)
     throw std::invalid_argument("Too many arguments");
   return func(name, args, env);
+}
+
+bool CadrFunc::has_tro() const { return false; }
+
+TRInfo CadrFunc::call_tro(std::vector<PTR<Sexp>> args, PTR<Envs> env) const {
+  assert(false);
 }
 

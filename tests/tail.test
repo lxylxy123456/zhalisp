@@ -1,0 +1,24 @@
+-> (defun factorial-recu-1 (x cur) (cond
+	((zerop x) cur)
+	(t (factorial-recu-1 (1- x) (* cur x)))))
+=> FACTORIAL-RECU-1
+
+-> (defun factorial-1 (x) (factorial-recu-1 x 1))
+=> FACTORIAL-1
+
+-> (defun factorial-recu-2 (x cur)
+	(if (zerop x) cur (factorial-recu-2 (1- x) (* cur x))))
+=> FACTORIAL-RECU-2
+
+-> (defun factorial-2 (x) (factorial-recu-1 x 1))
+=> FACTORIAL-2
+
+-> (factorial-1 10)
+=> 3628800
+
+-> (factorial-2 19)
+=> 121645100408832000
+
+-> ((lambda (x) (= (factorial-1 x) (factorial-2 x))) 100000)
+=> T
+
