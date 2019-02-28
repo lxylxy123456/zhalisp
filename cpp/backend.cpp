@@ -22,7 +22,7 @@
 #include "evaluate.h"
 
 void shell() {
-  ENV env(new Envs{PTR<Env>(new Env{}), std::cout});
+  ENV env(new Env{std::cout});
   while (true) {
     std::cout << "-> " << std::flush;
     std::string lns;
@@ -45,7 +45,7 @@ void shell() {
     if (upper(strip(lns)) == "(EXIT)") {
       break;
     } else if (upper(strip(lns)) == "CLEAR-ENV") {
-      env = ENV(new Envs{PTR<Env>(new Env{}), std::cout});
+      env = ENV(new Env{std::cout});
       std::cout << "=> CLEAR-ENV" << std::endl;
       continue;
     }

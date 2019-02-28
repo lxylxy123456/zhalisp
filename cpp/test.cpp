@@ -27,7 +27,7 @@ typedef std::pair<std::string, std::string> Test;
 typedef std::vector<std::pair<std::string, std::string>> Tests;
 
 ENV build_test_env(std::ostream& os) {
-  return ENV(new Envs{PTR<Env>(new Env{}), os});
+  return ENV(new Env{os});
 }
 
 bool match(PTR<Sexp> a, PTR<Sexp> b) {

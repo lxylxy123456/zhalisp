@@ -24,37 +24,28 @@
 
 #include "symbol.h"
 
+#define ENV PTR<Env>
+
+class Funcs;        // from func.h
+
 class Env {
  public:
-  Env();
-  Env(const std::string& scope);
-  Env(std::string&& scope);
-  bool has_var(PTR<Symbol>);
-  PTR<Sexp> get_var(PTR<Symbol>);
-  void set_var(PTR<Symbol>, PTR<Sexp>);
-  bool has_fun(PTR<Symbol>);
-  PTR<Sexp> get_fun(PTR<Symbol>);
-  void set_fun(PTR<Symbol>, PTR<Sexp>);
+  Env(std::ostream&);
+  Env(ENV, const std::string& scope);
+  Env(ENV, std::string&& scope);
+  PTR<Sexp> find_var(PTR<Symbol> s);
+  void set_vars(PTR<Symbol> s, PTR<Sexp> e);
+  void set_var(PTR<Symbol> s, PTR<Sexp> e);
+  PTR<Funcs> find_fun(PTR<Symbol> s);
+  void set_fun(PTR<Symbol> s, PTR<Funcs> e);
+  std::ostream& get_os();
 
  private:
   std::string scope;
   std::unordered_map<std::string, PTR<Sexp>> variable;
-  std::unordered_map<std::string, PTR<Sexp>> function;
-};
-
-class Envs {
- public:
-  Envs(PTR<Env>, std::ostream&);
-  PTR<Sexp> find_var(PTR<Symbol>);
-  void set_var(PTR<Symbol>, PTR<Sexp>);
-  PTR<Sexp> find_fun(PTR<Symbol>);
-  void set_fun(PTR<Symbol>, PTR<Sexp>);
-  void add_layer(PTR<Env>);
-  PTR<Env> top();
-  std::ostream& get_os();
-
- private:
-  std::vector<PTR<Env>> envs;
+  std::unordered_map<std::string, PTR<Funcs>> function;
+  PTR<Env> outer;     // global's outer = nullptr
+  Env* global;        // global's global = global
   std::ostream& os;
 };
 

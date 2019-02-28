@@ -48,6 +48,7 @@ $
 * The GNU Multiple Precision Arithmetic Library (GMP)
 	* https://gmplib.org/manual/index.html
 	* `#include <gmpxx.h>`, `-lgmp -lgmpxx`
+* [(An ((Even Better) Lisp) Interpreter (in Python))](http://norvig.com/lispy2.html) by Peter Norvig
 
 ## Insights
 * Major development time: 9.5 days

@@ -21,8 +21,6 @@
 
 #include "structs.h"
 
-#define PTR std::shared_ptr
-#define ENV PTR<Envs>
 #define BOOL(X) ((X) ? (PTR<Sexp>)Bool::lisp_t : (PTR<Sexp>)Nil::lisp_nil)
 
 #define DPC std::dynamic_pointer_cast

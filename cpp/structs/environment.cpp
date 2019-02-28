@@ -18,75 +18,52 @@
 
 #include "environment.h"
 
-Env::Env(): scope("global") {}
+Env::Env(std::ostream& o) :
+          scope("global"), outer(nullptr), global(this), os(o) {}
 
-Env::Env(const std::string& s): scope(s) {}
+Env::Env(ENV o, const std::string& s) :
+          scope(s), outer(o), global(o->global), os(o->os) {}
 
-Env::Env(std::string&& s): scope(s) {}
+Env::Env(ENV o, std::string&& s) :
+          scope(s), outer(o), global(o->global), os(o->os) {}
 
-bool Env::has_var(PTR<Symbol> s) {
-  return variable.find(s->get_value()) != variable.end();
-}
-
-PTR<Sexp> Env::get_var(PTR<Symbol> s) {
-  auto found = variable.find(s->get_value());
-  if (found == variable.end())
-    return nullptr;
-  else
-    return found->second;
-}
-
-void Env::set_var(PTR<Symbol> s, PTR<Sexp> e) { variable[s->get_value()] = e; }
-
-bool Env::has_fun(PTR<Symbol> s) {
-  return function.find(s->get_value()) != variable.end();
-}
-
-PTR<Sexp> Env::get_fun(PTR<Symbol> s) {
-  auto found = function.find(s->get_value());
-  if (found == function.end())
-    return nullptr;
-  else
-    return found->second;
-}
-
-void Env::set_fun(PTR<Symbol> s, PTR<Sexp> e) { function[s->get_value()] = e; }
-
-Envs::Envs(PTR<Env> global, std::ostream& o): envs(1, global), os(o) {}
-
-PTR<Sexp> Envs::find_var(PTR<Symbol> s) {
-  for (auto i = envs.rbegin(); i != envs.rend(); i++) {
-    PTR<Sexp>&& found = (*i)->get_var(s);
-    if (found)
-      return found;
+PTR<Sexp> Env::find_var(PTR<Symbol> s) {
+  const std::string& name = s->get_value();
+  for (Env* i = this; i; i = i->outer.get()) {
+    auto found = i->variable.find(name);
+    if (found != i->variable.end())
+      return found->second;
   }
   throw std::runtime_error("Variable not found");
 }
 
-void Envs::set_var(PTR<Symbol> s, PTR<Sexp> e) {
-  for (auto i = envs.rbegin(); i != envs.rend(); i++)
-    if ((*i)->has_var(s))
-      return (*i)->set_var(s, e);
-  envs[0]->set_var(s, e);
-}
-
-PTR<Sexp> Envs::find_fun(PTR<Symbol> s) {
-  for (auto i = envs.rbegin(); i != envs.rend(); i++) {
-    PTR<Sexp>&& found = (*i)->get_fun(s);
-    if (found)
-      return found;
+void Env::set_vars(PTR<Symbol> s, PTR<Sexp> e) {
+  const std::string& name = s->get_value();
+  for (Env* i = this; i; i = i->outer.get()) {
+    auto found = i->variable.find(name);
+    if (found != i->variable.end()) {
+      found->second = e;
+      return;
+    }
   }
-  throw std::runtime_error("Function not found");
+  global->variable[name] = e;
 }
 
-void Envs::set_fun(PTR<Symbol> s, PTR<Sexp> e) {
+void Env::set_var(PTR<Symbol> s, PTR<Sexp> e) { variable[s->get_value()] = e; }
+
+PTR<Funcs> Env::find_fun(PTR<Symbol> s) {
   // Always uses the global environment
-  envs[0]->set_fun(s, e);
+  auto found = global->function.find(s->get_value());
+  if (found != global->function.end())
+    return found->second;
+  else
+    throw std::runtime_error("Function not found");
 }
 
-void Envs::add_layer(PTR<Env> e) { envs.push_back(e); }
+void Env::set_fun(PTR<Symbol> s, PTR<Funcs> e) {
+  // Always uses the global environment
+  global->function[s->get_value()] = e;
+}
 
-PTR<Env> Envs::top() { return envs[envs.size() - 1]; }
-
-std::ostream& Envs::get_os() { return os; }
+std::ostream& Env::get_os() { return os; }
 

@@ -144,7 +144,7 @@ char* bottom_stack = nullptr;
 size_t stack_limit = (LIMIT_STACK);
 
 void check_stack() {
-  char* top_stack = (char*) &top_stack;
+  char* top_stack = reinterpret_cast<char*>(&top_stack);
   if (stack_limit && bottom_stack > top_stack &&
       (size_t) (bottom_stack - top_stack) > stack_limit)
     throw std::invalid_argument("Stack overflow");
@@ -631,9 +631,7 @@ TRInfo(*eval__recu)(const std::vector<PTR<Sexp>>& args, ENV env) = nullptr;
 PTR<Sexp> let(PTR<List> args, ENV env) {
   if (args->nil())
     throw std::invalid_argument("Too few arguments");
-  PTR<Env> new_env(new Env{"LET"});
-  PTR<Envs> new_envs(new Envs{*env});
-  new_envs->add_layer(new_env);
+  ENV new_env(new Env{env, "LET"});
   for (PTR<List> i = DPCL(args->car()); i && !i->nil(); i = i->cdr()) {
     PTR<Symbol> k = DPCS(i->car());
     PTR<Sexp> v = Nil::lisp_nil;
@@ -648,7 +646,7 @@ PTR<Sexp> let(PTR<List> args, ENV env) {
   }
   PTR<Sexp> ans = Nil::lisp_nil;
   for (PTR<List> i = args->cdr(); i && !i->nil(); i = i->cdr())
-    ans = evaluate(i->car(), new_envs);
+    ans = evaluate(i->car(), new_env);
   return ans;
 }
 
@@ -656,9 +654,7 @@ PTR<Sexp> let(PTR<List> args, ENV env) {
 TRInfo let_recu(PTR<List> args, ENV env) {
   if (args->nil())
     throw std::invalid_argument("Too few arguments");
-  PTR<Env> new_env(new Env{"LET"});
-  PTR<Envs> new_envs(new Envs{*env});
-  new_envs->add_layer(new_env);
+  ENV new_env(new Env{env, "LET"});
   for (PTR<List> i = DPCL(args->car()); i && !i->nil(); i = i->cdr()) {
     PTR<Symbol> k = DPCS(i->car());
     PTR<Sexp> v = Nil::lisp_nil;
@@ -675,17 +671,15 @@ TRInfo let_recu(PTR<List> args, ENV env) {
     return TRInfo(Nil::lisp_nil);
   PTR<List> i = args->cdr();
   for (; i->cdr() && !i->cdr()->nil(); i = i->cdr())
-    evaluate(i->car(), new_envs);
-  return TRInfo(i->car(), new_envs);
+    evaluate(i->car(), new_env);
+  return TRInfo(i->car(), new_env);
 }
 #endif
 
 PTR<Sexp> let_star(PTR<List> args, ENV env) {
   if (args->nil())
     throw std::invalid_argument("Too few arguments");
-  PTR<Env> new_env(new Env{"LET*"});
-  PTR<Envs> new_envs(new Envs{*env});
-  new_envs->add_layer(new_env);
+  ENV new_env(new Env{env, "LET*"});
   for (PTR<List> i = DPCL(args->car()); i && !i->nil(); i = i->cdr()) {
     PTR<Symbol> k = DPCS(i->car());
     PTR<Sexp> v = Nil::lisp_nil;
@@ -694,13 +688,13 @@ PTR<Sexp> let_star(PTR<List> args, ENV env) {
       if (!il->fcdr()->fcdr()->nil())
         throw std::invalid_argument("Argument too long");
       k = FDPCS(il->car());
-      v = evaluate(il->fcdr()->car(), new_envs);
+      v = evaluate(il->fcdr()->car(), new_env);
     }
     new_env->set_var(k, v);
   }
   PTR<Sexp> ans = Nil::lisp_nil;
   for (PTR<List> i = args->cdr(); i && !i->nil(); i = i->cdr())
-    ans = evaluate(i->car(), new_envs);
+    ans = evaluate(i->car(), new_env);
   return ans;
 }
 
@@ -708,9 +702,7 @@ PTR<Sexp> let_star(PTR<List> args, ENV env) {
 TRInfo let_star_recu(PTR<List> args, ENV env) {
   if (args->nil())
     throw std::invalid_argument("Too few arguments");
-  PTR<Env> new_env(new Env{"LET*"});
-  PTR<Envs> new_envs(new Envs{*env});
-  new_envs->add_layer(new_env);
+  ENV new_env(new Env{env, "LET*"});
   for (PTR<List> i = DPCL(args->car()); i && !i->nil(); i = i->cdr()) {
     PTR<Symbol> k = DPCS(i->car());
     PTR<Sexp> v = Nil::lisp_nil;
@@ -719,7 +711,7 @@ TRInfo let_star_recu(PTR<List> args, ENV env) {
       if (!il->fcdr()->fcdr()->nil())
         throw std::invalid_argument("Argument too long");
       k = FDPCS(il->car());
-      v = evaluate(il->fcdr()->car(), new_envs);
+      v = evaluate(il->fcdr()->car(), new_env);
     }
     new_env->set_var(k, v);
   }
@@ -727,8 +719,8 @@ TRInfo let_star_recu(PTR<List> args, ENV env) {
     return TRInfo(Nil::lisp_nil);
   PTR<List> i = args->cdr();
   for (; i->cdr() && !i->cdr()->nil(); i = i->cdr())
-    evaluate(i->car(), new_envs);
-  return TRInfo(i->car(), new_envs);
+    evaluate(i->car(), new_env);
+  return TRInfo(i->car(), new_env);
 }
 #endif
 
@@ -743,14 +735,14 @@ PTR<Sexp> setq(PTR<List> args, ENV env) {
     PTR<Symbol> k = FDPCS(i->car());
     i = i->cdr();
     v = evaluate(i->car(), env);
-    env->set_var(k, v);
+    env->set_vars(k, v);
   }
   return v;
 }
 
 PTR<Sexp> set(const std::vector<PTR<Sexp>>& args, ENV env) {
   ARGS_SIZE_EQ(2)
-  env->set_var(FDPCS(args[0]), args[1]);
+  env->set_vars(FDPCS(args[0]), args[1]);
   return args[1];
 }
 
@@ -820,9 +812,7 @@ TRInfo if__recu(PTR<List> args, ENV env) {
 PTR<Sexp> do_(PTR<List> args, ENV env) {
   if (args->fcdr()->nil())
     throw std::invalid_argument("Too few arguments");
-  PTR<Env> new_env(new Env{"DO"});
-  PTR<Envs> new_envs(new Envs{*env});
-  new_envs->add_layer(new_env);
+  ENV new_env(new Env{env, "DO"});
   std::vector<std::pair<PTR<Symbol>, PTR<Sexp>>> val_list;
   for (PTR<List> i = DPCL(args->car()); !i->nil(); i = i->fcdr()) {
     PTR<List> li = DPCL(i->car());
@@ -837,25 +827,25 @@ PTR<Sexp> do_(PTR<List> args, ENV env) {
     }
   }
   PTR<Sexp> exit_test = FDPCL(args->fcdr()->car())->car();
-  while (evaluate(exit_test, new_envs)->nil()) {
+  while (evaluate(exit_test, new_env)->nil()) {
     for (PTR<List> i = args->fcdr()->fcdr(); !i->nil(); i = i->fcdr())
-      evaluate(i->car(), new_envs);
+      evaluate(i->car(), new_env);
     std::vector<std::pair<PTR<Symbol>, PTR<Sexp>>> new_values;
     for (auto i = val_list.begin(); i != val_list.end(); i++)
-      new_values.emplace_back(i->first, evaluate(i->second, new_envs));
+      new_values.emplace_back(i->first, evaluate(i->second, new_env));
     for (auto i = new_values.begin(); i != new_values.end(); i++)
       new_env->set_var(i->first, i->second);
   }
   PTR<Sexp> ans = Nil::lisp_nil;
   for (PTR<List> i = FDPCL(args->fcdr()->car())->fcdr(); !i->nil();
         i = i->fcdr())
-    ans = evaluate(i->car(), new_envs);
+    ans = evaluate(i->car(), new_env);
   return ans;
 }
 
 class ProgInterrupt: public std::exception {
  public:
-  ProgInterrupt(int t, PTR<Env> e, PTR<Sexp> v): type(t), env(e), value(v) {}
+  ProgInterrupt(int t, ENV e, PTR<Sexp> v): type(t), env(e), value(v) {}
   int type;       // 1: go; 2: return
   PTR<Env> env;
   PTR<Sexp> value;
@@ -865,9 +855,7 @@ class ProgInterrupt: public std::exception {
 PTR<Sexp> prog(PTR<List> args, ENV env) {
   if (args->nil())
     throw std::invalid_argument("Too few arguments");
-  PTR<Env> new_env(new Env{"PROG"});
-  PTR<Envs> new_envs(new Envs{*env});
-  new_envs->add_layer(new_env);
+  ENV new_env(new Env{env, "PROG"});
   for (PTR<List> i = DPCL(args->car()); !i->nil(); i = i->fcdr()) {
     PTR<List> li = DPCL(i->car());
     if (li) {
@@ -888,7 +876,7 @@ PTR<Sexp> prog(PTR<List> args, ENV env) {
   }
   for (size_t cur = 0; cur < sequence.size(); ) {
     try {
-      evaluate(sequence[cur], new_envs);
+      evaluate(sequence[cur], new_env);
     } catch (ProgInterrupt& e) {
       if (e.env.get() != new_env.get())
         throw e;
@@ -919,7 +907,7 @@ PTR<Sexp> go(PTR<List> args, ENV env) {
     throw std::invalid_argument("Too few arguments");
   if (!args->fcdr()->nil())
     throw std::invalid_argument("Too many arguments");
-  throw ProgInterrupt{1, env->top(), args->car()};
+  throw ProgInterrupt{1, env, args->car()};
 }
 
 PTR<Sexp> return_(PTR<List> args, ENV env) {
@@ -927,7 +915,7 @@ PTR<Sexp> return_(PTR<List> args, ENV env) {
     throw std::invalid_argument("Too few arguments");
   if (!args->fcdr()->nil())
     throw std::invalid_argument("Too many arguments");
-  throw ProgInterrupt{2, env->top(), evaluate(args->car(), env)};
+  throw ProgInterrupt{2, env, evaluate(args->car(), env)};
 }
 
 // I/O
@@ -1004,7 +992,7 @@ std::unordered_map<std::string, PTR<EFunc>> fmap = {
   REGISTER_EFUNC("SETSTACKLIMIT", setstacklimit, nullptr, 1, 1)
 };
 
-#define CFUNC_TYPE(N) PTR<Sexp>(*N)(PTR<List>, PTR<Envs>)
+#define CFUNC_TYPE(N) PTR<Sexp>(*N)(PTR<List>, ENV)
 
 std::unordered_map<std::string, CFUNC_TYPE()> special_funcs = {
   {"AND", and_},
@@ -1025,7 +1013,7 @@ std::unordered_map<std::string, CFUNC_TYPE()> special_funcs = {
 };
 
 #ifdef TAIL_RECU
-#define CFUNCTRO_TYPE(N) TRInfo(*N)(PTR<List>, PTR<Envs>)
+#define CFUNCTRO_TYPE(N) TRInfo(*N)(PTR<List>, ENV)
 
 std::unordered_map<std::string, CFUNCTRO_TYPE()> special_funcs_tro = {
   {"LET", let_recu},
@@ -1063,7 +1051,7 @@ PTR<Funcs> find_func(PTR<Symbol> sym, ENV env) {
   static const std::regex re_caordr("C[AD]{1,4}R");
   if (std::regex_match(fun_name, re_caordr))
     return PTR<CadrFunc>(new CadrFunc(fun_name, caordr));
-  PTR<Funcs> func = DPCFuncs(env->find_fun(sym));
+  PTR<Funcs> func = env->find_fun(sym);
   return func;
 }
 
