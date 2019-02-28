@@ -27,6 +27,7 @@ $
 
 ## Project Structure
 * `structs.h`: all structures used, which are included in `structs/`
+	* Arithmetic uses GMP
 * `lex.l`: Lex specification for the grammar
 * `translate.y`: Yacc specification for the grammar
 * `evaluate.cpp`: backend

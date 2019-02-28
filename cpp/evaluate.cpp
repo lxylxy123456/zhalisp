@@ -22,8 +22,8 @@
 #include <unordered_map>
 #include <regex>
 
-#define TAIL_RECU
-#define LIMIT_STACK 0x800000 - 0x10000
+// Allow tail-recursion optimization: #define TAIL_RECU
+// Allow check for stack overflow:    #define LIMIT_STACK <eval stack size>
 
 // Conversion
 
