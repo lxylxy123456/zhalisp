@@ -23,6 +23,7 @@
 #include <regex>
 
 #define TAIL_RECU
+#define LIMIT_STACK 0x800000 - 0x10000
 
 // Conversion
 
@@ -137,6 +138,18 @@ std::string upper(std::string s) {
   std::transform(s.begin(), s.end(), s.begin(), toupper);
   return s;
 }
+
+#ifdef LIMIT_STACK
+char* bottom_stack = nullptr;
+size_t stack_limit = (LIMIT_STACK);
+
+void check_stack() {
+  char* top_stack = (char*) &top_stack;
+  if (stack_limit && bottom_stack > top_stack &&
+      (size_t) (bottom_stack - top_stack) > stack_limit)
+    throw std::invalid_argument("Stack overflow");
+}
+#endif
 
 #define ARGS_SIZE_LB(X) assert(args.size() >= X);
 #define ARGS_SIZE_UB(X) assert(args.size() <= X);
@@ -932,6 +945,17 @@ PTR<Sexp> setrecursionlimit(const std::vector<PTR<Sexp>>& args, ENV env) {
   return args[0];
 }
 
+PTR<Sexp> setstacklimit(const std::vector<PTR<Sexp>>& args, ENV env) {
+  ARGS_SIZE_EQ(1)
+#ifdef LIMIT_STACK
+  const mpz_class& val = FDPCI(args[0])->get_value();
+  if (val < 0 || val >= std::numeric_limits<std::size_t>::max())
+    throw std::invalid_argument("Invalid stack size");
+  stack_limit = val.get_ui();
+#endif
+  return args[0];
+}
+
 // Evaluate
 
 #define REGISTER_EFUNC(K, ...) {K, PTR<EFunc>(new EFunc(K, __VA_ARGS__))},
@@ -977,6 +1001,7 @@ std::unordered_map<std::string, PTR<EFunc>> fmap = {
   REGISTER_EFUNC("SET", set, nullptr, 2, 2)
   REGISTER_EFUNC("PRINT", print_, nullptr, 1, 1)
   REGISTER_EFUNC("SETRECURSIONLIMIT", setrecursionlimit, nullptr, 1, 1)
+  REGISTER_EFUNC("SETSTACKLIMIT", setstacklimit, nullptr, 1, 1)
 };
 
 #define CFUNC_TYPE(N) PTR<Sexp>(*N)(PTR<List>, PTR<Envs>)
@@ -1043,6 +1068,12 @@ PTR<Funcs> find_func(PTR<Symbol> sym, ENV env) {
 }
 
 PTR<Sexp> evaluate(PTR<Sexp> arg, ENV env) {
+#ifdef LIMIT_STACK
+  if (!bottom_stack) {
+    char v;
+    bottom_stack = &v;
+  }
+#endif
 #ifdef TAIL_RECU
   TRInfo trinfo;
 start_eval:
@@ -1087,6 +1118,9 @@ start_eval:
         throw std::invalid_argument("Too many arguments");
       param.push_back(evaluate(i->car(), env));
     }
+#ifdef LIMIT_STACK
+    check_stack();
+#endif
 #ifdef TAIL_RECU
     if (f->has_tro()) {
       trinfo = f->call_tro(param, env);
@@ -1115,6 +1149,9 @@ proc_trinfo:
     goto start_eval;
   } else {
     PTR<Funcs> f = DPCFuncs(trinfo.sexp);
+#ifdef LIMIT_STACK
+    check_stack();
+#endif
     if (f->has_tro()) {
       trinfo = f->call_tro(*trinfo.args, trinfo.env);
       goto proc_trinfo;

@@ -731,6 +731,12 @@ def setrecursionlimit(exps, env) :
 	__import__('sys').setrecursionlimit(value.value)
 	return value
 
+@lisp_builtin('SETSTACKLIMIT')
+def setstacklimit(exps, env) :
+	value, = eval_params(exps, env)
+	# Nothing to do
+	return value
+
 # Evaluate
 
 def evaluate(exp, env) :

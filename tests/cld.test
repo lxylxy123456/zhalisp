@@ -819,11 +819,14 @@
 -> (factorial 6)
 => 720
 
+-> (SETSTACKLIMIT 800000)
+=> 800000
+
 -> (factorial -1)
-=> ERRORC
+=> ERROR
 
 -> (factorial 0.1)
-=> ERRORC
+=> ERROR
 
 -> (defun our-subst (in out struct)
 	(if (atom struct) struct (cons (if (equal out (car struct)) in

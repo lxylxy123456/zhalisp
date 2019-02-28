@@ -56,6 +56,7 @@ $
 * Python cannot do recursion with too many levels (has `RecursionError`)
 	* The limit can be increased using `SETRECURSIONLIMIT`, but may raise Segmentation fault
 	* Calling the function in C++ version have no effects
+* When passing dotted list to built-in functions, have different behavior than Clisp
 
 ### To be implemented
 * string

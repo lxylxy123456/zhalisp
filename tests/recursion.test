@@ -1,8 +1,14 @@
 -> (defun factorial (n) (cond ((zerop n) 1) (t (* n (factorial (1- n))))))
 => FACTORIAL
 
+-> (SETSTACKLIMIT 8000)
+=> 8000
+
 -> (factorial 100)
-=> ERRORC	; C++ do not have recursion limit
+=> ERROR	; C++ do not have recursion limit
+
+-> (SETSTACKLIMIT 8000000)
+=> 8000000
 
 -> (SETRECURSIONLIMIT 11000)
 => 11000
@@ -19,6 +25,9 @@
 -> (SETRECURSIONLIMIT 10001000)
 => 10001000
 
+-> (SETSTACKLIMIT 800000)
+=> 800000
+
 -> (f 3792)
-=> ERRORC	; critical value at which the C++ program segfaults
+=> ERROR	; critical value at which the C++ program segfaults
 

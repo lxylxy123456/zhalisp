@@ -64,4 +64,8 @@
 * `CLEAR-ENV` clears current environment (all variables and functions)
 * `(EXIT)` exits interactive mode (cannot be nested function call)
 * `(SETRECURSIONLIMIT 1000)` sets Python [recursion limit](https://docs.python.org/3/library/sys.html#sys.setrecursionlimit)
+	* No effect on C++
+* `(SETSTACKLIMIT 8388608)` (if `LIMIT_STACK` is defined) sets C++ stack size (from first call of `evaluate` to somewhere in current function call) to 8 MiB
+	* `0` means no limit
+	* No effect on Python
 
