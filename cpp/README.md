@@ -35,6 +35,13 @@ $
 * `test.cpp`: run test cases
 * `backend.cpp`: interactive shell
 
+## Compile time arguments and macros
+* Macro `TAIL_RECU` enables tail recursion optimization (`TR_FLAG` in Makefile)
+* Macro `LIMIT_STACK` enables and sets default stack limit (`LS_FLAG` in Makefile)
+	* The value can be changed using `SETSTACKLIMIT`
+* `O_FLAG` in Makefile controls optimization level
+* If defined, macro `REMOVE_EXP_POS` removes the plus sign after 'E' in floating point number's scientific notation (`EXP_POS_FLAG` in Makefile)
+
 ## Limitations
 * `eq` may have different behavior than Clisp (currently same as `eql`)
 * `typep` not implemented fully

@@ -1,8 +1,11 @@
 TR_FLAG = -DTAIL_RECU
 LS_FLAG = -DLIMIT_STACK='0x800000 - 0x10000'
 O_FLAG = -O3
+EXP_POS_FLAG = -DREMOVE_EXP_POS
 
-CXXFLAGS=-Wall -g -std=c++11 -lgmp -lgmpxx $(TR_FLAG) $(LS_FLAG) $(O_FLAG)
+CUSTOM_FLAGS = $(TR_FLAG) $(LS_FLAG) $(O_FLAG) $(EXP_POS_FLAG)
+
+CXXFLAGS=-Wall -g -std=c++11 -lgmp -lgmpxx $(CUSTOM_FLAGS)
 
 STRUCTS = $(wildcard structs/*.h)
 

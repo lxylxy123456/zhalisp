@@ -30,8 +30,17 @@ const mpf_class& Float::get_value() const { return value; }
 
 std::string Float::str() const {
   std::ostringstream os;
-  os << value;
+  os << std::uppercase << value;
+#ifdef REMOVE_EXP_POS
+  std::string s = os.str();
+  auto f = std::find(s.begin(), s.end(), '+');
+  if (f == s.end())
+    return s;
+  auto&& i = f - s.begin();
+  return s.substr(0, i) + s.substr(i + 1);
+#else
   return os.str();
+#endif
 }
 
 Type Float::type() const { return Type::float_; }
