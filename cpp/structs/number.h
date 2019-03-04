@@ -21,8 +21,6 @@
 
 #include <gmpxx.h>
 
-#include "bool.h"
-#include "nil.h"
 #include "sexp.h"
 
 #define DCCI dynamic_cast<const Integer&>
@@ -30,10 +28,11 @@
 #define DCCF dynamic_cast<const Float&>
 #define DCCC dynamic_cast<const Complex&>
 
-#define DPCI std::dynamic_pointer_cast<Integer>
-#define DPCR std::dynamic_pointer_cast<Rational>
-#define DPCF std::dynamic_pointer_cast<Float>
-#define DPCC std::dynamic_pointer_cast<Complex>
+#define DPCN DPC<Number>
+#define DPCI DPC<Integer>
+#define DPCR DPC<Rational>
+#define DPCF DPC<Float>
+#define DPCC DPC<Complex>
 
 #define PTRNI(X) PTR<Number>(new Integer(X))
 #define PTRNR(X) PTR<Number>(new Rational(X))

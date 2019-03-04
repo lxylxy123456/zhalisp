@@ -23,6 +23,7 @@
 #include <string>
 
 #define PTR std::shared_ptr
+#define DPC std::dynamic_pointer_cast
 
 enum struct Type : int {
   sexp,     // not possible return value for type()

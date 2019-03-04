@@ -21,7 +21,7 @@
 
 #include <limits>
 
-#include "nil.h"
+#include "list.h"
 #include "symbol.h"
 #include "environment.h"
 

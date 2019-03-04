@@ -21,6 +21,8 @@
 
 #include "sexp.h"
 
+#define DPCS DPC<Symbol>
+
 class Symbol: public Sexp {
  public:
   Symbol(const char * const s);

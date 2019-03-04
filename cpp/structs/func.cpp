@@ -19,8 +19,7 @@
 #include <cassert>
 
 #include "func.h"
-
-#define DPCS std::dynamic_pointer_cast<Symbol>
+#include "nil.h"
 
 Funcs::~Funcs() { /* std::cout << "~Funcs" << std::endl; */ }
 

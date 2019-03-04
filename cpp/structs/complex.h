@@ -22,7 +22,6 @@
 #include <cassert>
 
 #include "number.h"
-#include "symbol.h"
 
 Number* reduced_complex_ns(Number* r, PTR<Number> i);
 PTR<Number> reduced_complex(PTR<Number> r, PTR<Number> i);

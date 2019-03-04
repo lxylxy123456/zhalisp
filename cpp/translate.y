@@ -80,7 +80,7 @@ int yyerror(const char *msg) {
 	return printf("%s\n", msg); 
 }
 
-std::shared_ptr<List> parse(std::string s) {
+PTR<List> parse(std::string s) {
 	yy_scan_string(s.c_str());
 	assert(!yyparse());
 	// https://stackoverflow.com/a/9920524

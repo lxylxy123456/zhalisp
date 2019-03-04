@@ -22,7 +22,6 @@
 #include "sexp.h"
 
 #define PTRNL(X, Y) PTR<List>(new List{X, Y})
-#define DPC std::dynamic_pointer_cast
 #define DPCL DPC<List>
 
 class List: public Sexp {
