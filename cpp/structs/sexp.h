@@ -23,10 +23,12 @@
 #include <string>
 
 #ifdef CUSTOM_PTR
-#include "sptr.h"
+  #include "sptr.h"
+  #define PTR sptr
+  #define DPC sptr_cast
 #else
-#define PTR std::shared_ptr
-#define DPC std::dynamic_pointer_cast
+  #define PTR std::shared_ptr
+  #define DPC std::dynamic_pointer_cast
 #endif
 
 enum struct Type : int {

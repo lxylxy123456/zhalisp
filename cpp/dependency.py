@@ -6,7 +6,7 @@ import os, re
 
 def grep_include(filename) :
 	for i in open(filename).read().split('\n') :
-		matched = re.fullmatch('#include "([\w\.\/]+)"', i)
+		matched = re.fullmatch('\s*#include "([\w\.\/]+)"', i)
 		if matched :
 			yield matched.groups()[0]
 

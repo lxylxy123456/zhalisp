@@ -19,41 +19,40 @@
 #ifndef SPTR_H
 #define SPTR_H
 
-#define PTR sptr
-#define DPC sptr_cast
-
 template <typename T>
 class sptr {
  public:
-  sptr() : ptr(nullptr) {}
-  sptr(T* p) : ptr(p) {}
+  sptr();
+  sptr(T* p);
   template <typename S>
-  sptr(const sptr<S>& sp) : ptr(sp.ptr) {}
-  sptr<T> operator=(const sptr<T>& rhs) {
-    ptr = rhs.ptr;
-    return *this;
-  }
-  T* operator->() { return ptr; }
-  const T* operator->() const { return ptr; }
-  T* get() { return ptr; }
-  const T* get() const { return ptr; }
-  T& operator*() { return *ptr; }
-  const T& operator*() const { return *ptr; }
-  operator bool() const { return ptr; }
-  bool operator!() { return !ptr; }
-  
+  sptr(const sptr<S>& sp);
+  sptr<T> operator=(const sptr<T>& rhs);
+  T* operator->();
+  const T* operator->() const;
+  T* get() const;
+  T& operator*();
+  const T& operator*() const;
+  operator bool() const;
+  bool operator!();
+
  private:
-  T* ptr;
+  mutable T* ptr;
 
   template<class S>
   friend class sptr;
+  template <typename S>
+  friend sptr<T> sptr_cast(const sptr<S>&);
+  template <typename S>
+  friend sptr<T> sptr_cast(sptr<S>&&);
 };
 
 template <typename T, typename S>
 sptr<T> sptr_cast(const sptr<S>& s) {
-  // TODO: const is discarded
-  // return sptr<T>(dynamic_cast<T*>(static_cast<S*>(s.get())));
-  return sptr<T>();
+  return sptr<T>(dynamic_cast<T*>(static_cast<S*>(s.get())));
 }
 
+template <typename T, typename S>
+sptr<T> sptr_cast(sptr<S>&& s) {
+  return sptr<T>(dynamic_cast<T*>(s.get()));
+}
 #endif
