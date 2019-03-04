@@ -31,35 +31,35 @@ PTR<Number> FDPCN(PTR<Sexp> p) {
   PTR<Number>&& ans = DPC<Number>(p);
   if (!ans)
     throw std::invalid_argument("Not a number");
-  return ans;
+  return std::move(ans);
 }
 
 PTR<Symbol> FDPCS(PTR<Sexp> p) {
   PTR<Symbol>&& ans = DPC<Symbol>(p);
   if (!ans)
     throw std::invalid_argument("Not a symbol");
-  return ans;
+  return std::move(ans);
 }
 
 PTR<Integer> FDPCI(PTR<Sexp> p) {
   PTR<Integer>&& ans = DPC<Integer>(p);
   if (!ans)
     throw std::invalid_argument("Not an integer");
-  return ans;
+  return std::move(ans);
 }
 
 PTR<List> FDPCL(PTR<Sexp> p) {
   PTR<List>&& ans = DPC<List>(p);
   if (!ans)
     throw std::invalid_argument("Not an list");
-  return ans;
+  return std::move(ans);
 }
 
 PTR<Funcs> FDPCFuncs(PTR<Sexp> p) {
   PTR<Funcs>&& ans = DPC<Funcs>(p);
   if (!ans)
     throw std::invalid_argument("Not a function");
-  return ans;
+  return std::move(ans);
 }
 
 // Helper functions

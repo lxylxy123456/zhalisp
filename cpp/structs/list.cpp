@@ -49,7 +49,7 @@ const PTR<List> List::fcdr() const {
   PTR<List>&& ans = DPCL(l_cdr);
   if (!ans)
     throw std::invalid_argument("Dotted list");
-  return ans;
+  return std::move(ans);
 }
 
 const PTR<Sexp> List::r_cdr() const { return l_cdr; }
