@@ -262,7 +262,6 @@ PTR<Sexp> numberp(const std::vector<PTR<Sexp>>& args, ENV env) {
 PTR<Sexp> typep(const std::vector<PTR<Sexp>>& args, ENV env) {
   ARGS_SIZE_EQ(2)
   // Does not supporting 3rd arg
-  PTR<Sexp> value = args[0];
   std::string type_name = FDPCS(args[1])->get_value();
   static std::unordered_map<std::string, Type> lookup_type = {
     {"ATOM", Type::atom},

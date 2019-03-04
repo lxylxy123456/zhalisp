@@ -98,10 +98,10 @@ PTR<Number> Complex::operator*(const Number& rhs) const {
       return reduced_complex(*real * DCCF(rhs), *imag * DCCF(rhs));
     case Type::complex: {
       const Complex& r = DCCC(rhs);
-      PTR<Number> r1r2 = *real * *r.real;
-      PTR<Number> i1i2 = *imag * *r.imag;
-      PTR<Number> i1r2 = *imag * *r.real;
-      PTR<Number> r1i2 = *real * *r.imag;
+      PTR<Number>&& r1r2 = *real * *r.real;
+      PTR<Number>&& i1i2 = *imag * *r.imag;
+      PTR<Number>&& i1r2 = *imag * *r.real;
+      PTR<Number>&& r1i2 = *real * *r.imag;
       return reduced_complex(*r1r2 - *i1i2, *i1r2 + *r1i2);
     }
     default:
@@ -119,13 +119,12 @@ PTR<Number> Complex::operator/(const Number& rhs) const {
       return reduced_complex(*real / DCCF(rhs), *imag / DCCF(rhs));
     case Type::complex: {
       const Complex& r = DCCC(rhs);
-      PTR<Number> r2i2 = *r.real * *r.imag;
-      PTR<Number> r2i22 = *r2i2 * *r2i2;
-      PTR<Number> r1r2 = *real * *r.real;
-      PTR<Number> i1i2 = *imag * *r.imag;
-      PTR<Number> i1r2 = *imag * *r.real;
-      PTR<Number> r1i2 = *real * *r.imag;
-      return reduced_complex(*r1r2 + *i1i2, *i1r2 - *r1i2);
+      PTR<Number>&& r2i22 = *(*r.real * *r.real) + *(*r.imag * *r.imag);
+      PTR<Number>&& r1r2 = *real * *r.real;
+      PTR<Number>&& i1i2 = *imag * *r.imag;
+      PTR<Number>&& i1r2 = *imag * *r.real;
+      PTR<Number>&& r1i2 = *real * *r.imag;
+      return *reduced_complex(*r1r2 + *i1i2, *i1r2 - *r1i2) / *r2i22;
     }
     default:
       throw std::invalid_argument("Not number");
@@ -136,7 +135,7 @@ bool Complex::operator==(const Number& rhs) const {
   if (rhs.type() != Type::complex)
     return false;
   const Complex& r = DCCC(rhs);
-  return real == r.real && imag == r.imag;
+  return *real == *r.real && *imag == *r.imag;
 }
 
 bool Complex::operator<(const Number& rhs) const {
@@ -157,8 +156,8 @@ bool Complex::operator>=(const Number& rhs) const {
 
 PTR<Number> Complex::sqrt_() const {
   // tex(solve([a = c**2 - d**2, b = 2 * c * d], [c, d])[2]);
-  PTR<Number> sa2b2 = (*(*real * *real) + *(*imag * *imag))->sqrt_();
-  PTR<Number> c = (*(*sa2b2 + *real) / *Integer::lisp_2)->sqrt_();
+  PTR<Number>&& sa2b2 = (*(*real * *real) + *(*imag * *imag))->sqrt_();
+  PTR<Number>&& c = (*(*sa2b2 + *real) / *Integer::lisp_2)->sqrt_();
   return reduced_complex(c, *c * *(*(*sa2b2 - *real) / *imag));
 }
 

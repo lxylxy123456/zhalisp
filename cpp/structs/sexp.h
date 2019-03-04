@@ -22,8 +22,12 @@
 #include <memory>
 #include <string>
 
+#ifdef CUSTOM_PTR
+#include "sptr.h"
+#else
 #define PTR std::shared_ptr
 #define DPC std::dynamic_pointer_cast
+#endif
 
 enum struct Type : int {
   sexp,     // not possible return value for type()
