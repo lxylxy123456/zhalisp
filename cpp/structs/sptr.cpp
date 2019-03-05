@@ -71,7 +71,7 @@ bool sptr<T>::operator!() { return !ptr; }
 
 template <typename T, typename S>
 sptr<T> sptr_cast(const sptr<S>& s) {
-  return sptr<T>(dynamic_cast<T*>(static_cast<S*>(s.get())));
+  return sptr<T>(dynamic_cast<T*>(s.get()));
 }
 
 // Explicit template instantiation

@@ -51,8 +51,6 @@ sptr<T> sptr_cast(const sptr<S>& s);
 
 /*
 template <typename T, typename S>
-sptr<T> sptr_cast(sptr<S>&& s) {
-  return sptr<T>(dynamic_cast<T*>(s.get()));
-}
+sptr<T> sptr_cast(sptr<S>&& s) { return sptr<T>(dynamic_cast<T*>(s.get())); }
 */
 #endif
