@@ -69,20 +69,50 @@ sptr<T>::operator bool() const { return ptr; }
 template<typename T>
 bool sptr<T>::operator!() { return !ptr; }
 
+template <typename T, typename S>
+sptr<T> sptr_cast(const sptr<S>& s) {
+  return sptr<T>(dynamic_cast<T*>(static_cast<S*>(s.get())));
+}
+
 // Explicit template instantiation
-template class sptr<Bool>;
-template class sptr<Complex>;
-template class sptr<Env>;
+template class sptr<Sexp>;
+template class sptr<Symbol>;
+template class sptr<Number>;
+template class sptr<Integer>;
+template class sptr<Rational>;
 template class sptr<Float>;
+template class sptr<Complex>;
+template class sptr<Bool>;
+template class sptr<List>;
+template class sptr<Nil>;
 template class sptr<Funcs>;
 template class sptr<Func>;
 template class sptr<EFunc>;
 template class sptr<CadrFunc>;
-template class sptr<Integer>;
-template class sptr<List>;
-template class sptr<Nil>;
-template class sptr<Number>;
-template class sptr<Rational>;
-template class sptr<Sexp>;
-template class sptr<Symbol>;
+template class sptr<Env>;
+template class sptr<std::vector<sptr<Sexp>, std::allocator<sptr<Sexp>>>>;
+
+#define INSTANTIATE(S, T)\
+  template sptr<S>::sptr<T>(const sptr<T>&); \
+  template sptr<T> sptr_cast<T, S>(const sptr<S>& s);
+
+INSTANTIATE(Sexp, Symbol);
+INSTANTIATE(Sexp, Number);
+INSTANTIATE(Sexp, Integer);
+INSTANTIATE(Sexp, Rational);
+INSTANTIATE(Sexp, Float);
+INSTANTIATE(Sexp, Complex);
+INSTANTIATE(Sexp, Bool);
+INSTANTIATE(Sexp, List);
+INSTANTIATE(Sexp, Nil);
+INSTANTIATE(Sexp, Func);
+INSTANTIATE(Sexp, Funcs);
+INSTANTIATE(Number, Integer);
+INSTANTIATE(Number, Rational);
+INSTANTIATE(Number, Float);
+INSTANTIATE(Number, Complex);
+INSTANTIATE(List, Nil);
+INSTANTIATE(Funcs, Func);
+INSTANTIATE(Funcs, EFunc);
+INSTANTIATE(Funcs, CadrFunc);
 

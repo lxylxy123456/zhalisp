@@ -38,7 +38,7 @@ class sptr {
  private:
   mutable T* ptr;
 
-  template<class S>
+  template <class S>
   friend class sptr;
   template <typename S>
   friend sptr<T> sptr_cast(const sptr<S>&);
@@ -47,12 +47,12 @@ class sptr {
 };
 
 template <typename T, typename S>
-sptr<T> sptr_cast(const sptr<S>& s) {
-  return sptr<T>(dynamic_cast<T*>(static_cast<S*>(s.get())));
-}
+sptr<T> sptr_cast(const sptr<S>& s);
 
+/*
 template <typename T, typename S>
 sptr<T> sptr_cast(sptr<S>&& s) {
   return sptr<T>(dynamic_cast<T*>(s.get()));
 }
+*/
 #endif
