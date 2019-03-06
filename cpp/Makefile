@@ -12,9 +12,9 @@ STRUCTS = $(wildcard structs/*.h)
 
 STRUCTS_O = $(STRUCTS:.h=.o)
 
-LIBRARY = $(STRUCTS_O) translate.o evaluate.o
+LIBRARY = $(STRUCTS_O) translate.o evaluate.o test.o
 
-all: backend test
+all: backend
 
 translate.o: lex.l translate.y
 	lex lex.l
@@ -22,9 +22,6 @@ translate.o: lex.l translate.y
 	$(CXX) $(CXXFLAGS) y.tab.c -g -c -o $@ -Wno-unused-function
 
 backend: backend.cpp $(LIBRARY)
-	$(CXX) $(CXXFLAGS) $(LINKFLAGS) -o $@ $^
-
-test: test.cpp $(LIBRARY)
 	$(CXX) $(CXXFLAGS) $(LINKFLAGS) -o $@ $^
 
 tmp: tmp.cpp $(LIBRARY)

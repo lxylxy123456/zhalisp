@@ -16,21 +16,12 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#include <iostream>
+#ifndef TEST_H
+#define TEST_H
 
-#include "test.h"
+#include <string>
 
-int main(int argc, char* argv[]) {
-  if (argc > 1)
-    for (int i = 1; i < argc; i++) {
-      std::string file_name(argv[i]);
-      if (file_name == "-")
-        shell();
-      else
-        test(file_name);
-    }
-  else
-    shell();
-  return 0;
-}
+void test(const std::string& file_name);
+void shell();
 
+#endif

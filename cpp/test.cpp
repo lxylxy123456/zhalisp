@@ -16,6 +16,8 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
+#include "test.h"
+
 #include "evaluate.h"
 #include "translate.h"
 
@@ -119,9 +121,42 @@ void test(const std::string& file_name) {
   }
 }
 
-int main(int argc, char* argv[]) {
-  for (int i = 1; i < argc; i++) {
-    test(argv[i]);
+void shell() {
+  ENV env = build_test_env(std::cout);
+  while (true) {
+    std::cout << "-> " << std::flush;
+    std::string lns;
+    std::getline(std::cin, lns);
+    if (std::cin.eof()) {
+      std::cout << std::endl;
+      break;
+    }
+    PTR<List> tree;
+    while (true) {
+      try {
+        tree = parse(lns);
+        break;
+      } catch (SyntaxError& e) {
+        std::string ln;
+        std::getline(std::cin, ln);
+        lns += "\n" + ln;
+      }
+    }
+    if (upper(strip(lns)) == "(EXIT)") {
+      break;
+    } else if (upper(strip(lns)) == "CLEAR-ENV") {
+      env = build_test_env(std::cout);
+      std::cout << "=> CLEAR-ENV" << std::endl;
+      continue;
+    }
+    for (PTR<List> i = tree; !i->nil(); i = i->cdr()) {
+      try {
+        PTR<Sexp> ans = evaluate(i->car(), env);
+        std::cout << "=> " << ans->str() << std::endl;
+      } catch (std::exception& e) {
+        std::cout << "Error: " << e.what() << std::endl;
+      }
+    }
   }
 }
 

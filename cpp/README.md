@@ -3,7 +3,7 @@ This directory contains a C++ implementation of zhalisp
 
 ## Usage
 * Execute `backend` with no arguments will result in shell mode. Type an s-expression and press Enter. 
-* Execute `tests` with test file names (ends with `.test`) as arguments will perform tests with the test files. 
+* Execute `backend` with test file names (ends with `.test`) as arguments will perform tests with the test files. `-` (meaning stdin) will open shell mode. 
 
 ### Example
 ```
@@ -32,8 +32,8 @@ $
 * `translate.y`: Yacc specification for the grammar
 * `evaluate.cpp`: backend
 	* `PTR<Sexp> evaluate(PTR<Sexp>, ENV)` evaluates any s-expression
-* `test.cpp`: run test cases
-* `backend.cpp`: interactive shell
+* `test.cpp`: function to run test cases / make shell interactions
+* `backend.cpp`: file containing the `main` function
 
 ## Compile time arguments and macros
 * Macro `TAIL_RECU` enables tail recursion optimization (`TR_FLAG` in Makefile)
