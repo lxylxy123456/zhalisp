@@ -27,7 +27,7 @@ class sptr {
   sptr(const sptr<T>&);
   sptr(sptr<T>&&);
   template <typename S>
-  explicit sptr(const sptr<S>&);
+  sptr(const sptr<S>&);
   sptr(T*, int*);
   ~sptr();
 

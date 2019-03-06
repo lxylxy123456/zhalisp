@@ -21,7 +21,7 @@
 #include "test.h"
 
 int main(int argc, char* argv[]) {
-  if (argc > 1)
+  if (argc > 1) {
     for (int i = 1; i < argc; i++) {
       std::string file_name(argv[i]);
       if (file_name == "-")
@@ -29,8 +29,9 @@ int main(int argc, char* argv[]) {
       else
         test(file_name);
     }
-  else
+  } else {
     shell();
+  }
   return 0;
 }
 

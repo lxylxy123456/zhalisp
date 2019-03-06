@@ -22,6 +22,8 @@
 #include "rational.h"
 #include "complex.h"
 
+// Remove the positive sign after E:  #define REMOVE_EXP_POS
+
 Float::Float(const mpf_class& f): value(f) {}
 
 Float::~Float() { /* std::cout << "~Float" << std::endl; */ }

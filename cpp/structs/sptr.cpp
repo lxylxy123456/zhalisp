@@ -32,6 +32,9 @@
 #include "sptr.h"
 #include "symbol.h"
 
+// Enable sptr:                       #define CUSTOM_PTR
+// Print debug information:           #define DEBUG_SPTR
+
 #ifdef DEBUG_SPTR
   #include <iostream>
 #endif
