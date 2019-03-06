@@ -40,7 +40,9 @@ $
 * Macro `LIMIT_STACK` enables and sets default stack limit (`LS_FLAG` in Makefile)
 	* The value can be changed using `SETSTACKLIMIT`
 * `O_FLAG` in Makefile controls optimization level
-* If defined, macro `REMOVE_EXP_POS` removes the plus sign after 'E' in floating point number's scientific notation (`EXP_POS_FLAG` in Makefile)
+* Macro `REMOVE_EXP_POS` removes the plus sign after 'E' in floating point number's scientific notation (`EXP_POS_FLAG` in Makefile)
+* Macro `CUSTOM_PTR` uses the self-implemented smart pointer (`PTR_FLAG` in Makefile)
+	* Use `DEBUG_SPTR` to print debug information like construct / destruct info
 
 ## Limitations
 * `eq` may have different behavior than Clisp (currently same as `eql`)
