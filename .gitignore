@@ -9,6 +9,7 @@ parsetab.py
 a.out
 backend
 test
+tmp
 
 # C++ generated C files
 lex.yy.c
@@ -16,4 +17,7 @@ y.tab.c
 
 # C++ debug core dump files
 vgcore.*
+
+# Temporary files
+tmp.cpp
 

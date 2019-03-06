@@ -25,8 +25,9 @@ class sptr {
   sptr();
   sptr(T*);
   sptr(const sptr<T>&);
+  sptr(sptr<T>&&);
   template <typename S>
-  sptr(const sptr<S>&);
+  explicit sptr(const sptr<S>&);
   sptr(T*, int*);
   ~sptr();
 
@@ -45,10 +46,8 @@ class sptr {
 
   template <class S>
   friend class sptr;
-  template <typename S>
-  friend sptr<T> sptr_cast(const sptr<S>&);
-  template <typename S>
-  friend sptr<T> sptr_cast(sptr<S>&&);
+  template <typename R, typename S>
+  friend sptr<R> sptr_cast(const sptr<S>&);
 };
 
 template <typename T, typename S>

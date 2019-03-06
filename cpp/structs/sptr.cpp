@@ -32,36 +32,57 @@
 #include "sptr.h"
 #include "symbol.h"
 
-#include <iostream>   // 0/0
+#ifdef DEBUG_SPTR
+  #include <iostream>
+#endif
 
 template<typename T>
 sptr<T>::sptr() : ptr(nullptr), use_cnt(nullptr) {
-  std::cout << "C1" << std::endl;
+#ifdef DEBUG_SPTR
+  std::cout << "C1 " << this << std::endl;
+#endif
 }
 
 template<typename T>
 sptr<T>::sptr(T* p) : ptr(p), use_cnt(ptr ? new int(1) : nullptr) {
-  std::cout << "C2" << std::endl;
+#ifdef DEBUG_SPTR
+  std::cout << "C2 " << this << std::endl;
+#endif
 }
 
 template<typename T>
 sptr<T>::sptr(const sptr<T>& sp) : ptr(sp.ptr), use_cnt(sp.use_cnt) {
-  std::cout << "C3" << std::endl;
+#ifdef DEBUG_SPTR
+  std::cout << "C3 " << this << std::endl;
+#endif
   if (ptr)
     (*use_cnt)++;
 }
 
 template<typename T>
+sptr<T>::sptr(sptr<T>&& sp) : ptr(sp.ptr), use_cnt(sp.use_cnt) {
+#ifdef DEBUG_SPTR
+  std::cout << "C4 " << this << std::endl;
+#endif
+  if (ptr)
+    (*use_cnt)++;   // 0/0: may not be necessary
+}
+
+template<typename T>
 template<typename S>
 sptr<T>::sptr(const sptr<S>& sp) : ptr(sp.ptr), use_cnt(sp.use_cnt) {
-  std::cout << "C4" << std::endl;
+#ifdef DEBUG_SPTR
+  std::cout << "C5 " << this << std::endl;
+#endif
   if (ptr)
     (*use_cnt)++;
 }
 
 template<typename T>
 sptr<T>::sptr(T* p, int* u) : ptr(p), use_cnt(u) {
-  std::cout << "C5" << std::endl;
+#ifdef DEBUG_SPTR
+  std::cout << "C6 " << this << std::endl;
+#endif
   if (ptr)
     (*use_cnt)++;
 }
@@ -70,9 +91,13 @@ template <typename T>
 sptr<T>::~sptr() {
   if (ptr) {
     (*use_cnt)--;
-    std::cout << "d " << *use_cnt << std::endl;  // 0/0
+#ifdef DEBUG_SPTR
+    std::cout << "d  " << this << "\t" << *use_cnt << std::endl;  // 0/0
+#endif
     if (!*use_cnt) {
-      std::cout << "~" << std::endl;  // 0/0
+#ifdef DEBUG_SPTR
+      std::cout << "~  " << this << std::endl;  // 0/0
+#endif
       delete ptr;
       delete use_cnt;
     }
@@ -84,6 +109,8 @@ sptr<T>& sptr<T>::operator=(const sptr<T>& rhs) {
   this->~sptr();
   ptr = rhs.ptr;
   use_cnt = rhs.use_cnt;
+  if (ptr)
+    (*use_cnt)++;
   return *this;
 }
 
@@ -110,11 +137,11 @@ bool sptr<T>::operator!() { return !ptr; }
 
 template <typename T, typename S>
 sptr<T> sptr_cast(const sptr<S>& s) {
-  auto _1 = s.get();
-  auto _2 = dynamic_cast<T*>(_1);
-  auto _3 = sptr<T>(_2);
-  return _3;
-  // return sptr<T>(dynamic_cast<T*>(s.get()));
+  T* cast = dynamic_cast<T*>(s.ptr);
+  if (cast)
+    return sptr<T>(cast, s.use_cnt);
+  else
+    return sptr<T>();
 }
 
 // Explicit template instantiation

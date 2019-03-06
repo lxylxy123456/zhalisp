@@ -27,6 +27,9 @@ backend: backend.cpp $(LIBRARY)
 test: test.cpp $(LIBRARY)
 	$(CXX) $(CXXFLAGS) $(LINKFLAGS) -o $@ $^
 
+tmp: tmp.cpp $(LIBRARY)
+	$(CXX) $(CXXFLAGS) $(LINKFLAGS) -o $@ $^
+
 lint: *.h *.cpp structs/*.h structs/*.cpp
 	cpplint $^
 
