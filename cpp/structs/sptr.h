@@ -23,10 +23,14 @@ template <typename T>
 class sptr {
  public:
   sptr();
-  sptr(T* p);
+  sptr(T*);
+  sptr(const sptr<T>&);
   template <typename S>
-  sptr(const sptr<S>& sp);
-  sptr<T> operator=(const sptr<T>& rhs);
+  sptr(const sptr<S>&);
+  sptr(T*, int*);
+  ~sptr();
+
+  sptr<T>& operator=(const sptr<T>&);
   T* operator->();
   const T* operator->() const;
   T* get() const;
@@ -37,6 +41,7 @@ class sptr {
 
  private:
   mutable T* ptr;
+  int* use_cnt;
 
   template <class S>
   friend class sptr;
