@@ -68,7 +68,7 @@ sptr<T>::sptr(sptr<T>&& sp) : ptr(sp.ptr), use_cnt(sp.use_cnt) {
   std::cout << "C4 " << this << std::endl;
 #endif
   if (ptr)
-    (*use_cnt)++;   // 0/0: may not be necessary
+    (*use_cnt)++;
 }
 
 template<typename T>
@@ -95,11 +95,11 @@ sptr<T>::~sptr() {
   if (ptr) {
     (*use_cnt)--;
 #ifdef DEBUG_SPTR
-    std::cout << "d  " << this << "\t" << *use_cnt << std::endl;  // 0/0
+    std::cout << "d  " << this << "\t" << *use_cnt << std::endl;
 #endif
     if (!*use_cnt) {
 #ifdef DEBUG_SPTR
-      std::cout << "~  " << this << std::endl;  // 0/0
+      std::cout << "~  " << this << std::endl;
 #endif
       delete ptr;
       delete use_cnt;
