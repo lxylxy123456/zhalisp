@@ -41,8 +41,10 @@ $
 	* The value can be changed using `SETSTACKLIMIT`
 * `O_FLAG` in Makefile controls optimization level
 * Macro `REMOVE_EXP_POS` removes the plus sign after 'E' in floating point number's scientific notation (`EXP_POS_FLAG` in Makefile)
-* Macro `CUSTOM_PTR` uses the self-implemented smart pointer (`PTR_FLAG` in Makefile)
+* Macro `CUSTOM_PTR` enables trace-based garbage collection (`PTR_FLAG` in Makefile)
 	* Use `DEBUG_SPTR` to print debug information like construct / destruct info
+	* The garbage is only collected after each line of interactive mode / test mode completes
+	* This will cause an nonnegligible overhead on computation time
 
 ## Limitations
 * `eq` may have different behavior than Clisp (currently same as `eql`)

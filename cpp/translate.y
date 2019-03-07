@@ -77,8 +77,9 @@ PTR<List> PTRL(Sexp* exp) {
 SyntaxError::SyntaxError(std::string d): desc(d) {}
 
 int yyerror(const char *msg) {
+	yy_delete_buffer(YY_CURRENT_BUFFER);
 	throw SyntaxError(msg);
-	return printf("%s\n", msg); 
+	// return printf("%s\n", msg);
 }
 
 PTR<List> parse(std::string s) {
