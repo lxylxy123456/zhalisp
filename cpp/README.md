@@ -43,14 +43,17 @@ $
 * Macro `REMOVE_EXP_POS` removes the plus sign after 'E' in floating point number's scientific notation (`EXP_POS_FLAG` in Makefile)
 * Macro `CUSTOM_PTR` enables trace-based garbage collection (`PTR_FLAG` in Makefile)
 	* Use `DEBUG_SPTR` to print debug information like construct / destruct info
-	* The garbage is only collected after each line of interactive mode / test mode completes
-	* This will cause an nonnegligible overhead on computation time
 
 ## Limitations
 * `eq` may have different behavior than Clisp (currently same as `eql`)
 * `typep` not implemented fully
 * `prog` may have incorrect behavior (due to `go` and `return` statements)
-* Memory leak (reason: reference cycles between Env and Func objects)
+* Memory leak
+	* If macro `CUSTOM_PTR` is not enabled, there will be memory leak due to reference cycles between Env and Func objects
+		* The garbage is only collected after each line of interactive mode / test mode completes
+		* This will cause an nonnegligible overhead on computation time
+	* If it is enabled, there may still be memory leak when entering multiple-line input in interactive mode
+		* To fix this problem, the shell will need to predict whether the input is completed
 
 ## References
 * The GNU Multiple Precision Arithmetic Library (GMP)
