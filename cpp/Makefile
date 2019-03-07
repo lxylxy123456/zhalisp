@@ -31,5 +31,5 @@ lint: *.h *.cpp structs/*.h structs/*.cpp
 	cpplint $^
 
 clean:
-	rm -f lex.yy.c y.tab.c a.out backend test structs/*.o *.o vgcore.*
+	rm -f lex.yy.c y.tab.c a.out backend structs/*.o *.o vgcore.*
 

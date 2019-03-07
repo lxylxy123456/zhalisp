@@ -62,101 +62,110 @@ void read_tests(Tests& tests, const std::string& file_name) {
 }
 
 void test(const std::string& file_name) {
-  Tests tests;
-  read_tests(tests, file_name);
-  std::ostringstream sout;
-  ENV env = build_test_env(sout);
+  {
+    Tests tests;
+    read_tests(tests, file_name);
+    std::ostringstream sout;
+    ENV env = build_test_env(sout);
 
-  for (Test& test : tests) {
-    std::string& q = test.first;
-    std::string& a = test.second;
-    if (upper(strip(q)) == "CLEAR-ENV") {
-      env = build_test_env(sout);
-      std::cout << "-> CLEAR-ENV\n=> CLEAR-ENV\n" << std::endl;
-      continue;
-    }
-    PTR<List> aa = parse(a);
-    for (PTR<List> qq = parse(q); !qq->nil(); qq = qq->cdr()) {
-      assert(!aa->nil());
-      PTR<Sexp> aaa = aa->car();
-      aa = aa->cdr();
-      if (strip(aaa->str()) == "ERROR") {
-        bool error_flag = false;
-        try {
-          std::cout << "-> " << qq->car()->str() << std::endl;
-          std::cout << "=> " << evaluate(qq->car(), env)->str() << std::endl;
-        } catch (...) {   // https://stackoverflow.com/a/22268788/
-          error_flag = true;
-          std::cout << "ERROR" << std::endl;
-        }
-        if (!error_flag) {
-          throw std::runtime_error("Test fails: should error");
-        }
-      } else if (strip(aaa->str()) == "ERRORC") {
-        std::cout << "-> " << qq->car()->str() << std::endl;
-        std::cout << "=> ERRORC" << std::endl;
-      } else {
-        sout.str("");
-        std::cout << "-> " << qq->car()->str() << std::endl;
-        PTR<Sexp> qqq = evaluate(qq->car(), env);
-        std::istringstream sin(sout.str());
-        for (std::string ln; std::getline(sin, ln); ) {
-          std::cout << "p> " << ln << std::endl;
-          if (aaa->str() != ln) {
-            throw std::runtime_error("Test fails: wrong print output");
+    for (Test& test : tests) {
+      std::string& q = test.first;
+      std::string& a = test.second;
+      if (upper(strip(q)) == "CLEAR-ENV") {
+        env = build_test_env(sout);
+        std::cout << "-> CLEAR-ENV\n=> CLEAR-ENV\n" << std::endl;
+        continue;
+      }
+      PTR<List> aa = parse(a);
+      for (PTR<List> qq = parse(q); !qq->nil(); qq = qq->cdr()) {
+        assert(!aa->nil());
+        PTR<Sexp> aaa = aa->car();
+        aa = aa->cdr();
+        if (strip(aaa->str()) == "ERROR") {
+          bool error_flag = false;
+          try {
+            std::cout << "-> " << qq->car()->str() << std::endl;
+            std::cout << "=> " << evaluate(qq->car(), env)->str() << std::endl;
+            SPTR_SWEEP(env);
+          } catch (...) {   // https://stackoverflow.com/a/22268788/
+            error_flag = true;
+            std::cout << "ERROR" << std::endl;
           }
-          assert(!aa->nil());
-          aaa = aa->car();
-          aa = aa->cdr();
-        }
-        std::cout << "=> " << qqq->str() << std::endl;
-        if (!match(qqq, aaa)) {
-          std::cout << "!> " << aaa->str() << std::endl;
-          throw std::runtime_error("Test fails: wrong answer");
+          if (!error_flag) {
+            throw std::runtime_error("Test fails: should error");
+          }
+        } else if (strip(aaa->str()) == "ERRORC") {
+          std::cout << "-> " << qq->car()->str() << std::endl;
+          std::cout << "=> ERRORC" << std::endl;
+        } else {
+          sout.str("");
+          std::cout << "-> " << qq->car()->str() << std::endl;
+          PTR<Sexp> qqq = evaluate(qq->car(), env);
+          SPTR_SWEEP(env);
+          std::istringstream sin(sout.str());
+          for (std::string ln; std::getline(sin, ln); ) {
+            std::cout << "p> " << ln << std::endl;
+            if (aaa->str() != ln) {
+              throw std::runtime_error("Test fails: wrong print output");
+            }
+            assert(!aa->nil());
+            aaa = aa->car();
+            aa = aa->cdr();
+          }
+          std::cout << "=> " << qqq->str() << std::endl;
+          if (!match(qqq, aaa)) {
+            std::cout << "!> " << aaa->str() << std::endl;
+            throw std::runtime_error("Test fails: wrong answer");
+          }
         }
       }
+      assert(aa->nil());
+      std::cout << std::endl;
     }
-    assert(aa->nil());
-    std::cout << std::endl;
   }
+  SPTR_SWEEP(ENV{});
 }
 
 void shell() {
-  ENV env = build_test_env(std::cout);
-  while (true) {
-    std::cout << "-> " << std::flush;
-    std::string lns;
-    std::getline(std::cin, lns);
-    if (std::cin.eof()) {
-      std::cout << std::endl;
-      break;
-    }
-    PTR<List> tree;
+  {
+    ENV env = build_test_env(std::cout);
     while (true) {
-      try {
-        tree = parse(lns);
+      std::cout << "-> " << std::flush;
+      std::string lns;
+      std::getline(std::cin, lns);
+      if (std::cin.eof()) {
+        std::cout << std::endl;
         break;
-      } catch (SyntaxError& e) {
-        std::string ln;
-        std::getline(std::cin, ln);
-        lns += "\n" + ln;
       }
-    }
-    if (upper(strip(lns)) == "(EXIT)") {
-      break;
-    } else if (upper(strip(lns)) == "CLEAR-ENV") {
-      env = build_test_env(std::cout);
-      std::cout << "=> CLEAR-ENV" << std::endl;
-      continue;
-    }
-    for (PTR<List> i = tree; !i->nil(); i = i->cdr()) {
-      try {
-        PTR<Sexp> ans = evaluate(i->car(), env);
-        std::cout << "=> " << ans->str() << std::endl;
-      } catch (std::exception& e) {
-        std::cout << "Error: " << e.what() << std::endl;
+      PTR<List> tree;
+      while (true) {
+        try {
+          tree = parse(lns);
+          break;
+        } catch (SyntaxError& e) {
+          std::string ln;
+          std::getline(std::cin, ln);
+          lns += "\n" + ln;
+        }
+      }
+      if (upper(strip(lns)) == "(EXIT)") {
+        break;
+      } else if (upper(strip(lns)) == "CLEAR-ENV") {
+        env = build_test_env(std::cout);
+        std::cout << "=> CLEAR-ENV" << std::endl;
+        continue;
+      }
+      for (PTR<List> i = tree; !i->nil(); i = i->cdr()) {
+        try {
+          PTR<Sexp> ans = evaluate(i->car(), env);
+          SPTR_SWEEP(env);
+          std::cout << "=> " << ans->str() << std::endl;
+        } catch (std::exception& e) {
+          std::cout << "Error: " << e.what() << std::endl;
+        }
       }
     }
   }
+  SPTR_SWEEP(ENV{});
 }
 

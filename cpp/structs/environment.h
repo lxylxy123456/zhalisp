@@ -47,6 +47,12 @@ class Env {
   PTR<Env> outer;     // global's outer = nullptr
   Env* global;        // global's global = global
   std::ostream& os;
+#ifdef CUSTOM_PTR
+  template <class S>
+  friend void sweep_dfs(const sptr<S>&, std::unordered_set<void*>&);
+  template <class S>
+  friend void sptr_sweep(const sptr<S>&);
+#endif
 };
 
 #endif

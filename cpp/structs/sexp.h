@@ -26,9 +26,11 @@
   #include "sptr.h"
   #define PTR sptr
   #define DPC sptr_cast
+  #define SPTR_SWEEP(X) sptr_sweep(X)
 #else
   #define PTR std::shared_ptr
   #define DPC std::dynamic_pointer_cast
+  #define SPTR_SWEEP(X)
 #endif
 
 enum struct Type : int {
@@ -43,7 +45,10 @@ enum struct Type : int {
   boolean,
   list,
   null,
+  funcs,    // not possible return value for type()
   func,
+  efunc,
+  cadrfunc,
 };
 
 class Sexp {

@@ -90,7 +90,7 @@ std::string EFunc::str() const {
 
 const std::string& EFunc::get_name() const { return name; }
 
-Type EFunc::type() const { return Type::func; }
+Type EFunc::type() const { return Type::efunc; }
 
 size_t EFunc::get_lb() const { return lower_bound; }
 
@@ -121,7 +121,7 @@ std::string CadrFunc::str() const {
 
 const std::string& CadrFunc::get_name() const { return name; }
 
-Type CadrFunc::type() const { return Type::func; }
+Type CadrFunc::type() const { return Type::cadrfunc; }
 
 size_t CadrFunc::get_lb() const { return 1; }
 

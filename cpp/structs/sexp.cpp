@@ -28,22 +28,25 @@ Type Sexp::type() const { return Type::sexp; }
 
 bool Sexp::has_type(Type tid) const {
   static const int type_matrix[] = {
-    // fnlbacftinss
-    // uuiotolanuye
-    // nlsoomottmmx
-    // cltlmpaiebbp
-    0b0000000000001,   // sexp
-    0b0000010000011,   // symbol
-    0b0000010000101,   // number
-    0b0000010011101,   // integer
-    0b0000010010101,   // rational
-    0b0000010100101,   // float_
-    0b0000011000101,   // complex
-    0b0000010000001,   // atom
-    0b0000110000001,   // boolean
-    0b0001000000001,   // list
-    0b0011110000001,   // null
-    0b0100010000001,   // func
+    // ceffnlbacftinss
+    // afuuuiotolanuye
+    // dunnlsoomottmmx
+    // fncsltlmpaiebbp
+    0b0000000000000001,   // sexp
+    0b0000000010000011,   // symbol
+    0b0000000010000101,   // number
+    0b0000000010011101,   // integer
+    0b0000000010010101,   // rational
+    0b0000000010100101,   // float_
+    0b0000000011000101,   // complex
+    0b0000000010000001,   // atom
+    0b0000000110000001,   // boolean
+    0b0000001000000001,   // list
+    0b0000011110000001,   // null
+    0b0000100010000001,   // funcs
+    0b0001100010000001,   // func
+    0b0010100010000001,   // efunc
+    0b0100100010000001,   // cadrfunc
   };
   return type_matrix[static_cast<int>(type())] & (1 << static_cast<int>(tid));
 }
@@ -61,7 +64,10 @@ const char* Sexp::strtype() {
     "bool",
     "list",
     "null",
+    "funcs",
     "func",
+    "efunc",
+    "cadrfunc",
   };
   return type_desc[static_cast<int>(type())];
 }

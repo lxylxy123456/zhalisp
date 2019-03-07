@@ -18,6 +18,8 @@
 
 #include "sptr.h"
 
+#include <cassert>
+
 #include "bool.h"
 #include "complex.h"
 #include "environment.h"
@@ -29,7 +31,6 @@
 #include "number.h"
 #include "rational.h"
 #include "sexp.h"
-#include "sptr.h"
 #include "symbol.h"
 
 // Enable sptr:                       #define CUSTOM_PTR
@@ -39,81 +40,61 @@
   #include <iostream>
 #endif
 
+std::unordered_map<void*, int*> sptr_items;
+
+template <typename T>
+int get_dynamic_type(T* p) {
+  static_assert(std::is_base_of<Sexp, T>::value, "");
+  return p ? static_cast<int>(p->type()) : -3;
+}
+
+int get_dynamic_type(Env* p) {
+  return p ? -1 : -3;
+}
+
+int get_dynamic_type(std::vector<sptr<Sexp>>* p) {
+  return p ? -2 : -3;
+}
+
 template<typename T>
-sptr<T>::sptr() : ptr(nullptr), use_cnt(nullptr) {
-#ifdef DEBUG_SPTR
-  std::cout << "C1 " << this << std::endl;
+sptr<T>::sptr() : ptr(nullptr), use_cnt(nullptr), type(-3) {
+#ifdef DEBUG_SPTR_
+  std::cout << "c " << this << std::endl;
 #endif
 }
 
 template<typename T>
-sptr<T>::sptr(T* p) : ptr(p), use_cnt(ptr ? new int(1) : nullptr) {
-#ifdef DEBUG_SPTR
-  std::cout << "C2 " << this << std::endl;
-#endif
-}
+sptr<T>::sptr(T* p) : sptr<T>(p, p ? new int(0) : nullptr, get_dynamic_type(p)) {}
 
 template<typename T>
-sptr<T>::sptr(const sptr<T>& sp) : ptr(sp.ptr), use_cnt(sp.use_cnt) {
-#ifdef DEBUG_SPTR
-  std::cout << "C3 " << this << std::endl;
-#endif
-  if (ptr)
-    (*use_cnt)++;
-}
+sptr<T>::sptr(const sptr<T>& sp) : sptr<T>(sp.ptr, sp.use_cnt, sp.type) {}
 
 template<typename T>
-sptr<T>::sptr(sptr<T>&& sp) : ptr(sp.ptr), use_cnt(sp.use_cnt) {
-#ifdef DEBUG_SPTR
-  std::cout << "C4 " << this << std::endl;
-#endif
-  if (ptr)
-    (*use_cnt)++;
-}
+sptr<T>::sptr(sptr<T>&& sp) : sptr<T>(sp.ptr, sp.use_cnt, sp.type) {}
 
 template<typename T>
 template<typename S>
-sptr<T>::sptr(const sptr<S>& sp) : ptr(sp.ptr), use_cnt(sp.use_cnt) {
-#ifdef DEBUG_SPTR
-  std::cout << "C5 " << this << std::endl;
-#endif
-  if (ptr)
-    (*use_cnt)++;
-}
+sptr<T>::sptr(const sptr<S>& sp) : sptr<T>(sp.ptr, sp.use_cnt, sp.type) {}
 
 template<typename T>
-sptr<T>::sptr(T* p, int* u) : ptr(p), use_cnt(u) {
-#ifdef DEBUG_SPTR
-  std::cout << "C6 " << this << std::endl;
+sptr<T>::sptr(T* p, int* u, int t) : ptr(p), use_cnt(u), type(t) {
+#ifdef DEBUG_SPTR_
+  std::cout << "C " << this << std::endl;
 #endif
-  if (ptr)
-    (*use_cnt)++;
+  this->inc_use();
 }
 
 template <typename T>
 sptr<T>::~sptr() {
-  if (ptr) {
-    (*use_cnt)--;
-#ifdef DEBUG_SPTR
-    std::cout << "d  " << this << "\t" << *use_cnt << std::endl;
-#endif
-    if (!*use_cnt) {
-#ifdef DEBUG_SPTR
-      std::cout << "~  " << this << std::endl;
-#endif
-      delete ptr;
-      delete use_cnt;
-    }
-  }
+  this->dec_use();
 }
 
 template<typename T>
 sptr<T>& sptr<T>::operator=(const sptr<T>& rhs) {
-  this->~sptr();
+  this->dec_use();
   ptr = rhs.ptr;
   use_cnt = rhs.use_cnt;
-  if (ptr)
-    (*use_cnt)++;
+  this->inc_use();
   return *this;
 }
 
@@ -138,13 +119,99 @@ sptr<T>::operator bool() const { return ptr; }
 template<typename T>
 bool sptr<T>::operator!() { return !ptr; }
 
+template<typename T>
+inline void sptr<T>::dec_use() {
+  if (ptr) {
+    (*use_cnt)--;
+#ifdef DEBUG_SPTR
+    std::cout << "D " << this << "\t" << *use_cnt << (*use_cnt ? "\t" : "\t~")
+              << std::endl;
+#endif
+    if (!*use_cnt) {
+      if (std::is_convertible<T, Env>::value) {
+        sptr_items.erase(ptr);
+      }
+      delete ptr;
+      delete use_cnt;
+    }
+  }
+}
+
+template<typename T>
+inline void sptr<T>::inc_use() {
+  if (ptr) {
+    (*use_cnt)++;
+    if (std::is_convertible<T, Env>::value) {
+      auto found = sptr_items.find(ptr);
+      if (found != sptr_items.end())
+        assert(found->second == use_cnt);
+      else
+        sptr_items[ptr] = use_cnt;
+    }
+  }
+}
+
 template <typename T, typename S>
 sptr<T> sptr_cast(const sptr<S>& s) {
   T* cast = dynamic_cast<T*>(s.ptr);
   if (cast)
-    return sptr<T>(cast, s.use_cnt);
+    return sptr<T>(cast, s.use_cnt, s.type);
   else
     return sptr<T>();
+}
+
+template <typename T>
+void sweep_dfs(const sptr<T>& elem, std::unordered_set<void*>& visited) {
+  if (visited.find(elem.ptr) != visited.end())
+    return;
+  switch (elem.type) {
+    case -1: {                // Env
+      visited.insert(elem.ptr);
+      Env& e = *((Env*) elem.ptr);
+      for (auto i = e.variable.begin(); i != e.variable.end(); i++)
+        sweep_dfs(i->second, visited);
+      for (auto i = e.function.begin(); i != e.function.end(); i++)
+        sweep_dfs(i->second, visited);
+      sweep_dfs(e.outer, visited);
+      break;
+    }
+    case static_cast<int>(Type::func): {
+      visited.insert(elem.ptr);
+      Func& e = *((Func*) elem.ptr);
+      sweep_dfs(e.f_stmt, visited);
+      sweep_dfs(e.f_env, visited);
+      break;
+    }
+    case static_cast<int>(Type::list): {
+      visited.insert(elem.ptr);
+      List& e = *((List*) elem.ptr);
+      sweep_dfs(e.l_car, visited);
+      sweep_dfs(e.l_cdr, visited);
+      break;
+    }
+    default:
+      break;
+  }
+}
+
+template <typename T>
+void sptr_sweep(const sptr<T>& root) {
+  std::unordered_set<void*> visited;
+  if (root.ptr)
+    sweep_dfs(root, visited);
+  std::unordered_set<void*> remove_list;
+  for (auto i = sptr_items.begin(); i != sptr_items.end(); i++)
+    if (visited.find(i->first) == visited.end())
+      remove_list.insert(i->first);
+  for (auto i : remove_list) {
+    auto found = sptr_items.find(i);
+    if (found != sptr_items.end()) {
+      sptr<Env> e = sptr<Env>((Env*) i, found->second, -1);
+      e->outer = nullptr;
+      e->variable.clear();
+      e->function.clear();
+    }
+  }
 }
 
 // Explicit template instantiation
@@ -188,4 +255,6 @@ INSTANTIATE(List, Nil);
 INSTANTIATE(Funcs, Func);
 INSTANTIATE(Funcs, EFunc);
 INSTANTIATE(Funcs, CadrFunc);
+
+template void sptr_sweep<Env>(const sptr<Env>& root);
 

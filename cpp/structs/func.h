@@ -64,6 +64,10 @@ class Func : public Funcs {
   const std::vector<PTR<Symbol>> f_args;
   const PTR<List> f_stmt;
   const ENV f_env;
+#ifdef CUSTOM_PTR
+  template <class S>
+  friend void sweep_dfs(const sptr<S>&, std::unordered_set<void*>&);
+#endif
 };
 
 class EFunc : public Funcs {

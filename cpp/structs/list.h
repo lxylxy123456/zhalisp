@@ -39,6 +39,10 @@ class List: public Sexp {
  private:
   PTR<Sexp> l_car;
   PTR<Sexp> l_cdr;
+#ifdef CUSTOM_PTR
+  template <class S>
+  friend void sweep_dfs(const sptr<S>&, std::unordered_set<void*>&);
+#endif
 };
 
 #endif

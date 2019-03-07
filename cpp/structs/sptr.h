@@ -19,6 +19,9 @@
 #ifndef SPTR_H
 #define SPTR_H
 
+#include <unordered_map>
+#include <unordered_set>
+
 template <typename T>
 class sptr {
  public:
@@ -28,7 +31,7 @@ class sptr {
   sptr(sptr<T>&&);
   template <typename S>
   sptr(const sptr<S>&);
-  sptr(T*, int*);
+  sptr(T*, int*, int);
   ~sptr();
 
   sptr<T>& operator=(const sptr<T>&);
@@ -41,13 +44,21 @@ class sptr {
   bool operator!();
 
  private:
+  inline void dec_use();
+  inline void inc_use();
+
   mutable T* ptr;
   int* use_cnt;
+  const int type;   // Sexp follow Type; Env = -1; other < -1
 
   template <class S>
   friend class sptr;
   template <typename R, typename S>
   friend sptr<R> sptr_cast(const sptr<S>&);
+  template <class S>
+  friend void sweep_dfs(const sptr<S>&, std::unordered_set<void*>&);
+  template <class S>
+  friend void sptr_sweep(const sptr<S>&);
 };
 
 template <typename T, typename S>
@@ -57,4 +68,8 @@ sptr<T> sptr_cast(const sptr<S>& s);
 template <typename T, typename S>
 sptr<T> sptr_cast(sptr<S>&& s) { return sptr<T>(dynamic_cast<T*>(s.get())); }
 */
+
+template <typename T>
+void sptr_sweep(const sptr<T>&);
+
 #endif
