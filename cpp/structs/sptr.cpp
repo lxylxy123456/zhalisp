@@ -16,6 +16,8 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
+#ifdef CUSTOM_PTR
+
 #include "sptr.h"
 
 #include <cassert>
@@ -64,7 +66,8 @@ sptr<T>::sptr() : ptr(nullptr), use_cnt(nullptr), type(-3) {
 }
 
 template<typename T>
-sptr<T>::sptr(T* p) : sptr<T>(p, p ? new int(0) : nullptr, get_dynamic_type(p)) {}
+sptr<T>::sptr(T* p) : sptr<T>(p, p ? new int(0) : nullptr,
+                              get_dynamic_type(p)) {}
 
 template<typename T>
 sptr<T>::sptr(const sptr<T>& sp) : sptr<T>(sp.ptr, sp.use_cnt, sp.type) {}
@@ -167,7 +170,7 @@ void sweep_dfs(const sptr<T>& elem, std::unordered_set<void*>& visited) {
   switch (elem.type) {
     case -1: {                // Env
       visited.insert(elem.ptr);
-      Env& e = *((Env*) elem.ptr);
+      Env& e = *reinterpret_cast<Env*>(elem.ptr);
       for (auto i = e.variable.begin(); i != e.variable.end(); i++)
         sweep_dfs(i->second, visited);
       for (auto i = e.function.begin(); i != e.function.end(); i++)
@@ -177,14 +180,14 @@ void sweep_dfs(const sptr<T>& elem, std::unordered_set<void*>& visited) {
     }
     case static_cast<int>(Type::func): {
       visited.insert(elem.ptr);
-      Func& e = *((Func*) elem.ptr);
+      Func& e = *reinterpret_cast<Func*>(elem.ptr);
       sweep_dfs(e.f_stmt, visited);
       sweep_dfs(e.f_env, visited);
       break;
     }
     case static_cast<int>(Type::list): {
       visited.insert(elem.ptr);
-      List& e = *((List*) elem.ptr);
+      List& e = *reinterpret_cast<List*>(elem.ptr);
       sweep_dfs(e.l_car, visited);
       sweep_dfs(e.l_cdr, visited);
       break;
@@ -206,7 +209,7 @@ void sptr_sweep(const sptr<T>& root) {
   for (auto i : remove_list) {
     auto found = sptr_items.find(i);
     if (found != sptr_items.end()) {
-      sptr<Env> e = sptr<Env>((Env*) i, found->second, -1);
+      sptr<Env> e = sptr<Env>(reinterpret_cast<Env*>(i), found->second, -1);
       e->outer = nullptr;
       e->variable.clear();
       e->function.clear();
@@ -258,3 +261,4 @@ INSTANTIATE(Funcs, CadrFunc);
 
 template void sptr_sweep<Env>(const sptr<Env>& root);
 
+#endif  // CUSTOM_PTR
