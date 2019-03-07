@@ -17,7 +17,6 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // 
 #include "structs.h"
-#define NEWTYP(TYPE, ARG) static_cast<PTR<TYPE>>(new TYPE(ARG))
 %}
 
 id	[A-Za-z0-9\+\-\*\/\_\?\>\<\=\!\.]+

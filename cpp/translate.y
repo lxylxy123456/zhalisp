@@ -46,7 +46,8 @@ sexp :'(' exps ')'			{ $$ = $2; }
 	 |NUM					{ $$ = $1; }
 	 |ID					{ $$ = $1; }
 	 |'#' ID '(' NUM NUM ')'{ $$ = reduced_complex_ns(DCN($4), PTRN(DCN($5))); 
-									assert(DCS($2)->get_value() == "C");  }
+									assert(DCS($2)->get_value() == "C");
+									delete $2; }
 	 ;
 exps :sexp exps				{ $$ = NEWLST(PTRS($1), PTRS($2)); }
 	 |sexp DOT sexp			{ $$ = NEWLST(PTRS($1), PTRS($3)); }
