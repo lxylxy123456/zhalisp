@@ -17,7 +17,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // 
 #include <ctype.h>
-#include <stdio.h>
+#include <iostream>
 
 #include "translate.h"
 
@@ -37,8 +37,8 @@
 
 %%
 
-sexps:sexp sexps			{ $$ = NEWLST(PTRS($1), PTRS($2)); }
-	 |						{ $$ = Nil::lisp_nil.get(); }
+sexps: sexps sexp			{ yy_yield_sexp(PTRS($2)); }
+	 |
 	 ;
 sexp :'(' exps ')'			{ $$ = $2; }
 	 |'\'' sexp				{ $$ = NEWLST2(Symbol::lisp_quote, PTRS($2)); }
@@ -79,14 +79,32 @@ SyntaxError::SyntaxError(std::string d): desc(d) {}
 int yyerror(const char *msg) {
 	yy_delete_buffer(YY_CURRENT_BUFFER);
 	throw SyntaxError(msg);
-	// return printf("%s\n", msg);
 }
 
-PTR<List> parse(std::string s) {
+void (*yy_yield_sexp) (PTR<Sexp>) = nullptr;
+
+void parse(void (*f)(PTR<Sexp>)) {
+	yy_yield_sexp = f;
+	assert(!yyparse());
+	yy_yield_sexp = nullptr;
+}
+
+std::vector<PTR<Sexp>>* sexps = nullptr;
+
+void constructor(PTR<Sexp> s) {
+	sexps->push_back(s);
+}
+
+std::vector<PTR<Sexp>>* parse(std::string s) {
+	yy_yield_sexp = constructor;
+	sexps = new std::vector<PTR<Sexp>>;
 	yy_scan_string(s.c_str());
 	assert(!yyparse());
 	// https://stackoverflow.com/a/9920524
 	yy_delete_buffer(YY_CURRENT_BUFFER);
-	return PTRL(yyval);
+	yy_yield_sexp = nullptr;
+	std::vector<PTR<Sexp>>* ans = sexps;
+	sexps = nullptr;
+	return ans;
 }
 

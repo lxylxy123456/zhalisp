@@ -97,6 +97,7 @@ sptr<T>& sptr<T>::operator=(const sptr<T>& rhs) {
   this->dec_use();
   ptr = rhs.ptr;
   use_cnt = rhs.use_cnt;
+  type = rhs.type;
   this->inc_use();
   return *this;
 }

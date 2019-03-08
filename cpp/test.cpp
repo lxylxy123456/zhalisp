@@ -76,16 +76,16 @@ void test(const std::string& file_name) {
         std::cout << "-> CLEAR-ENV\n=> CLEAR-ENV\n" << std::endl;
         continue;
       }
-      PTR<List> aa = parse(a);
-      for (PTR<List> qq = parse(q); !qq->nil(); qq = qq->cdr()) {
-        assert(!aa->nil());
-        PTR<Sexp> aaa = aa->car();
-        aa = aa->cdr();
+      std::shared_ptr<std::vector<PTR<Sexp>>> qp(parse(q)), ap(parse(a));
+      auto aa = ap->begin();
+      for (auto& qq : *qp) {
+        assert(aa != ap->end());
+        PTR<Sexp> aaa = *(aa++);
         if (strip(aaa->str()) == "ERROR") {
           bool error_flag = false;
           try {
-            std::cout << "-> " << qq->car()->str() << std::endl;
-            std::cout << "=> " << evaluate(qq->car(), env)->str() << std::endl;
+            std::cout << "-> " << qq->str() << std::endl;
+            std::cout << "=> " << evaluate(qq, env)->str() << std::endl;
             SPTR_SWEEP(env);
           } catch (...) {   // https://stackoverflow.com/a/22268788/
             error_flag = true;
@@ -95,12 +95,12 @@ void test(const std::string& file_name) {
             throw std::runtime_error("Test fails: should error");
           }
         } else if (strip(aaa->str()) == "ERRORC") {
-          std::cout << "-> " << qq->car()->str() << std::endl;
+          std::cout << "-> " << qq->str() << std::endl;
           std::cout << "=> ERRORC" << std::endl;
         } else {
           sout.str("");
-          std::cout << "-> " << qq->car()->str() << std::endl;
-          PTR<Sexp> qqq = evaluate(qq->car(), env);
+          std::cout << "-> " << qq->str() << std::endl;
+          PTR<Sexp> qqq = evaluate(qq, env);
           SPTR_SWEEP(env);
           std::istringstream sin(sout.str());
           for (std::string ln; std::getline(sin, ln); ) {
@@ -108,9 +108,8 @@ void test(const std::string& file_name) {
             if (aaa->str() != ln) {
               throw std::runtime_error("Test fails: wrong print output");
             }
-            assert(!aa->nil());
-            aaa = aa->car();
-            aa = aa->cdr();
+            assert(aa != ap->end());
+            aaa = *(aa++);
           }
           std::cout << "=> " << qqq->str() << std::endl;
           if (!match(qqq, aaa)) {
@@ -119,52 +118,43 @@ void test(const std::string& file_name) {
           }
         }
       }
-      assert(aa->nil());
+      assert(aa == ap->end());
       std::cout << std::endl;
     }
   }
   SPTR_SWEEP(ENV{});
 }
 
-void shell() {
-  {
-    ENV env = build_test_env(std::cout);
-    while (true) {
-      std::cout << "-> " << std::flush;
-      std::string lns;
-      std::getline(std::cin, lns);
-      if (std::cin.eof()) {
-        std::cout << std::endl;
-        break;
-      }
-      PTR<List> tree;
-      while (true) {
-        try {
-          tree = parse(lns);
-          break;
-        } catch (SyntaxError& e) {
-          std::string ln;
-          std::getline(std::cin, ln);
-          lns += "\n" + ln;
-        }
-      }
-      if (upper(strip(lns)) == "(EXIT)") {
-        break;
-      } else if (upper(strip(lns)) == "CLEAR-ENV") {
-        env = build_test_env(std::cout);
-        std::cout << "=> CLEAR-ENV" << std::endl;
-        continue;
-      }
-      for (PTR<List> i = tree; !i->nil(); i = i->cdr()) {
-        try {
-          PTR<Sexp> ans = evaluate(i->car(), env);
-          SPTR_SWEEP(env);
-          std::cout << "=> " << ans->str() << std::endl;
-        } catch (std::exception& e) {
-          std::cout << "Error: " << e.what() << std::endl;
-        }
-      }
+ENV shell_env = nullptr;
+
+class sig_exit {};
+
+void shell_evaluate(PTR<Sexp> s) {
+  if (s->str() == "(EXIT)") {
+    throw sig_exit();
+  } else if (s->str() == "CLEAR-ENV") {
+    shell_env = build_test_env(std::cout);
+    std::cout << "=> CLEAR-ENV\n-> ";
+    return;
+  } else {
+    try {
+      PTR<Sexp> ans = evaluate(s, shell_env);
+      std::cout << "=> " << ans->str() << "\n-> ";
+    } catch (std::exception& e) {
+      std::cout << "Error: " << e.what() << "\n-> ";
     }
+  }
+  SPTR_SWEEP(shell_env);
+}
+
+void shell() {
+  shell_env = build_test_env(std::cout);
+  std::cout << "-> ";
+  try {
+    parse(shell_evaluate);
+    std::cout << std::endl;
+  } catch (sig_exit& e) {
+    // no action
   }
   SPTR_SWEEP(ENV{});
 }

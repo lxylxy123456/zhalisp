@@ -27,6 +27,8 @@ class SyntaxError: public std::exception {
   std::string desc;
 };
 
-PTR<List> parse(std::string s);
+void parse(void (*)(PTR<Sexp>));
+
+std::vector<PTR<Sexp>>* parse(std::string);
 
 #endif

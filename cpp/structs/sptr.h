@@ -49,7 +49,7 @@ class sptr {
 
   mutable T* ptr;
   int* use_cnt;
-  const int type;   // Sexp follow Type; Env = -1; other < -1
+  int type;   // Sexp follow Type; Env = -1; other < -1
 
   template <class S>
   friend class sptr;
