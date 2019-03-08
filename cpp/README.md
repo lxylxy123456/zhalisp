@@ -50,10 +50,9 @@ $
 * `prog` may have incorrect behavior (due to `go` and `return` statements)
 * Memory leak
 	* If macro `CUSTOM_PTR` is not enabled, there will be memory leak due to reference cycles between Env and Func objects
+	* If it is enabled
 		* The garbage is only collected after each line of interactive mode / test mode completes
 		* This will cause an nonnegligible overhead on computation time
-	* If it is enabled, there may still be memory leak when entering multiple-line input in interactive mode
-		* To fix this problem, the shell will need to predict whether the input is completed
 
 ## References
 * The GNU Multiple Precision Arithmetic Library (GMP)
