@@ -70,3 +70,11 @@ $
 	* indirectly lost: 91,876 bytes in 2,782 blocks
 * About 2800 lines of code
 
+## Insights updated
+* Major development time: 28 days
+* Time to compile (O3 optimization, at git [3925b1](https://github.com/lxylxy123456/zhalisp/commit/3925b1b6062bb5685bdf7765211b95d931efab15)): 20.559s
+* Time to run all tests (test data at git 257f6b3): 0.145s
+	* if `LIMIT_STACK` is turned off: 0.032s
+* No memory leak after running all tests (test data at git 257f6b3)
+* About 3800 lines of code
+
