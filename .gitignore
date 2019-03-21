@@ -6,7 +6,7 @@ parsetab.py
 
 # C++ executable
 *.o
-a.out
+*.out
 backend
 test
 tmp
