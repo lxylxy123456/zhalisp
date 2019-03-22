@@ -53,6 +53,8 @@ $
 	* If it is enabled
 		* The garbage is only collected after each line of interactive mode / test mode completes
 		* This will cause an nonnegligible overhead on computation time
+* The scope for `eval` is incorrect.
+	* e.g. `(setq a 0) (let ((a 1)) (eval 'a))` should give 0, but gives 1. 
 
 ## References
 * The GNU Multiple Precision Arithmetic Library (GMP)
