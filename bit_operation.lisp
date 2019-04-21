@@ -52,3 +52,16 @@
  )
 )
 
+(defun multiply (a b)
+ (cond
+  ((= a 0) 0)
+  ((= b 0) 0)
+  ((= a 1) b)
+  ((= b 1) a)
+  ((= a -1) (neg b))
+  ((= b -1) (neg a))
+  ((zerop (& a 1)) (<< (multiply (>> a 1) b) 1))
+  (t               (plus (<< (multiply (>> a 1) b) 1) b))
+ )
+)
+
