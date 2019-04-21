@@ -37,6 +37,12 @@ class Integer: public Number {
   virtual PTR<Number> operator-(const Number&) const;
   virtual PTR<Number> operator*(const Number&) const;
   virtual PTR<Number> operator/(const Number&) const;
+  virtual PTR<Number> operator<<(const Number&) const;
+  virtual PTR<Number> operator>>(const Number&) const;
+  virtual PTR<Number> operator&(const Number&) const;
+  virtual PTR<Number> operator|(const Number&) const;
+  virtual PTR<Number> operator^(const Number&) const;
+  virtual PTR<Number> operator~() const;
   virtual bool operator==(const Number&) const;
   virtual bool operator<(const Number&) const;
   virtual bool operator<=(const Number&) const;

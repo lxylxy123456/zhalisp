@@ -114,6 +114,30 @@ PTR<Number> Integer::operator/(const Number& rhs) const {
   }
 }
 
+PTR<Number> Integer::operator<<(const Number& rhs) const {
+  return PTRNI(Integer(value.get_si() << DCCI(rhs).value.get_si()));
+}
+
+PTR<Number> Integer::operator>>(const Number& rhs) const {
+  return PTRNI(Integer(value.get_si() >> DCCI(rhs).value.get_si()));
+}
+
+PTR<Number> Integer::operator&(const Number& rhs) const {
+  return PTRNI(Integer(value.get_si() & DCCI(rhs).value.get_si()));
+}
+
+PTR<Number> Integer::operator|(const Number& rhs) const {
+  return PTRNI(Integer(value.get_si() | DCCI(rhs).value.get_si()));
+}
+
+PTR<Number> Integer::operator^(const Number& rhs) const {
+  return PTRNI(Integer(value.get_si() ^ DCCI(rhs).value.get_si()));
+}
+
+PTR<Number> Integer::operator~() const {
+  return PTRNI(Integer(~value.get_si()));
+}
+
 bool Integer::operator==(const Number& rhs) const {
   return rhs.type() == Type::integer && value == DCCI(rhs).value;
 }

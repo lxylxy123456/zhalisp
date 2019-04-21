@@ -175,17 +175,35 @@ PTR<Sexp> minus(const std::vector<PTR<Sexp>>& args, ENV env) {
   return ans;
 }
 
-PTR<Sexp> shl(const std::vector<PTR<Sexp>>& args, ENV env) {
-  ARGS_SIZE_LB(1)
-  if (args.size() == 1)
-    return -(*FDPCN(args[0]));
-  PTR<Number> ans = FDPCN(args[0]);
-  for (auto i = args.begin() + 1; i != args.end(); i++) {
-    ans = (*ans) - (*FDPCN(*i));
-  }
-  return ans;
+PTR<Sexp> shr(const std::vector<PTR<Sexp>>& args, ENV env) {
+  ARGS_SIZE_EQ(2)
+  return *FDPCI(args[0]) >> *FDPCI(args[1]);
 }
 
+PTR<Sexp> shl(const std::vector<PTR<Sexp>>& args, ENV env) {
+  ARGS_SIZE_EQ(2)
+  return *FDPCI(args[0]) << *FDPCI(args[1]);
+}
+
+PTR<Sexp> band(const std::vector<PTR<Sexp>>& args, ENV env) {
+  ARGS_SIZE_EQ(2)
+  return *FDPCI(args[0]) & *FDPCI(args[1]);
+}
+
+PTR<Sexp> bor(const std::vector<PTR<Sexp>>& args, ENV env) {
+  ARGS_SIZE_EQ(2)
+  return *FDPCI(args[0]) | *FDPCI(args[1]);
+}
+
+PTR<Sexp> bxor(const std::vector<PTR<Sexp>>& args, ENV env) {
+  ARGS_SIZE_EQ(2)
+  return *FDPCI(args[0]) ^ *FDPCI(args[1]);
+}
+
+PTR<Sexp> bnot(const std::vector<PTR<Sexp>>& args, ENV env) {
+  ARGS_SIZE_EQ(1)
+  return ~(*FDPCI(args[0]));
+}
 
 PTR<Sexp> mul(const std::vector<PTR<Sexp>>& args, ENV env) {
   PTR<Number> ans = Integer::lisp_1;
@@ -971,6 +989,12 @@ std::unordered_map<std::string, PTR<EFunc>> fmap = {
   REGISTER_EFUNC("<=", le, nullptr, 2, 2)
   REGISTER_EFUNC(">", gt, nullptr, 2, 2)
   REGISTER_EFUNC(">=", ge, nullptr, 2, 2)
+  REGISTER_EFUNC(">>", shr, nullptr, 2, 2)
+  REGISTER_EFUNC("<<", shl, nullptr, 2, 2)
+  REGISTER_EFUNC("&", band, nullptr, 2, 2)
+  REGISTER_EFUNC("|", bor, nullptr, 2, 2)
+  REGISTER_EFUNC("^", bxor, nullptr, 2, 2)
+  REGISTER_EFUNC("~", bnot, nullptr, 1, 1)
   REGISTER_EFUNC("SQRT", sqrt_, nullptr, 1, 1)
   REGISTER_EFUNC("ATOM", atom, nullptr, 1, 1)
   REGISTER_EFUNC("LISTP", listp, nullptr, 1, 1)
