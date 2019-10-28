@@ -115,27 +115,39 @@ PTR<Number> Integer::operator/(const Number& rhs) const {
 }
 
 PTR<Number> Integer::operator<<(const Number& rhs) const {
-  return PTRNI(Integer(value.get_si() << DCCI(rhs).value.get_si()));
+  mpz_t tmp;
+  mpz_mul_2exp(tmp, value.get_mpz_t(), DCCI(rhs).value.get_ui());
+  return PTRNI(Integer(mpz_class(tmp)));
 }
 
 PTR<Number> Integer::operator>>(const Number& rhs) const {
-  return PTRNI(Integer(value.get_si() >> DCCI(rhs).value.get_si()));
+  mpz_t tmp;
+  mpz_fdiv_q_2exp(tmp, value.get_mpz_t(), DCCI(rhs).value.get_ui());
+  return PTRNI(Integer(mpz_class(tmp)));
 }
 
 PTR<Number> Integer::operator&(const Number& rhs) const {
-  return PTRNI(Integer(value.get_si() & DCCI(rhs).value.get_si()));
+  mpz_t tmp;
+  mpz_and(tmp, value.get_mpz_t(), DCCI(rhs).value.get_mpz_t());
+  return PTRNI(Integer(mpz_class(tmp)));
 }
 
 PTR<Number> Integer::operator|(const Number& rhs) const {
-  return PTRNI(Integer(value.get_si() | DCCI(rhs).value.get_si()));
+  mpz_t tmp;
+  mpz_ior(tmp, value.get_mpz_t(), DCCI(rhs).value.get_mpz_t());
+  return PTRNI(Integer(mpz_class(tmp)));
 }
 
 PTR<Number> Integer::operator^(const Number& rhs) const {
-  return PTRNI(Integer(value.get_si() ^ DCCI(rhs).value.get_si()));
+  mpz_t tmp;
+  mpz_xor(tmp, value.get_mpz_t(), DCCI(rhs).value.get_mpz_t());
+  return PTRNI(Integer(mpz_class(tmp)));
 }
 
 PTR<Number> Integer::operator~() const {
-  return PTRNI(Integer(~value.get_si()));
+  mpz_t tmp;
+  mpz_com(tmp, value.get_mpz_t());
+  return PTRNI(Integer(mpz_class(tmp)));
 }
 
 bool Integer::operator==(const Number& rhs) const {
