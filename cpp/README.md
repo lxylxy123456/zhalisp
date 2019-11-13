@@ -1,6 +1,20 @@
 # zhalisp - C++ implementation
 This directory contains a C++ implementation of zhalisp
 
+## Compilation
+* Use `make` to generate the simplest version. 
+* Use `make ALL=1 O=3` to enable all features (explained below) and
+use highest optimization.
+
+### Compile time arguments and macros
+* Adding `TR=1` in `make` enables macro `TAIL_RECU`, which enables tail recursion optimization.
+* Adding `LS=1` in `make` enables macro `LIMIT_STACK`, which enables and sets default stack limit.
+	* The value can be changed using function `SETSTACKLIMIT`.
+* Adding `O=1`, `O=2`, or `O=3` in `make` controls optimization level. 
+* Adding `EP=1` in `make` enables macro `REMOVE_EXP_POS`, which removes the plus sign after 'E' in floating point number's scientific notation.
+* Adding `PTR=1` in `make` enables macro `CUSTOM_PTR` enables trace-based garbage collection.
+	* Use `DEBUG_SPTR` to print debug information like construct / destruct info (need to change code).
+
 ## Usage
 * Execute `backend` with no arguments will result in shell mode. Type an s-expression and press Enter. 
 * Execute `backend` with test file names (ends with `.test`) as arguments will perform tests with the test files. `-` (meaning stdin) will open shell mode. 
@@ -34,15 +48,6 @@ $
 	* `PTR<Sexp> evaluate(PTR<Sexp>, ENV)` evaluates any s-expression
 * `test.cpp`: function to run test cases / make shell interactions
 * `backend.cpp`: file containing the `main` function
-
-## Compile time arguments and macros
-* Macro `TAIL_RECU` enables tail recursion optimization (`TR_FLAG` in Makefile)
-* Macro `LIMIT_STACK` enables and sets default stack limit (`LS_FLAG` in Makefile)
-	* The value can be changed using `SETSTACKLIMIT`
-* `O_FLAG` in Makefile controls optimization level
-* Macro `REMOVE_EXP_POS` removes the plus sign after 'E' in floating point number's scientific notation (`EXP_POS_FLAG` in Makefile)
-* Macro `CUSTOM_PTR` enables trace-based garbage collection (`PTR_FLAG` in Makefile)
-	* Use `DEBUG_SPTR` to print debug information like construct / destruct info
 
 ## Limitations
 * `eq` may have different behavior than Clisp (currently same as `eql`)
