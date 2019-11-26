@@ -43,10 +43,10 @@ translate.o: lex.l translate.y
 	$(CXX) $(CXXFLAGS) y.tab.c -g -c -o $@ -Wno-unused-function
 
 backend: backend.cpp $(LIBRARY)
-	$(CXX) $(CXXFLAGS) $(LINKFLAGS) -o $@ $^
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LINKFLAGS)
 
 tmp: tmp.cpp $(LIBRARY)
-	$(CXX) $(CXXFLAGS) $(LINKFLAGS) -o $@ $^
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LINKFLAGS)
 
 lint: *.h *.cpp structs/*.h structs/*.cpp
 	cpplint $^
