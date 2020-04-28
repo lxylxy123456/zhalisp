@@ -43,6 +43,7 @@
 |`MAPC`		|`mapc`		|`(MAPC #'+ '(1 2) '(10 20))`		|`(1 2)`					|						|
 |`MAPLIST`	|`maplist`	|`(MAPLIST #'cons '(2 3) '(20 30))` |`(((2 3) 20 30) ((3) 30))`	|						|
 |`APPEND`	|`append`	|`(APPEND '(1 2) '(3 4) '(5 6))`	|`(1 2 3 4 5 6)`			|						|
+|`REDUCE`	|`reduce`	|`(REDUCE #'- '(1 2 3 4))`			|`-8`						|						|
 |`DEFUN`	|`defun`	|`(DEFUN F (X) (* X X))`			|`F`						| Functions				|
 |`LAMBDA`	|`lambda_`	|`((LAMBDA (X) (* X X X)) 10)`		|`1000`						|						|
 |`APPLY`	|`apply`	|`(APPLY #'+ '(1 2 3))`				|`6`						|						|

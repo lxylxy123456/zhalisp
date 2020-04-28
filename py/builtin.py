@@ -443,6 +443,17 @@ def maplist(exps, env) :
 		params = list(map(lambda x: x.cdr, params))
 	return build_list(answer)
 
+@lisp_builtin('REDUCE')
+def reduce(exps, env) :
+	"(REDUCE #'- '(1 2 3 4)) -> -8"
+	func, lst = eval_params(exps, env)
+	if lst.nil():
+		return call_func(func, build_list(), env)
+	ans = lst.car
+	for i in lst.cdr :
+		ans = call_func(func, build_list([ans, i]), env)
+	return ans
+
 @lisp_builtin('APPEND')
 def append(exps, env) :
 	"(append '(1 2 3) '(4 5 6) '(7 8 9))"

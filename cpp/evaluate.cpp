@@ -474,6 +474,22 @@ PTR<Sexp> maplist(const std::vector<PTR<Sexp>>& args, ENV env) {
   }
 }
 
+PTR<Sexp> reduce(const std::vector<PTR<Sexp>>& args, ENV env) {
+  ARGS_SIZE_EQ(2)
+  PTR<Funcs> func = sym_to_func(args[0], env);
+  if (!func)
+    throw std::invalid_argument("Not a function");
+  if (args[1]->nil())
+    return func->call(std::vector<PTR<Sexp>>{}, env);
+  PTR<List> lst = FDPCL(args[1]);
+  PTR<Sexp> ans = lst->car();
+  for (PTR<List> i = lst->cdr(); !i->nil(); i = i->cdr()) {
+    std::vector<PTR<Sexp>> param{ans, i->car()};
+    ans = func->call(param, env);
+  }
+  return ans;
+}
+
 PTR<Sexp> append(const std::vector<PTR<Sexp>>& args, ENV env) {
   PTR<Sexp> ans = Nil::lisp_nil;
   PTR<Sexp>* next_ans = &ans;
@@ -981,6 +997,7 @@ std::unordered_map<std::string, PTR<EFunc>> fmap = {
   REGISTER_EFUNC("MAPCAR", mapcar, nullptr, 2)
   REGISTER_EFUNC("MAPC", mapc, nullptr, 2)
   REGISTER_EFUNC("MAPLIST", maplist, nullptr, 2)
+  REGISTER_EFUNC("REDUCE", reduce, nullptr, 2)
   REGISTER_EFUNC("APPEND", append, nullptr)
   REGISTER_EFUNC("APPLY", apply, apply_recu, 2)
   REGISTER_EFUNC("FUNCALL", funcall, funcall_recu, 1)
