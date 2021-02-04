@@ -18,6 +18,8 @@
 
 #include "list.h"
 
+#include <stdexcept>
+
 List::List(const PTR<Sexp>& a, const PTR<Sexp>& d): l_car(a), l_cdr(d) {}
 
 List::~List() { /* std::cout << "~List" << std::endl; */ }

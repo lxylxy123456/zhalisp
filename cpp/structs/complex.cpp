@@ -18,6 +18,7 @@
 
 #include "complex.h"
 
+#include <stdexcept>
 #include "integer.h"
 #include "rational.h"
 #include "float.h"

@@ -18,6 +18,8 @@
 
 #include "nil.h"
 
+#include <stdexcept>
+
 Nil::Nil(): List(nullptr, nullptr) {}
 
 Nil::~Nil() { /* std::cout << "~Nil" << std::endl; */ }

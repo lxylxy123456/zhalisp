@@ -18,6 +18,7 @@
 
 #include <cassert>
 
+#include <stdexcept>
 #include "func.h"
 #include "nil.h"
 

@@ -18,6 +18,8 @@
 
 #include "environment.h"
 
+#include <stdexcept>
+
 Env::Env(std::ostream& o) :
           scope("global"), outer(nullptr), global(this), os(o) {}
 
