@@ -101,7 +101,7 @@ PTR<Number> Integer::operator/(const Number& rhs) const {
     case Type::rational :
       return reduced_rational(value / DCCR(rhs).value);
     case Type::float_ :
-      return PTRNF(value * DCCF(rhs).value);
+      return PTRNF(value / DCCF(rhs).value);
     case Type::complex: {
       const Complex& r = DCCC(rhs);
       PTR<Number> ri = *r.real * *r.imag;
