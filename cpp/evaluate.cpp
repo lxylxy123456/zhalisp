@@ -871,7 +871,7 @@ PTR<Sexp> prog(PTR<List> args, ENV env) {
   if (args->nil())
     throw std::invalid_argument("Too few arguments");
   ENV new_env(new Env{env, "PROG"});
-  for (PTR<List> i = DPCL(args->car()); !i->nil(); i = i->fcdr()) {
+  for (PTR<List> i = FDPCL(args->car()); !i->nil(); i = i->fcdr()) {
     PTR<List> li = DPCL(i->car());
     if (li) {
       assert(li->fcdr()->fcdr()->nil());
