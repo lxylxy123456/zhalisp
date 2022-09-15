@@ -51,7 +51,7 @@ PTR<Integer> FDPCI(PTR<Sexp> p) {
 PTR<List> FDPCL(PTR<Sexp> p) {
   PTR<List>&& ans = DPC<List>(p);
   if (!ans)
-    throw std::invalid_argument("Not an list");
+    throw std::invalid_argument("Not a list");
   return std::move(ans);
 }
 
@@ -829,7 +829,7 @@ PTR<Sexp> do_(PTR<List> args, ENV env) {
     throw std::invalid_argument("Too few arguments");
   ENV new_env(new Env{env, "DO"});
   std::vector<std::pair<PTR<Symbol>, PTR<Sexp>>> val_list;
-  for (PTR<List> i = DPCL(args->car()); !i->nil(); i = i->fcdr()) {
+  for (PTR<List> i = FDPCL(args->car()); !i->nil(); i = i->fcdr()) {
     PTR<List> li = DPCL(i->car());
     if (li) {
       assert(li->fcdr()->fcdr()->fcdr()->nil());
