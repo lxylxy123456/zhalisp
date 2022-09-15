@@ -43,8 +43,10 @@ size_t Func::get_lb() const { return f_args.size(); }
 size_t Func::get_ub() const { return f_args.size(); }
 
 PTR<Sexp> Func::call(std::vector<PTR<Sexp>> args, ENV) {
-  assert(args.size() >= f_args.size());
-  assert(args.size() <= f_args.size());
+  if (args.size() < f_args.size())
+    throw std::invalid_argument("Too few arguments");
+  if (args.size() > f_args.size())
+    throw std::invalid_argument("Too many arguments");
   ENV new_env(new Env{f_env, name});
   auto j = f_args.begin();
   for (auto i = args.begin(); i != args.end(); i++, j++)
@@ -58,8 +60,10 @@ PTR<Sexp> Func::call(std::vector<PTR<Sexp>> args, ENV) {
 bool Func::has_tro() const { return true; }
 
 TRInfo Func::call_tro(std::vector<PTR<Sexp>> args, ENV env) const {
-  assert(args.size() >= f_args.size());
-  assert(args.size() <= f_args.size());
+  if (args.size() < f_args.size())
+    throw std::invalid_argument("Too few arguments");
+  if (args.size() > f_args.size())
+    throw std::invalid_argument("Too many arguments");
   ENV new_env(new Env{f_env, name});
   auto j = f_args.begin();
   for (auto i = args.begin(); i != args.end(); i++, j++)
