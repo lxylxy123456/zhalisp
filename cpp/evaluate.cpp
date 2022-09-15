@@ -832,7 +832,9 @@ PTR<Sexp> do_(PTR<List> args, ENV env) {
   for (PTR<List> i = FDPCL(args->car()); !i->nil(); i = i->fcdr()) {
     PTR<List> li = DPCL(i->car());
     if (li) {
-      assert(li->fcdr()->fcdr()->fcdr()->nil());
+      if (!li->fcdr()->fcdr()->fcdr()->nil()) {
+        throw std::invalid_argument("Too long list in DO");
+      }
       PTR<Symbol> name = FDPCS(li->car());
       new_env->set_var(name, evaluate(li->fcdr()->car(), env));
       if (!li->fcdr()->fcdr()->nil())
@@ -874,7 +876,9 @@ PTR<Sexp> prog(PTR<List> args, ENV env) {
   for (PTR<List> i = FDPCL(args->car()); !i->nil(); i = i->fcdr()) {
     PTR<List> li = DPCL(i->car());
     if (li) {
-      assert(li->fcdr()->fcdr()->nil());
+      if (!li->fcdr()->fcdr()->nil()) {
+        throw std::invalid_argument("Too long list in PROG");
+      }
       new_env->set_var(FDPCS(li->car()), evaluate(li->fcdr()->car(), env));
     } else {
       new_env->set_var(FDPCS(i->car()), Nil::lisp_nil);
