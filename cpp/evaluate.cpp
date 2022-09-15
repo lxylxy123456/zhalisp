@@ -997,7 +997,7 @@ std::unordered_map<std::string, PTR<EFunc>> fmap = {
   REGISTER_EFUNC("MAPCAR", mapcar, nullptr, 2)
   REGISTER_EFUNC("MAPC", mapc, nullptr, 2)
   REGISTER_EFUNC("MAPLIST", maplist, nullptr, 2)
-  REGISTER_EFUNC("REDUCE", reduce, nullptr, 2)
+  REGISTER_EFUNC("REDUCE", reduce, nullptr, 2, 2)
   REGISTER_EFUNC("APPEND", append, nullptr)
   REGISTER_EFUNC("APPLY", apply, apply_recu, 2)
   REGISTER_EFUNC("FUNCALL", funcall, funcall_recu, 1)
