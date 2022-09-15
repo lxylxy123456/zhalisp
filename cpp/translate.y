@@ -25,7 +25,6 @@
 
 #define NEWLST(CAR, CDR) new List(CAR, CDR)
 #define NEWLST2(CAR1, CAR2) NEWLST(CAR1, PTR<Sexp>(NEWLST(CAR2, Nil::lisp_nil)))
-#define DCL dynamic_cast<List*>
 #define DCS dynamic_cast<Symbol*>
 #define DCN dynamic_cast<Number*>
 #define PTRN PTR<Number>
@@ -46,7 +45,10 @@ sexp :'(' exps ')'			{ $$ = $2; }
 	 |NUM					{ $$ = $1; }
 	 |ID					{ $$ = $1; }
 	 |'#' ID '(' NUM NUM ')'{ $$ = reduced_complex_ns(DCN($4), PTRN(DCN($5))); 
-									assert(DCS($2)->get_value() == "C");
+									if (!DCS($2) ||
+										DCS($2)->get_value() != "C") {
+										throw SyntaxError("Expecting \"#C\"");
+									}
 									delete $2; }
 	 ;
 exps :sexp exps				{ $$ = NEWLST(PTRS($1), PTRS($2)); }
