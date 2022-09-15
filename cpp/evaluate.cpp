@@ -614,8 +614,11 @@ PTR<Sexp> function(PTR<List> args, ENV env) {
     return find_func(as, env);
   } else {
     PTR<List> lst = FDPCL(args->car());
-    assert(FDPCS(lst->car())->get_value() == "LAMBDA");
-    return lambda_(lst->fcdr(), env);
+    if (FDPCS(lst->car())->get_value() == "LAMBDA") {
+      return lambda_(lst->fcdr(), env);
+    } else {
+      throw std::invalid_argument("Unknown function");
+    }
   }
 }
 
