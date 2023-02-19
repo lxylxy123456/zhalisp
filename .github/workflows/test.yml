@@ -24,6 +24,9 @@ jobs:
       with:
         name: backend
         path: backend
+    - name: install cpplint
+      run: |
+        pip3 install cpplint
     - name: lint
       run: |
         cd cpp/

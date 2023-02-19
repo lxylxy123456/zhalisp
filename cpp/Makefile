@@ -38,10 +38,10 @@ LIBRARY = $(STRUCTS_O) translate.o evaluate.o test.o
 all: backend
 
 lex.yy.c: lex.l
-	lex $^
+	lex $<
 
-y.tab.c: translate.y
-	yacc $^
+y.tab.c: translate.y lex.yy.c
+	yacc $<
 
 translate.o: y.tab.c
 	$(CXX) $(CXXFLAGS) -c -o $@ -Wno-unused-function y.tab.c
