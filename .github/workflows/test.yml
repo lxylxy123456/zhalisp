@@ -22,8 +22,8 @@ jobs:
     - name: release
       uses: actions/upload-artifact@v3
       with:
-        name: backend
-        path: backend
+        name: zhalisp_ALL_O3
+        path: cpp/backend
     - name: install cpplint
       run: |
         pip3 install cpplint
