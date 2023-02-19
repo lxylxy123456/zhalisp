@@ -15,15 +15,24 @@ jobs:
         touch generated/*
         cp generated/* .
         make ALL=1 O=3 -j `nproc`
-    - name: unit test
+    - name: test
       run: |
         cd cpp/
         ./backend ../tests/*.test
+    - name: release
+      uses: actions/upload-artifact@v3
+      with:
+        name: backend
+        path: backend
+    - name: lint
+      run: |
+        cd cpp/
+        make lint
     - name: install valgrind
       run: |
         sudo apt-get update
         sudo apt-get install -y valgrind
-    - name: unit test with valgrind
+    - name: test with valgrind
       run: |
         cd cpp/
         valgrind --error-exitcode=1 --tool=memcheck --leak-check=full \

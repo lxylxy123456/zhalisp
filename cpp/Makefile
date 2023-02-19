@@ -52,6 +52,7 @@ backend: backend.cpp $(LIBRARY)
 tmp: tmp.cpp $(LIBRARY)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LINKFLAGS)
 
+.PHONY: lint
 lint: *.h *.cpp structs/*.h structs/*.cpp
 	cpplint $^
 
