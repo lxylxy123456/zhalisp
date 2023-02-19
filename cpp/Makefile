@@ -37,10 +37,14 @@ LIBRARY = $(STRUCTS_O) translate.o evaluate.o test.o
 
 all: backend
 
-translate.o: lex.l translate.y
-	lex lex.l
-	yacc translate.y
-	$(CXX) $(CXXFLAGS) y.tab.c -g -c -o $@ -Wno-unused-function
+lex.yy.c: lex.l
+	lex $^
+
+y.tab.c: translate.y
+	yacc $^
+
+translate.o: y.tab.c
+	$(CXX) $(CXXFLAGS) -c -o $@ -Wno-unused-function y.tab.c
 
 backend: backend.cpp $(LIBRARY)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LINKFLAGS)
