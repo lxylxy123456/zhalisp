@@ -12,6 +12,8 @@ jobs:
     - name: make
       run: |
         cd cpp/
+        touch generated/*
+        cp generated/* .
         make ALL=1 O=3 -j `nproc`
     - name: unit test
       run: |
