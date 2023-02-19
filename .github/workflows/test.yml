@@ -1,0 +1,30 @@
+name: Test
+
+on: [push, pull_request]
+
+jobs:
+  test:
+
+    runs-on: 'ubuntu-latest'
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: make
+      run: |
+        cd cpp/
+        make ALL=1 O=3 -j `nproc`
+    - name: unit test
+      run: |
+        cd cpp/
+        ./backend ../tests/*.test
+    - name: install valgrind
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y valgrind
+    - name: unit test with valgrind
+      run: |
+        cd cpp/
+        valgrind --error-exitcode=1 --tool=memcheck --leak-check=full \
+                 --errors-for-leak-kinds=definite \
+                 ./backend ../tests/*.test
+
