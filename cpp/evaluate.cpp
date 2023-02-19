@@ -146,7 +146,7 @@ size_t stack_limit = (LIMIT_STACK);
 void check_stack() {
   char* top_stack = reinterpret_cast<char*>(&top_stack);
   if (stack_limit && bottom_stack > top_stack &&
-      (size_t) (bottom_stack - top_stack) > stack_limit)
+      static_cast<size_t>(bottom_stack - top_stack) > stack_limit)
     throw std::invalid_argument("Stack overflow");
 }
 #endif
